@@ -76,6 +76,7 @@ function handleDrop(e, onTaskMove) {
     }
 
     if (!draggedElement) {
+        console.warn('Drop: No dragged element found');
         return false;
     }
 
@@ -83,8 +84,24 @@ function handleDrop(e, onTaskMove) {
     const fromSegment = parseInt(draggedElement.dataset.segmentId);
     const toSegment = parseInt(e.currentTarget.dataset.segment);
 
+    console.log('Drop event:', {
+        taskId,
+        fromSegment,
+        toSegment,
+        hasCallback: !!onTaskMove,
+        willMove: fromSegment !== toSegment
+    });
+
     if (fromSegment !== toSegment && onTaskMove) {
+        console.log('Calling onTaskMove callback');
         onTaskMove(taskId, fromSegment, toSegment);
+    } else {
+        if (fromSegment === toSegment) {
+            console.log('Same segment - no move needed');
+        }
+        if (!onTaskMove) {
+            console.error('onTaskMove callback is not defined!');
+        }
     }
 
     e.currentTarget.classList.remove('drag-over');
