@@ -55,6 +55,7 @@ import {
 // ============================================
 let currentUser = null;
 let db = null;
+let isGuestMode = false;
 
 // ============================================
 // Core Functions
@@ -64,7 +65,7 @@ let db = null;
  * Save all tasks (Guest or Firebase)
  */
 async function saveAllTasks() {
-    if (currentUser && db) {
+    if (currentUser && db && !isGuestMode) {
         await saveTasks(tasks, currentUser.uid, db, firebase);
     } else {
         await saveGuestTasks(tasks);
@@ -75,7 +76,7 @@ async function saveAllTasks() {
  * Load all tasks (Guest or Firebase)
  */
 async function loadAllTasks() {
-    if (currentUser && db) {
+    if (currentUser && db && !isGuestMode) {
         const loadedTasks = await loadUserTasks(currentUser.uid, db);
         setAllTasks(loadedTasks);
     } else {
@@ -340,11 +341,12 @@ function setupDragAndDropHandlers() {
  * Handle user authentication state changes
  * This is called from auth.js
  */
-window.onAuthStateChanged = async function(user, firebaseDb) {
+window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) {
     currentUser = user;
     db = firebaseDb;
+    isGuestMode = guestMode;
 
-    console.log('onAuthStateChanged called:', user ? user.email : 'guest mode');
+    console.log('onAuthStateChanged called:', user ? user.email : 'guest mode', 'isGuestMode:', isGuestMode);
 
     // Setup event listeners (after showApp() has been called by auth.js)
     setupEventListeners();
@@ -352,11 +354,11 @@ window.onAuthStateChanged = async function(user, firebaseDb) {
     // Setup drag and drop
     setupDragAndDropHandlers();
 
-    if (user) {
+    if (user && !isGuestMode) {
         console.log('User logged in:', user.email);
         await loadAllTasks();
     } else {
-        console.log('Guest mode');
+        console.log('Guest mode - loading from localForage');
         await loadAllTasks();
     }
 

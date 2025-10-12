@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Call the callback from script.js (ES6 module)
             if (typeof window.onAuthStateChanged === 'function') {
-                await window.onAuthStateChanged(user, db);
+                await window.onAuthStateChanged(user, db, false);
             }
         } else {
             // Check if guest mode was active
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Call the callback from script.js (ES6 module)
                 if (typeof window.onAuthStateChanged === 'function') {
-                    await window.onAuthStateChanged(null, db);
+                    await window.onAuthStateChanged(null, db, true);
                 }
             } else {
                 // User is signed out
@@ -253,7 +253,7 @@ async function continueAsGuest() {
 
     // Call the callback from script.js (ES6 module)
     if (typeof window.onAuthStateChanged === 'function') {
-        await window.onAuthStateChanged(null, db);
+        await window.onAuthStateChanged(null, db, true);
     }
 }
 
