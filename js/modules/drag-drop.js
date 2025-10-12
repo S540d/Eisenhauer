@@ -91,6 +91,18 @@ function handleDrop(e, onTaskMove) {
     return false;
 }
 
+// Store the last onTaskMove callback
+let currentOnTaskMove = null;
+
+/**
+ * Handle drop with stored callback
+ */
+function handleDropWithCallback(e) {
+    if (currentOnTaskMove) {
+        handleDrop(e, currentOnTaskMove);
+    }
+}
+
 /**
  * Setup drag and drop event listeners on task lists
  * @param {function} onTaskMove - Callback when task is moved
@@ -98,11 +110,21 @@ function handleDrop(e, onTaskMove) {
 export function setupDragAndDrop(onTaskMove) {
     const taskLists = document.querySelectorAll('.task-list');
 
+    // Store the callback
+    currentOnTaskMove = onTaskMove;
+
     taskLists.forEach(list => {
+        // Remove old listeners first to avoid duplicates
+        list.removeEventListener('dragover', handleDragOver, false);
+        list.removeEventListener('dragenter', handleDragEnter, false);
+        list.removeEventListener('dragleave', handleDragLeave, false);
+        list.removeEventListener('drop', handleDropWithCallback, false);
+
+        // Add new listeners
         list.addEventListener('dragover', handleDragOver, false);
         list.addEventListener('dragenter', handleDragEnter, false);
         list.addEventListener('dragleave', handleDragLeave, false);
-        list.addEventListener('drop', (e) => handleDrop(e, onTaskMove), false);
+        list.addEventListener('drop', handleDropWithCallback, false);
     });
 }
 
