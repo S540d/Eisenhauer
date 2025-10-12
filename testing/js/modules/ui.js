@@ -303,6 +303,30 @@ export function openSettingsModal(currentUser, version, buildDate) {
         settingsVersion.textContent = `Version ${version} (${buildDate})`;
     }
 
+    // Setup logout button event listener each time modal opens
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        console.log('Setting up logout button listener...');
+        // Remove old listener by cloning
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+
+        // Add new listener
+        newLogoutBtn.addEventListener('click', async () => {
+            console.log('Logout button clicked in modal');
+            if (typeof window.signOut === 'function') {
+                console.log('Calling window.signOut()');
+                await window.signOut();
+                // Close modal after logout
+                closeSettingsModal();
+            } else {
+                console.error('window.signOut is not available!');
+            }
+        });
+    } else {
+        console.error('Logout button not found!');
+    }
+
     settingsModal.classList.remove('hidden');
     settingsModal.classList.add('active');
     settingsModal.style.display = 'flex';
