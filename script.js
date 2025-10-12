@@ -151,10 +151,21 @@ function renderTasksWithCallbacks() {
 // Event Handlers
 // ============================================
 
+// Track if event listeners are already set up
+let eventListenersSetup = false;
+
 /**
  * Setup all event listeners
  */
 function setupEventListeners() {
+    // Prevent duplicate event listeners
+    if (eventListenersSetup) {
+        console.log('Event listeners already setup, skipping...');
+        return;
+    }
+
+    console.log('Setting up event listeners...');
+
     // Task input (if exists - v1.4.5 uses modal instead)
     const taskInput = document.getElementById('taskInput');
     if (taskInput) {
@@ -173,8 +184,11 @@ function setupEventListeners() {
     }
 
     // Segment add buttons (+)
-    document.querySelectorAll('.segment-add-btn').forEach(btn => {
+    const addButtons = document.querySelectorAll('.segment-add-btn');
+    console.log('Found', addButtons.length, 'add buttons');
+    addButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
+            console.log('Add button clicked, segment:', e.target.dataset.segment);
             const segment = parseInt(e.target.dataset.segment);
             openModal((text, selectedSegment, recurring) => {
                 handleAddTask(text, selectedSegment || segment, recurring);
@@ -185,8 +199,10 @@ function setupEventListeners() {
 
     // Settings button
     const settingsBtn = document.getElementById('settingsBtn');
+    console.log('Settings button found:', !!settingsBtn);
     if (settingsBtn) {
         settingsBtn.addEventListener('click', () => {
+            console.log('Settings button clicked');
             openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0]);
         });
     }
@@ -302,6 +318,9 @@ function setupEventListeners() {
             localStorage.setItem(STORAGE_KEYS.DRAG_HINT_SEEN, 'true');
         });
     }
+
+    eventListenersSetup = true;
+    console.log('✅ Event listeners setup complete');
 }
 
 /**
