@@ -45,18 +45,19 @@ jobs:
         sed -i 's/<body>/<body data-environment="testing">/' index.html || true
         echo "⚠️ Testing environment marker added"
 
-    - name: Deploy to Testing GitHub Pages
+    - name: Deploy to Testing Subdirectory
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./
-        publish_branch: gh-pages-testing
+        publish_branch: gh-pages
+        destination_dir: testing
         allow_empty_commit: false
-        keep_files: false
+        keep_files: true
         commit_message: '🧪 Testing deployment from ${{ github.sha }}'
 
     - name: Comment deployment URL
       run: |
         echo "🧪 Testing deployment successful!"
-        echo "Testing URL: https://${{ github.repository_owner }}.github.io/Eisenhauer-testing/"
-        echo "Branch: gh-pages-testing"
+        echo "Testing URL: https://${{ github.repository_owner }}.github.io/Eisenhauer/testing/"
+        echo "Branch: gh-pages (subdirectory: /testing/)"
