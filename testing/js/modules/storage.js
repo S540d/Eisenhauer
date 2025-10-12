@@ -119,7 +119,8 @@ export async function saveTaskToFirestore(task, userId, db, firebase) {
             text: task.text,
             segment: task.segment,
             checked: task.checked || false,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+            createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
         };
 
         // Add optional fields
@@ -242,7 +243,8 @@ export async function migrateLocalData(userId, db, firebase) {
                     text: task.text,
                     segment: task.segment,
                     checked: task.checked || false,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+                    createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
                 };
 
                 if (task.completedAt) {
