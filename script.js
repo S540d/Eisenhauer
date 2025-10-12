@@ -202,9 +202,24 @@ function setupEventListeners() {
     const settingsBtn = document.getElementById('settingsBtn');
     console.log('Settings button found:', !!settingsBtn);
     if (settingsBtn) {
-        settingsBtn.addEventListener('click', () => {
-            console.log('Settings button clicked');
+        console.log('Settings button position:', settingsBtn.getBoundingClientRect());
+        console.log('Settings button style:', window.getComputedStyle(settingsBtn).pointerEvents);
+
+        settingsBtn.addEventListener('click', (e) => {
+            console.log('Settings button clicked', e);
+            e.preventDefault();
+            e.stopPropagation();
             openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0]);
+        });
+
+        // Also add event to children (SVG)
+        settingsBtn.querySelectorAll('*').forEach(child => {
+            child.addEventListener('click', (e) => {
+                console.log('Settings button child clicked');
+                e.preventDefault();
+                e.stopPropagation();
+                openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0]);
+            });
         });
     }
 
