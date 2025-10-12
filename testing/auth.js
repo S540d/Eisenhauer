@@ -302,6 +302,9 @@ function showLogin() {
     document.getElementById('appScreen').style.display = 'none';
 }
 
+// Export showLogin as global function for ES6 modules
+window.showLogin = showLogin;
+
 function showApp() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appScreen').style.display = 'flex';

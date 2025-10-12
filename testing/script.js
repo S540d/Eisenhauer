@@ -206,7 +206,7 @@ function setupEventListeners() {
             console.log('Settings button (footer) clicked', e);
             e.preventDefault();
             e.stopPropagation();
-            openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0]);
+            openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0], isGuestMode);
         });
     }
 

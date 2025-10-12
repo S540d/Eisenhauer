@@ -278,8 +278,9 @@ export function getRecurringConfig() {
  * @param {object} currentUser - Current user object (or null)
  * @param {string} version - App version
  * @param {string} buildDate - Build date
+ * @param {boolean} isGuestMode - Whether user is in guest mode
  */
-export function openSettingsModal(currentUser, version, buildDate) {
+export function openSettingsModal(currentUser, version, buildDate, isGuestMode = false) {
     const settingsModal = document.getElementById('settingsModal');
     const settingsUserInfo = document.getElementById('settingsUserInfo');
     const settingsVersion = document.getElementById('settingsVersion');
@@ -313,14 +314,33 @@ export function openSettingsModal(currentUser, version, buildDate) {
 
         // Add new listener
         newLogoutBtn.addEventListener('click', async () => {
-            console.log('Logout button clicked in modal');
-            if (typeof window.signOut === 'function') {
-                console.log('Calling window.signOut()');
-                await window.signOut();
-                // Close modal after logout
-                closeSettingsModal();
+            console.log('Logout button clicked in modal, isGuestMode:', isGuestMode);
+
+            // Close modal first
+            closeSettingsModal();
+
+            if (isGuestMode) {
+                // Guest mode: Clear data and show login directly
+                console.log('Guest mode logout - clearing data and showing login');
+                if (typeof window.localforage !== 'undefined') {
+                    await window.localforage.removeItem('guestMode');
+                    await window.localforage.removeItem('eisenhauerTasks');
+                }
+                // Show login screen directly
+                if (typeof window.showLogin === 'function') {
+                    window.showLogin();
+                } else {
+                    document.getElementById('loginScreen').style.display = 'flex';
+                    document.getElementById('appScreen').style.display = 'none';
+                }
             } else {
-                console.error('window.signOut is not available!');
+                // Firebase user: Use signOut function
+                if (typeof window.signOut === 'function') {
+                    console.log('Firebase user logout - calling window.signOut()');
+                    await window.signOut();
+                } else {
+                    console.error('window.signOut is not available!');
+                }
             }
         });
     } else {
@@ -354,9 +374,27 @@ export function openMetricsModal(calculateMetrics) {
     if (!metricsModal) return;
 
     metricsModal.classList.add('active');
+    metricsModal.style.display = 'flex';
 
     if (calculateMetrics) {
         calculateMetrics();
+    }
+
+    // Setup close button event listener
+    const metricsCancelBtn = document.getElementById('metricsCancelBtn');
+    if (metricsCancelBtn) {
+        console.log('Setting up metrics cancel button listener...');
+        // Remove old listener by cloning
+        const newCancelBtn = metricsCancelBtn.cloneNode(true);
+        metricsCancelBtn.parentNode.replaceChild(newCancelBtn, metricsCancelBtn);
+
+        // Add new listener
+        newCancelBtn.addEventListener('click', () => {
+            console.log('Metrics cancel button clicked');
+            closeMetricsModal();
+        });
+    } else {
+        console.error('Metrics cancel button not found!');
     }
 }
 
@@ -366,7 +404,9 @@ export function openMetricsModal(calculateMetrics) {
 export function closeMetricsModal() {
     const metricsModal = document.getElementById('metricsModal');
     if (metricsModal) {
+        console.log('Closing metrics modal...');
         metricsModal.classList.remove('active');
+        metricsModal.style.display = 'none';
     }
 }
 
