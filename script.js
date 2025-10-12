@@ -298,8 +298,12 @@ function setupEventListeners() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
-            if (typeof signOut === 'function') {
-                await signOut();
+            console.log('Logout button clicked');
+            if (typeof window.signOut === 'function') {
+                console.log('Calling window.signOut()');
+                await window.signOut();
+            } else {
+                console.error('window.signOut is not available!');
             }
         });
     }

@@ -102,6 +102,9 @@ async function signOut() {
     }
 }
 
+// Export signOut as global function for ES6 modules
+window.signOut = signOut;
+
 // DEPRECATED: This function is now handled by storage.js module
 // async function loadUserTasks() {
 //     if (!currentUser) return;
