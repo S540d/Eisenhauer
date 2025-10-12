@@ -1,0 +1,525 @@
+/**
+ * UI Module
+ * Handles all UI rendering, modals, and user interactions
+ */
+
+import { COLORS, SEGMENTS } from './config.js';
+import { getTasks, getRecurringDescription } from './tasks.js';
+
+/**
+ * Create a task DOM element
+ * @param {object} task - Task object
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ * @param {function} onToggle - Callback when task is toggled
+ * @param {function} onDragStart - Drag start handler
+ * @param {function} onDragEnd - Drag end handler
+ * @param {function} onSetupTouchDrag - Touch drag setup
+ * @param {function} onSetupSwipeDelete - Swipe delete setup
+ * @returns {HTMLElement} Task element
+ */
+export function createTaskElement(task, translations, currentLanguage, callbacks = {}) {
+    const div = document.createElement('div');
+    div.className = 'task-item';
+    div.draggable = true;
+    div.dataset.taskId = task.id;
+    div.dataset.segmentId = task.segment;
+
+    // Set border color based on segment
+    div.style.setProperty('--checkbox-color', COLORS[task.segment]);
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.className = 'task-checkbox';
+    checkbox.checked = task.checked;
+
+    // Checkbox event listener
+    if (callbacks.onToggle) {
+        checkbox.addEventListener('change', () => {
+            callbacks.onToggle(task.id, task.segment);
+        });
+    }
+
+    const content = document.createElement('div');
+    content.className = 'task-content';
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'task-text';
+
+    // Create a text node for the task text
+    const textNode = document.createTextNode(task.text);
+    textSpan.appendChild(textNode);
+
+    // Add recurring indicator if task is recurring
+    if (task.recurring && task.recurring.enabled) {
+        const recurringIndicator = document.createElement('span');
+        recurringIndicator.className = 'recurring-indicator';
+        recurringIndicator.textContent = ' ' + translations[currentLanguage].recurring.indicator;
+        recurringIndicator.title = getRecurringDescription(task.recurring, translations[currentLanguage]);
+        textSpan.appendChild(recurringIndicator);
+    }
+
+    content.appendChild(textSpan);
+
+    // Add completion timestamp for Done! segment
+    if (task.segment === SEGMENTS.DONE && task.completedAt) {
+        const timestampSpan = document.createElement('span');
+        timestampSpan.className = 'task-timestamp';
+        const date = new Date(task.completedAt);
+        const formattedDate = date.toLocaleDateString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        const formattedTime = date.toLocaleTimeString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        timestampSpan.textContent = `${formattedDate} ${formattedTime}`;
+        content.appendChild(timestampSpan);
+    }
+
+    div.appendChild(checkbox);
+    div.appendChild(content);
+
+    // Drag and Drop Events (Desktop)
+    if (callbacks.onDragStart) {
+        div.addEventListener('dragstart', callbacks.onDragStart);
+    }
+    if (callbacks.onDragEnd) {
+        div.addEventListener('dragend', callbacks.onDragEnd);
+    }
+
+    // Touch Drag and Drop (Mobile)
+    if (callbacks.onSetupTouchDrag) {
+        callbacks.onSetupTouchDrag(div, task);
+    }
+
+    // Swipe to Delete
+    if (callbacks.onSetupSwipeDelete) {
+        callbacks.onSetupSwipeDelete(div, task);
+    }
+
+    return div;
+}
+
+/**
+ * Render tasks in a specific segment
+ * @param {number} segmentId - Segment ID (1-5)
+ * @param {object} tasks - Tasks object
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ * @param {object} callbacks - Event callbacks
+ */
+export function renderSegment(segmentId, tasks, translations, currentLanguage, callbacks = {}) {
+    const segmentElement = document.getElementById(`segment${segmentId}`);
+    if (!segmentElement) return;
+
+    segmentElement.innerHTML = '';
+
+    const segmentTasks = tasks[segmentId] || [];
+    segmentTasks.forEach(task => {
+        const taskElement = createTaskElement(task, translations, currentLanguage, callbacks);
+        segmentElement.appendChild(taskElement);
+    });
+}
+
+/**
+ * Render all tasks in all segments
+ * @param {object} tasks - Tasks object
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ * @param {object} callbacks - Event callbacks
+ */
+export function renderAllTasks(tasks, translations, currentLanguage, callbacks = {}) {
+    for (let i = 1; i <= 5; i++) {
+        renderSegment(i, tasks, translations, currentLanguage, callbacks);
+    }
+}
+
+/**
+ * Open the task segment modal
+ * @param {function} onAddTask - Callback when task is added
+ * @param {string} currentTask - Current task text
+ * @returns {function} Close modal function
+ */
+export function openModal(onAddTask, currentTask) {
+    const modal = document.getElementById('segmentModal');
+    const recurringEnabled = document.getElementById('recurringEnabled');
+    const recurringOptions = document.getElementById('recurringOptions');
+    const recurringInterval = document.getElementById('recurringInterval');
+    const weeklyOptions = document.getElementById('weeklyOptions');
+    const monthlyOptions = document.getElementById('monthlyOptions');
+    const customOptions = document.getElementById('customOptions');
+    const segmentBtns = document.querySelectorAll('.segment-btn');
+
+    if (!modal) return () => {};
+
+    modal.classList.add('active');
+
+    // Reset recurring task options
+    if (recurringEnabled) recurringEnabled.checked = false;
+    if (recurringOptions) recurringOptions.style.display = 'none';
+    if (recurringInterval) recurringInterval.value = 'daily';
+    if (weeklyOptions) weeklyOptions.style.display = 'none';
+    if (monthlyOptions) monthlyOptions.style.display = 'none';
+    if (customOptions) customOptions.style.display = 'none';
+
+    // Reset weekday checkboxes
+    if (weeklyOptions) {
+        const weekdayCheckboxes = weeklyOptions.querySelectorAll('input[type="checkbox"]');
+        weekdayCheckboxes.forEach(cb => cb.checked = false);
+    }
+
+    // Setup segment buttons
+    segmentBtns.forEach(btn => {
+        const segmentId = parseInt(btn.dataset.segment);
+        btn.onclick = () => {
+            if (currentTask) {
+                const recurringConfig = getRecurringConfig();
+                onAddTask(currentTask, segmentId, recurringConfig);
+            }
+            closeModal();
+        };
+    });
+
+    return () => closeModal();
+}
+
+/**
+ * Close the task segment modal
+ */
+export function closeModal() {
+    const modal = document.getElementById('segmentModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+/**
+ * Open modal for moving a task
+ * @param {object} task - Task to move
+ * @param {function} onMove - Callback when task is moved
+ */
+export function openModalForMove(task, onMove) {
+    const modal = document.getElementById('segmentModal');
+    const segmentBtns = document.querySelectorAll('.segment-btn');
+
+    if (!modal) return;
+
+    modal.classList.add('active');
+
+    // Update segment buttons for move
+    segmentBtns.forEach(btn => {
+        const segmentId = parseInt(btn.dataset.segment);
+        btn.onclick = () => {
+            if (task.segment !== segmentId) {
+                onMove(task.id, task.segment, segmentId);
+            }
+            closeModal();
+        };
+    });
+}
+
+/**
+ * Get recurring configuration from modal form
+ * @returns {object|null} Recurring config or null
+ */
+export function getRecurringConfig() {
+    const recurringEnabled = document.getElementById('recurringEnabled');
+    const recurringInterval = document.getElementById('recurringInterval');
+    const weeklyOptions = document.getElementById('weeklyOptions');
+
+    if (!recurringEnabled || !recurringEnabled.checked) {
+        return null;
+    }
+
+    const config = {
+        enabled: true,
+        interval: recurringInterval ? recurringInterval.value : 'daily'
+    };
+
+    // Get interval-specific configuration
+    switch(config.interval) {
+        case 'weekly':
+            if (weeklyOptions) {
+                const weekdayCheckboxes = weeklyOptions.querySelectorAll('input[type="checkbox"]:checked');
+                config.weekdays = Array.from(weekdayCheckboxes).map(cb => parseInt(cb.value));
+            }
+            break;
+        case 'monthly':
+            const dayOfMonth = document.getElementById('dayOfMonth');
+            if (dayOfMonth) {
+                config.dayOfMonth = parseInt(dayOfMonth.value);
+            }
+            break;
+        case 'custom':
+            const customDays = document.getElementById('customDays');
+            if (customDays) {
+                config.customDays = parseInt(customDays.value);
+            }
+            break;
+    }
+
+    return config;
+}
+
+/**
+ * Open settings modal
+ * @param {object} currentUser - Current user object (or null)
+ * @param {string} version - App version
+ * @param {string} buildDate - Build date
+ */
+export function openSettingsModal(currentUser, version, buildDate) {
+    const settingsModal = document.getElementById('settingsModal');
+    const settingsUserInfo = document.getElementById('settingsUserInfo');
+    const settingsVersion = document.getElementById('settingsVersion');
+
+    if (!settingsModal) return;
+
+    if (settingsUserInfo) {
+        if (currentUser) {
+            settingsUserInfo.textContent = `Angemeldet als: ${currentUser.email}`;
+        } else {
+            settingsUserInfo.textContent = 'Nicht angemeldet (Lokaler Modus)';
+        }
+    }
+
+    if (settingsVersion) {
+        settingsVersion.textContent = `Version ${version} (${buildDate})`;
+    }
+
+    settingsModal.classList.add('active');
+}
+
+/**
+ * Close settings modal
+ */
+export function closeSettingsModal() {
+    const settingsModal = document.getElementById('settingsModal');
+    if (settingsModal) {
+        settingsModal.classList.remove('active');
+    }
+}
+
+/**
+ * Open metrics modal
+ * @param {function} calculateMetrics - Callback to calculate and display metrics
+ */
+export function openMetricsModal(calculateMetrics) {
+    const metricsModal = document.getElementById('metricsModal');
+    if (!metricsModal) return;
+
+    metricsModal.classList.add('active');
+
+    if (calculateMetrics) {
+        calculateMetrics();
+    }
+}
+
+/**
+ * Close metrics modal
+ */
+export function closeMetricsModal() {
+    const metricsModal = document.getElementById('metricsModal');
+    if (metricsModal) {
+        metricsModal.classList.remove('active');
+    }
+}
+
+/**
+ * Show drag hint to user
+ */
+export function showDragHint() {
+    const dragHint = document.getElementById('dragHint');
+    if (!dragHint) return;
+
+    dragHint.style.display = 'block';
+
+    const closeBtn = document.getElementById('closeDragHint');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', async () => {
+            dragHint.style.display = 'none';
+            if (typeof localforage !== 'undefined') {
+                await localforage.setItem('dragHintSeen', true);
+            }
+        });
+    }
+}
+
+/**
+ * Update online/offline status indicator
+ */
+export function updateOnlineStatus() {
+    const indicator = document.getElementById('offlineIndicator');
+    if (!indicator) return;
+
+    if (!navigator.onLine) {
+        indicator.style.display = 'block';
+    } else {
+        indicator.style.display = 'none';
+    }
+}
+
+/**
+ * Update all UI text based on current language
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ */
+export function updateLanguage(translations, currentLanguage) {
+    const lang = translations[currentLanguage];
+    if (!lang) return;
+
+    // Update segment headers
+    for (let i = 1; i <= 5; i++) {
+        const segment = document.querySelector(`.segment[data-segment="${i}"]`);
+        if (segment) {
+            const header = segment.querySelector('.segment-header h2');
+            if (header) {
+                const segmentData = lang.segments[i];
+                if (segmentData.subtitle) {
+                    header.innerHTML = `${segmentData.title} <span style="font-size: 0.7em; opacity: 0.7; font-weight: 400;">${segmentData.subtitle}</span>`;
+                } else {
+                    header.textContent = segmentData.title;
+                }
+            }
+        }
+    }
+
+    // Update modal segment buttons
+    const segmentButtons = document.querySelectorAll('.segment-btn');
+    segmentButtons.forEach((btn) => {
+        const segmentId = parseInt(btn.dataset.segment);
+        const segmentData = lang.segments[segmentId];
+        if (segmentData) {
+            if (segmentData.subtitle) {
+                btn.innerHTML = `<strong>${segmentData.title}</strong><br><span style="font-size: 0.8em; opacity: 0.8;">${segmentData.subtitle}</span>`;
+            } else {
+                btn.innerHTML = `<strong>${segmentData.title}</strong>`;
+            }
+        }
+    });
+
+    // Update recurring task UI translations
+    const recurringEnableText = document.getElementById('recurringEnableText');
+    if (recurringEnableText) {
+        recurringEnableText.textContent = lang.recurring.enableLabel;
+    }
+
+    const recurringIntervalLabel = document.getElementById('recurringIntervalLabel');
+    if (recurringIntervalLabel) {
+        recurringIntervalLabel.textContent = lang.recurring.intervalLabel;
+    }
+
+    // Update interval select options
+    const recurringInterval = document.getElementById('recurringInterval');
+    if (recurringInterval) {
+        const dailyOption = recurringInterval.querySelector('option[value="daily"]');
+        const weeklyOption = recurringInterval.querySelector('option[value="weekly"]');
+        const monthlyOption = recurringInterval.querySelector('option[value="monthly"]');
+        const customOption = recurringInterval.querySelector('option[value="custom"]');
+
+        if (dailyOption) dailyOption.textContent = lang.recurring.daily;
+        if (weeklyOption) weeklyOption.textContent = lang.recurring.weekly;
+        if (monthlyOption) monthlyOption.textContent = lang.recurring.monthly;
+        if (customOption) customOption.textContent = lang.recurring.custom;
+    }
+
+    // Update weekday labels
+    const weekdayMap = {
+        'weekday-monday': 'monday',
+        'weekday-tuesday': 'tuesday',
+        'weekday-wednesday': 'wednesday',
+        'weekday-thursday': 'thursday',
+        'weekday-friday': 'friday',
+        'weekday-saturday': 'saturday',
+        'weekday-sunday': 'sunday'
+    };
+
+    Object.entries(weekdayMap).forEach(([id, key]) => {
+        const elem = document.getElementById(id);
+        if (elem && lang.recurring.weekdays[key]) {
+            elem.textContent = currentLanguage === 'de'
+                ? lang.recurring.weekdays[key].substring(0, 2)
+                : lang.recurring.weekdays[key].substring(0, 3);
+        }
+    });
+
+    const dayOfMonthLabel = document.getElementById('dayOfMonthLabel');
+    if (dayOfMonthLabel) {
+        dayOfMonthLabel.textContent = lang.recurring.dayOfMonth;
+    }
+
+    const customDaysLabel = document.getElementById('customDaysLabel');
+    if (customDaysLabel) {
+        customDaysLabel.textContent = lang.recurring.customDays;
+    }
+
+    // Update task input placeholder
+    const taskInput = document.getElementById('taskInput');
+    if (taskInput) {
+        taskInput.placeholder = lang.taskInputPlaceholder;
+    }
+
+    // Update drag hint text
+    const dragHint = document.getElementById('dragHint');
+    if (dragHint) {
+        const hintTextPara = dragHint.querySelector('p');
+        const hintButton = dragHint.querySelector('button');
+
+        if (hintTextPara) {
+            const hintText = currentLanguage === 'de'
+                ? '💡 <strong>Tipp:</strong> Ziehe Aufgaben zwischen Kategorien, um sie zu verschieben. Wische nach links, um zu löschen.'
+                : '💡 <strong>Tip:</strong> Drag tasks between categories to move them. Swipe left to delete.';
+            hintTextPara.innerHTML = hintText;
+        }
+
+        if (hintButton) {
+            const btnText = currentLanguage === 'de' ? 'Verstanden' : 'Got it';
+            hintButton.textContent = btnText;
+        }
+    }
+}
+
+/**
+ * Update metrics modal language
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ */
+export function updateMetricsLanguage(translations, currentLanguage) {
+    const lang = translations[currentLanguage];
+    if (!lang || !lang.metrics) return;
+
+    const metricsTitle = document.getElementById('metricsTitle');
+    if (metricsTitle) metricsTitle.textContent = lang.metrics.title;
+
+    const metricsOverviewTitle = document.getElementById('metricsOverviewTitle');
+    if (metricsOverviewTitle) metricsOverviewTitle.textContent = lang.metrics.overview;
+
+    const metricTotalLabel = document.getElementById('metricTotalLabel');
+    if (metricTotalLabel) metricTotalLabel.textContent = lang.metrics.totalCompleted;
+
+    const metricStreakLabel = document.getElementById('metricStreakLabel');
+    if (metricStreakLabel) metricStreakLabel.textContent = lang.metrics.streak;
+
+    const metricAvgTimeLabel = document.getElementById('metricAvgTimeLabel');
+    if (metricAvgTimeLabel) metricAvgTimeLabel.textContent = lang.metrics.avgTime;
+
+    const metricsCompletedTitle = document.getElementById('metricsCompletedTitle');
+    if (metricsCompletedTitle) metricsCompletedTitle.textContent = lang.metrics.completedTasks;
+
+    const metricsDistributionTitle = document.getElementById('metricsDistributionTitle');
+    if (metricsDistributionTitle) metricsDistributionTitle.textContent = lang.metrics.distribution;
+
+    const metricsDayBtn = document.getElementById('metricsDayBtn');
+    if (metricsDayBtn) metricsDayBtn.textContent = lang.metrics.day;
+
+    const metricsWeekBtn = document.getElementById('metricsWeekBtn');
+    if (metricsWeekBtn) metricsWeekBtn.textContent = lang.metrics.week;
+
+    const metricsMonthBtn = document.getElementById('metricsMonthBtn');
+    if (metricsMonthBtn) metricsMonthBtn.textContent = lang.metrics.month;
+
+    const metricsCancelBtn = document.getElementById('metricsCancelBtn');
+    if (metricsCancelBtn) metricsCancelBtn.textContent = lang.metrics.close;
+}
