@@ -153,9 +153,15 @@ export function openModal(onAddTask, currentTask) {
     const customOptions = document.getElementById('customOptions');
     const segmentBtns = document.querySelectorAll('.segment-btn');
 
-    if (!modal) return () => {};
+    if (!modal) {
+        console.error('Modal #segmentModal not found!');
+        return () => {};
+    }
 
+    console.log('Opening modal...');
+    modal.classList.remove('hidden');
     modal.classList.add('active');
+    modal.style.display = 'flex';
 
     // Reset recurring task options
     if (recurringEnabled) recurringEnabled.checked = false;
@@ -192,7 +198,10 @@ export function openModal(onAddTask, currentTask) {
 export function closeModal() {
     const modal = document.getElementById('segmentModal');
     if (modal) {
+        console.log('Closing modal...');
         modal.classList.remove('active');
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
     }
 }
 
@@ -275,7 +284,12 @@ export function openSettingsModal(currentUser, version, buildDate) {
     const settingsUserInfo = document.getElementById('settingsUserInfo');
     const settingsVersion = document.getElementById('settingsVersion');
 
-    if (!settingsModal) return;
+    if (!settingsModal) {
+        console.error('Settings modal not found!');
+        return;
+    }
+
+    console.log('Opening settings modal...');
 
     if (settingsUserInfo) {
         if (currentUser) {
@@ -289,7 +303,9 @@ export function openSettingsModal(currentUser, version, buildDate) {
         settingsVersion.textContent = `Version ${version} (${buildDate})`;
     }
 
+    settingsModal.classList.remove('hidden');
     settingsModal.classList.add('active');
+    settingsModal.style.display = 'flex';
 }
 
 /**
@@ -298,7 +314,10 @@ export function openSettingsModal(currentUser, version, buildDate) {
 export function closeSettingsModal() {
     const settingsModal = document.getElementById('settingsModal');
     if (settingsModal) {
+        console.log('Closing settings modal...');
         settingsModal.classList.remove('active');
+        settingsModal.classList.add('hidden');
+        settingsModal.style.display = 'none';
     }
 }
 
