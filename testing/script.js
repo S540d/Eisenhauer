@@ -147,6 +147,9 @@ function renderTasksWithCallbacks() {
     };
 
     renderAllTasks(tasks, translations, currentLanguage, callbacks);
+
+    // Re-setup drag and drop handlers after rendering tasks
+    setupDragAndDropHandlers();
 }
 
 // ============================================
