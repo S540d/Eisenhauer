@@ -348,11 +348,14 @@ window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) 
 
     console.log('onAuthStateChanged called:', user ? user.email : 'guest mode', 'isGuestMode:', isGuestMode);
 
-    // Setup event listeners (after showApp() has been called by auth.js)
-    setupEventListeners();
+    // Wait for DOM to be fully visible after showApp()
+    setTimeout(() => {
+        // Setup event listeners (after showApp() has been called by auth.js)
+        setupEventListeners();
 
-    // Setup drag and drop
-    setupDragAndDropHandlers();
+        // Setup drag and drop
+        setupDragAndDropHandlers();
+    }, 100);
 
     if (user && !isGuestMode) {
         console.log('User logged in:', user.email);
