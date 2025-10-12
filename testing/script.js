@@ -198,28 +198,15 @@ function setupEventListeners() {
         });
     });
 
-    // Settings button
-    const settingsBtn = document.getElementById('settingsBtn');
-    console.log('Settings button found:', !!settingsBtn);
+    // Settings button (footer)
+    const settingsBtn = document.getElementById('settingsBtnFooter');
+    console.log('Settings button (footer) found:', !!settingsBtn);
     if (settingsBtn) {
-        console.log('Settings button position:', settingsBtn.getBoundingClientRect());
-        console.log('Settings button style:', window.getComputedStyle(settingsBtn).pointerEvents);
-
         settingsBtn.addEventListener('click', (e) => {
-            console.log('Settings button clicked', e);
+            console.log('Settings button (footer) clicked', e);
             e.preventDefault();
             e.stopPropagation();
             openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0]);
-        });
-
-        // Also add event to children (SVG)
-        settingsBtn.querySelectorAll('*').forEach(child => {
-            child.addEventListener('click', (e) => {
-                console.log('Settings button child clicked');
-                e.preventDefault();
-                e.stopPropagation();
-                openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0]);
-            });
         });
     }
 
