@@ -91,7 +91,11 @@ async function signInWithApple() {
 async function signOut() {
     try {
         await auth.signOut();
+        // Clear guest mode flag
+        await localforage.removeItem('guestMode');
+        isGuestMode = false;
         console.log('User signed out successfully');
+        // The onAuthStateChanged handler will show the login screen
     } catch (error) {
         console.error('Sign-out error:', error);
         alert('Fehler beim Abmelden: ' + error.message);

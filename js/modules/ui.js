@@ -542,3 +542,107 @@ export function updateMetricsLanguage(translations, currentLanguage) {
     const metricsCancelBtn = document.getElementById('metricsCancelBtn');
     if (metricsCancelBtn) metricsCancelBtn.textContent = lang.metrics.close;
 }
+
+/**
+ * Open Quick Add Modal for a specific segment
+ * @param {number} segmentId - Segment ID (1-5)
+ * @param {function} onAddTask - Callback when task is added
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ */
+export function openQuickAddModal(segmentId, onAddTask, translations, currentLanguage) {
+    const quickAddModal = document.getElementById('quickAddModal');
+    const quickAddInput = document.getElementById('quickAddInput');
+    const quickAddCategory = document.getElementById('quickAddCategory');
+    const quickAddTitle = document.getElementById('quickAddTitle');
+    const quickAddSubmitBtn = document.getElementById('quickAddSubmitBtn');
+    const quickAddCancelBtn = document.getElementById('quickAddCancelBtn');
+    const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
+    const quickRecurringOptions = document.getElementById('quickRecurringOptions');
+
+    if (!quickAddModal || !quickAddInput) {
+        console.error('Quick Add Modal elements not found!');
+        return;
+    }
+
+    // Reset modal
+    quickAddInput.value = '';
+    quickRecurringEnabled.checked = false;
+    quickRecurringOptions.style.display = 'none';
+
+    // Segment names
+    const segmentNames = {
+        1: { de: 'Do! (Wichtig & Dringend)', en: 'Do! (Important & Urgent)' },
+        2: { de: 'Schedule! (Wichtig)', en: 'Schedule! (Important)' },
+        3: { de: 'Delegate! (Dringend)', en: 'Delegate! (Urgent)' },
+        4: { de: 'Ignore! (Weder/Noch)', en: 'Ignore! (Neither)' },
+        5: { de: 'Done! (Erledigt)', en: 'Done! (Completed)' }
+    };
+
+    // Set category title
+    const categoryName = segmentNames[segmentId]?.[currentLanguage] || segmentNames[segmentId]?.['en'] || 'Unknown';
+    quickAddCategory.textContent = categoryName;
+
+    // Update title
+    quickAddTitle.textContent = currentLanguage === 'de' ? 'Neue Aufgabe' : 'New Task';
+
+    // Show modal
+    quickAddModal.style.display = 'flex';
+    setTimeout(() => quickAddInput.focus(), 100);
+
+    // Handle submit
+    const handleSubmit = () => {
+        const text = quickAddInput.value.trim();
+        if (!text) return;
+
+        // Get recurring config if enabled
+        let recurringConfig = null;
+        if (quickRecurringEnabled.checked) {
+            const selectedType = document.querySelector('input[name="quickRecurringType"]:checked')?.value;
+            recurringConfig = { type: selectedType };
+
+            if (selectedType === 'weekly') {
+                const weekdays = Array.from(document.querySelectorAll('#quickWeekdaysContainer .weekday-check:checked'))
+                    .map(cb => parseInt(cb.value));
+                if (weekdays.length > 0) {
+                    recurringConfig.weekdays = weekdays;
+                }
+            } else if (selectedType === 'monthly') {
+                const monthDay = parseInt(document.getElementById('quickMonthDay')?.value || 1);
+                recurringConfig.dayOfMonth = monthDay;
+            } else if (selectedType === 'custom') {
+                const customDays = parseInt(document.getElementById('quickCustomDays')?.value || 1);
+                recurringConfig.interval = customDays;
+            }
+        }
+
+        // Call callback
+        if (onAddTask) {
+            onAddTask(text, segmentId, recurringConfig);
+        }
+
+        // Close modal
+        quickAddModal.style.display = 'none';
+    };
+
+    // Remove old listeners and add new ones
+    const newSubmitBtn = quickAddSubmitBtn.cloneNode(true);
+    quickAddSubmitBtn.parentNode.replaceChild(newSubmitBtn, quickAddSubmitBtn);
+    newSubmitBtn.addEventListener('click', handleSubmit);
+
+    const newCancelBtn = quickAddCancelBtn.cloneNode(true);
+    quickAddCancelBtn.parentNode.replaceChild(newCancelBtn, quickAddCancelBtn);
+    newCancelBtn.addEventListener('click', () => {
+        quickAddModal.style.display = 'none';
+    });
+
+    // Handle Enter key
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+    quickAddInput.removeEventListener('keypress', handleKeyPress);
+    quickAddInput.addEventListener('keypress', handleKeyPress);
+}

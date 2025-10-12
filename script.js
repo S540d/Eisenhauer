@@ -37,6 +37,7 @@ import {
     renderAllTasks,
     openModal,
     closeModal,
+    openQuickAddModal,
     openSettingsModal,
     openMetricsModal,
     showDragHint,
@@ -184,17 +185,16 @@ function setupEventListeners() {
         taskInput.maxLength = MAX_TASK_LENGTH;
     }
 
-    // Segment add buttons (+)
+    // Segment add buttons (+) - Open Quick Add Modal
     const addButtons = document.querySelectorAll('.segment-add-btn');
     console.log('Found', addButtons.length, 'add buttons');
     addButtons.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            console.log('Add button clicked, segment:', e.target.dataset.segment);
             const segment = parseInt(e.target.dataset.segment);
-            openModal((text, selectedSegment, recurring) => {
+            console.log('Add button clicked, segment:', segment);
+            openQuickAddModal(segment, (text, selectedSegment, recurring) => {
                 handleAddTask(text, selectedSegment || segment, recurring);
-                closeModal();
-            }, null, segment);
+            }, translations, currentLanguage);
         });
     });
 
