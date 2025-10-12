@@ -325,6 +325,14 @@ window.onAuthStateChanged = async function(user, firebaseDb) {
     currentUser = user;
     db = firebaseDb;
 
+    console.log('onAuthStateChanged called:', user ? user.email : 'guest mode');
+
+    // Setup event listeners (after showApp() has been called by auth.js)
+    setupEventListeners();
+
+    // Setup drag and drop
+    setupDragAndDropHandlers();
+
     if (user) {
         console.log('User logged in:', user.email);
         await loadAllTasks();
@@ -359,18 +367,12 @@ async function initApp() {
     // Setup persistent storage
     await requestPersistentStorage();
 
-    // Setup event listeners
-    setupEventListeners();
-
-    // Setup drag and drop
-    setupDragAndDropHandlers();
-
     // Check online status
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
 
-    // Initial load
-    // Note: Tasks are loaded in onAuthStateChanged callback
+    // Note: Event listeners and tasks are loaded in onAuthStateChanged callback
+    // which is triggered by auth.js after showApp() is called
 
     console.log('✅ App initialized successfully');
 }

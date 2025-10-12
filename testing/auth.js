@@ -17,7 +17,11 @@ document.addEventListener('DOMContentLoaded', function() {
             isGuestMode = false;
             await localforage.removeItem('guestMode');
             showApp();
-            loadUserTasks();
+
+            // Call the callback from script.js (ES6 module)
+            if (typeof window.onAuthStateChanged === 'function') {
+                await window.onAuthStateChanged(user, db);
+            }
         } else {
             // Check if guest mode was active
             const wasGuestMode = await localforage.getItem('guestMode');
@@ -25,7 +29,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Continuing in guest mode');
                 isGuestMode = true;
                 showApp();
-                await loadGuestTasks();
+
+                // Call the callback from script.js (ES6 module)
+                if (typeof window.onAuthStateChanged === 'function') {
+                    await window.onAuthStateChanged(null, db);
+                }
             } else {
                 // User is signed out
                 console.log('User signed out - showing login');
@@ -90,31 +98,31 @@ async function signOut() {
     }
 }
 
-// Load user tasks from Firestore
-async function loadUserTasks() {
-    if (!currentUser) return;
-
-    try {
-        const snapshot = await db.collection('users')
-            .doc(currentUser.uid)
-            .collection('tasks')
-            .get();
-
-        // Clear current tasks
-        tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-
-        // Load tasks from Firestore
-        snapshot.forEach(doc => {
-            const task = doc.data();
-            task.id = doc.id; // Use Firestore document ID
-            tasks[task.segment].push(task);
-        });
-
-        renderAllTasks();
-    } catch (error) {
-        console.error('Error loading tasks:', error);
-    }
-}
+// DEPRECATED: This function is now handled by storage.js module
+// async function loadUserTasks() {
+//     if (!currentUser) return;
+//
+//     try {
+//         const snapshot = await db.collection('users')
+//             .doc(currentUser.uid)
+//             .collection('tasks')
+//             .get();
+//
+//         // Clear current tasks
+//         tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+//
+//         // Load tasks from Firestore
+//         snapshot.forEach(doc => {
+//             const task = doc.data();
+//             task.id = doc.id; // Use Firestore document ID
+//             tasks[task.segment].push(task);
+//         });
+//
+//         renderAllTasks();
+//     } catch (error) {
+//         console.error('Error loading tasks:', error);
+//     }
+// }
 
 // Save task to Firestore
 async function saveTaskToFirestore(task) {
@@ -242,23 +250,28 @@ async function continueAsGuest() {
     }
 
     showApp();
-    await loadGuestTasks();
-}
 
-async function loadGuestTasks() {
-    try {
-        const savedTasks = await localforage.getItem('eisenhauerTasks');
-        if (savedTasks) {
-            tasks = savedTasks;
-            renderAllTasks();
-        } else {
-            tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-        }
-    } catch (error) {
-        console.error('Error loading guest tasks:', error);
-        tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+    // Call the callback from script.js (ES6 module)
+    if (typeof window.onAuthStateChanged === 'function') {
+        await window.onAuthStateChanged(null, db);
     }
 }
+
+// DEPRECATED: This function is now handled by storage.js module
+// async function loadGuestTasks() {
+//     try {
+//         const savedTasks = await localforage.getItem('eisenhauerTasks');
+//         if (savedTasks) {
+//             tasks = savedTasks;
+//             renderAllTasks();
+//         } else {
+//             tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+//         }
+//     } catch (error) {
+//         console.error('Error loading guest tasks:', error);
+//         tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+//     }
+// }
 
 async function saveGuestTasks() {
     if (isGuestMode) {
