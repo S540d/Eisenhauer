@@ -25,8 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // Check if guest mode was active
             const wasGuestMode = await localforage.getItem('guestMode');
+            console.log('User is null, checking guestMode:', wasGuestMode);
+
             if (wasGuestMode === 'true') {
-                console.log('Continuing in guest mode');
+                console.log('Continuing in guest mode - showing app');
                 isGuestMode = true;
                 showApp();
 
@@ -35,8 +37,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     await window.onAuthStateChanged(null, db, true);
                 }
             } else {
-                // User is signed out
-                console.log('User signed out - showing login');
+                // User is signed out and not in guest mode
+                console.log('User signed out and guestMode not active - showing login screen');
+                isGuestMode = false;
                 showLogin();
             }
         }
@@ -90,12 +93,15 @@ async function signInWithApple() {
 // Sign Out
 async function signOut() {
     try {
-        await auth.signOut();
-        // Clear guest mode flag
+        console.log('signOut() called - clearing guestMode first');
+        // Clear guest mode flag BEFORE signing out to ensure onAuthStateChanged sees the correct state
         await localforage.removeItem('guestMode');
         isGuestMode = false;
-        console.log('User signed out successfully');
-        // The onAuthStateChanged handler will show the login screen
+        console.log('guestMode cleared, now calling auth.signOut()');
+
+        // Now sign out - this will trigger onAuthStateChanged
+        await auth.signOut();
+        console.log('User signed out successfully - onAuthStateChanged should show login');
     } catch (error) {
         console.error('Sign-out error:', error);
         alert('Fehler beim Abmelden: ' + error.message);
