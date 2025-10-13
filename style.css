@@ -327,6 +327,9 @@ header h1 {
 .segment-header {
     margin-bottom: 10px;
     flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .q1 .segment-header { border-color: #1f2937; }
@@ -339,6 +342,44 @@ header h1 {
     font-size: 1rem;
     color: var(--text-primary);
     font-weight: 700;
+}
+
+/* Segment Add Button */
+.segment-add-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1.5px solid var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.segment-add-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.5;
+}
+
+.segment-add-btn:hover {
+    background: var(--text-secondary);
+    color: var(--card-bg);
+    border-color: var(--text-secondary);
+    transform: scale(1.1);
+}
+
+.segment-add-btn:hover svg {
+    stroke: var(--card-bg);
+}
+
+.segment-add-btn:active {
+    transform: scale(0.95);
 }
 
 /* Task List */
@@ -536,6 +577,13 @@ header h1 {
 .q1-btn:active { background: #fef2f2; }
 .q2-btn:active { background: #f0fdf4; }
 .q3-btn:active { background: #fffbeb; }
+
+@media (prefers-color-scheme: dark) {
+    .q1-btn:active { background: rgba(239, 68, 68, 0.2); }
+    .q2-btn:active { background: rgba(16, 185, 129, 0.2); }
+    .q3-btn:active { background: rgba(245, 158, 11, 0.2); }
+    .q4-btn:active { background: rgba(107, 114, 128, 0.2); }
+}
 .q4-btn:active { background: #f9fafb; }
 
 .cancel-btn {
@@ -953,4 +1001,34 @@ body.dark-mode .search-highlight {
     background: var(--task-bg);
     border-radius: 8px;
     padding: 10px;
+}
+
+
+/* Floating Settings Button */
+.settings-btn-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s;
+    color: var(--card-bg);
+    z-index: 999;
+}
+
+.settings-btn-float:hover {
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.settings-btn-float:active {
+    transform: scale(0.95) rotate(90deg);
 }

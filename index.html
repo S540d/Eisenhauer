@@ -30,9 +30,9 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea">
 
-    <link rel="stylesheet" href="style.css?v=1760208034863">
+    <link rel="stylesheet" href="style.css?v=1760372067511">
 </head>
-<body>
+<body data-environment="testing">
     <!-- Login Screen -->
     <div id="loginScreen" class="login-screen">
         <div class="login-container">
@@ -86,22 +86,19 @@
             <button id="closeDragHint" class="close-hint-btn">Verstanden</button>
         </div>
 
-        <div class="add-task-section">
-            <input type="text" id="taskInput" placeholder="Neue Aufgabe" maxlength="140">
-            <button id="settingsBtn" class="settings-btn" title="Einstellungen">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="5" r="2"></circle>
-                    <circle cx="12" cy="12" r="2"></circle>
-                    <circle cx="12" cy="19" r="2"></circle>
-                </svg>
-            </button>
-        </div>
+        <!-- Task input removed - use + buttons per category instead -->
 
         <div class="segments">
             <!-- Segment 1: Do! -->
             <div class="segment q1" data-segment="1">
                 <div class="segment-header">
                     <h2>Do!</h2>
+                    <button class="segment-add-btn" data-segment="1" title="Aufgabe hinzufügen">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </button>
                 </div>
                 <div class="task-list" id="segment1" data-segment="1"></div>
             </div>
@@ -110,6 +107,12 @@
             <div class="segment q2" data-segment="2">
                 <div class="segment-header">
                     <h2>Schedule!</h2>
+                    <button class="segment-add-btn" data-segment="2" title="Aufgabe hinzufügen">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </button>
                 </div>
                 <div class="task-list" id="segment2" data-segment="2"></div>
             </div>
@@ -118,6 +121,12 @@
             <div class="segment q3" data-segment="3">
                 <div class="segment-header">
                     <h2>Delegate!</h2>
+                    <button class="segment-add-btn" data-segment="3" title="Aufgabe hinzufügen">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </button>
                 </div>
                 <div class="task-list" id="segment3" data-segment="3"></div>
             </div>
@@ -126,6 +135,12 @@
             <div class="segment q4" data-segment="4">
                 <div class="segment-header">
                     <h2>Ignore!</h2>
+                    <button class="segment-add-btn" data-segment="4" title="Aufgabe hinzufügen">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </button>
                 </div>
                 <div class="task-list" id="segment4" data-segment="4"></div>
             </div>
@@ -134,6 +149,12 @@
             <div class="segment q5" data-segment="5">
                 <div class="segment-header">
                     <h2>Done!</h2>
+                    <button class="segment-add-btn" data-segment="5" title="Aufgabe hinzufügen">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                    </button>
                 </div>
                 <div class="task-list" id="segment5" data-segment="5"></div>
             </div>
@@ -144,6 +165,83 @@
                 ☕ Buy me a coffee
             </a>
         </footer>
+
+        <!-- Floating Settings Button -->
+        <button id="settingsBtnFloat" class="settings-btn-float" title="Einstellungen">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="2"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+                <circle cx="12" cy="19" r="2"></circle>
+            </svg>
+        </button>
+    </div>
+
+    <!-- Quick Add Modal (for + buttons) -->
+    <div id="quickAddModal" class="modal">
+        <div class="modal-content">
+            <h3 id="quickAddTitle">Neue Aufgabe</h3>
+            <p id="quickAddCategory" style="text-align: center; color: var(--text-secondary); margin-bottom: 15px;"></p>
+
+            <input type="text"
+                   id="quickAddInput"
+                   placeholder="Aufgabe eingeben..."
+                   maxlength="140"
+                   style="width: 100%; padding: 12px; border: 2px solid var(--input-border); border-radius: 8px; font-size: 1rem; background: transparent; color: var(--text-primary); margin-bottom: 15px;">
+
+            <!-- Recurring Task Configuration -->
+            <div class="recurring-config">
+                <label class="recurring-enable">
+                    <input type="checkbox" id="quickRecurringEnabled">
+                    <span>🔁 Als wiederkehrende Aufgabe</span>
+                </label>
+
+                <div id="quickRecurringOptions" class="recurring-options" style="display: none;">
+                    <label>
+                        <span>Intervall:</span>
+                        <select id="quickRecurringInterval">
+                            <option value="daily">Täglich</option>
+                            <option value="weekly">Wöchentlich</option>
+                            <option value="monthly">Monatlich</option>
+                            <option value="custom">Benutzerdefiniert</option>
+                        </select>
+                    </label>
+
+                    <!-- Weekly: Day selection -->
+                    <div id="quickWeeklyOptions" class="interval-options" style="display: none;">
+                        <div class="weekday-selector">
+                            <label><input type="checkbox" class="quick-weekday" value="1"> Mo</label>
+                            <label><input type="checkbox" class="quick-weekday" value="2"> Di</label>
+                            <label><input type="checkbox" class="quick-weekday" value="3"> Mi</label>
+                            <label><input type="checkbox" class="quick-weekday" value="4"> Do</label>
+                            <label><input type="checkbox" class="quick-weekday" value="5"> Fr</label>
+                            <label><input type="checkbox" class="quick-weekday" value="6"> Sa</label>
+                            <label><input type="checkbox" class="quick-weekday" value="0"> So</label>
+                        </div>
+                    </div>
+
+                    <!-- Monthly: Day of month -->
+                    <div id="quickMonthlyOptions" class="interval-options" style="display: none;">
+                        <label>
+                            <span>Tag des Monats:</span>
+                            <input type="number" id="quickDayOfMonth" min="1" max="31" value="1">
+                        </label>
+                    </div>
+
+                    <!-- Custom: Number of days -->
+                    <div id="quickCustomOptions" class="interval-options" style="display: none;">
+                        <label>
+                            <span>Tage:</span>
+                            <input type="number" id="quickCustomDays" min="1" value="1">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="quickAddConfirm" class="segment-btn q1-btn" style="flex: 1;">Hinzufügen</button>
+                <button id="quickAddCancel" class="cancel-btn" style="flex: 1;">Abbrechen</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal für Segment-Auswahl -->
@@ -320,21 +418,21 @@
     </div>
 
     <!-- localForage for better local storage -->
-    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js?v=1760208034863"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js?v=1760372067511"></script>
 
     <!-- Chart.js for metrics visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js?v=1760208034863"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js?v=1760372067511"></script>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js?v=1760208034863"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js?v=1760208034863"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js?v=1760208034863"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js?v=1760372067511"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js?v=1760372067511"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js?v=1760372067511"></script>
 
     <!-- Firebase Config -->
-    <script src="firebase-config.js?v=1760208034863"></script>
-    <script src="auth.js?v=1760208034863"></script>
+    <script src="firebase-config.js?v=1760372067511"></script>
+    <script src="auth.js?v=1760372067511"></script>
 
-    <script src="script.js?v=1760208034863"></script>
+    <script src="script.js?v=1760372067511"></script>
 
     <!-- Register Service Worker -->
     <script>
