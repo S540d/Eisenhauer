@@ -133,6 +133,19 @@ const modal = document.getElementById('segmentModal');
 const cancelBtn = document.getElementById('cancelBtn');
 const segmentBtns = document.querySelectorAll('.segment-btn');
 const settingsBtn = document.getElementById('settingsBtn');
+const settingsBtnFloat = document.getElementById('settingsBtnFloat');
+const segmentAddBtns = document.querySelectorAll('.segment-add-btn');
+const quickAddModal = document.getElementById('quickAddModal');
+const quickAddInput = document.getElementById('quickAddInput');
+const quickAddCategory = document.getElementById('quickAddCategory');
+const quickAddConfirm = document.getElementById('quickAddConfirm');
+const quickAddCancel = document.getElementById('quickAddCancel');
+const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
+const quickRecurringOptions = document.getElementById('quickRecurringOptions');
+const quickRecurringInterval = document.getElementById('quickRecurringInterval');
+const quickWeeklyOptions = document.getElementById('quickWeeklyOptions');
+const quickMonthlyOptions = document.getElementById('quickMonthlyOptions');
+const quickCustomOptions = document.getElementById('quickCustomOptions');
 const settingsModal = document.getElementById('settingsModal');
 const settingsCancelBtn = document.getElementById('settingsCancelBtn');
 const logoutBtn = document.getElementById('logoutBtn');
@@ -192,12 +205,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.addEventListener('offline', updateOnlineStatus);
 });
 
-// Enter Key in Input
-taskInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        addTask();
-    }
-});
+// Enter Key in Input (if taskInput exists)
+if (taskInput) {
+    taskInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addTask();
+        }
+    });
+}
 
 // Cancel Button
 cancelBtn.addEventListener('click', closeModal);
@@ -221,10 +236,105 @@ modal.addEventListener('click', (e) => {
     }
 });
 
-// Settings Button
+// Settings Button (old position - may not exist)
 if (settingsBtn) {
     settingsBtn.addEventListener('click', () => {
         openSettingsModal();
+    });
+}
+
+// Floating Settings Button
+if (settingsBtnFloat) {
+    settingsBtnFloat.addEventListener('click', () => {
+        openSettingsModal();
+    });
+}
+
+// Segment Add Buttons - Open Quick Add Modal
+let currentSegmentId = null;
+const segmentNames = {
+    1: 'Do!',
+    2: 'Schedule!',
+    3: 'Delegate!',
+    4: 'Ignore!',
+    5: 'Done!'
+};
+
+segmentAddBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentSegmentId = parseInt(btn.dataset.segment);
+        quickAddCategory.textContent = segmentNames[currentSegmentId];
+        quickAddInput.value = '';
+        quickRecurringEnabled.checked = false;
+        quickRecurringOptions.style.display = 'none';
+        quickAddModal.classList.add('active');
+        setTimeout(() => quickAddInput.focus(), 100);
+    });
+});
+
+// Quick Add Modal - Recurring checkbox toggle
+if (quickRecurringEnabled) {
+    quickRecurringEnabled.addEventListener('change', () => {
+        quickRecurringOptions.style.display = quickRecurringEnabled.checked ? 'block' : 'none';
+    });
+}
+
+// Quick Add Modal - Interval selector
+if (quickRecurringInterval) {
+    quickRecurringInterval.addEventListener('change', () => {
+        quickWeeklyOptions.style.display = quickRecurringInterval.value === 'weekly' ? 'block' : 'none';
+        quickMonthlyOptions.style.display = quickRecurringInterval.value === 'monthly' ? 'block' : 'none';
+        quickCustomOptions.style.display = quickRecurringInterval.value === 'custom' ? 'block' : 'none';
+    });
+}
+
+// Quick Add Modal - Confirm button
+if (quickAddConfirm) {
+    quickAddConfirm.addEventListener('click', () => {
+        const taskText = quickAddInput.value.trim();
+        if (taskText && currentSegmentId) {
+            const recurringConfig = quickRecurringEnabled.checked ? {
+                enabled: true,
+                interval: quickRecurringInterval.value,
+                weekdays: quickRecurringInterval.value === 'weekly' ?
+                    Array.from(document.querySelectorAll('.quick-weekday:checked')).map(cb => parseInt(cb.value)) : null,
+                dayOfMonth: quickRecurringInterval.value === 'monthly' ?
+                    parseInt(document.getElementById('quickDayOfMonth').value) : null,
+                customDays: quickRecurringInterval.value === 'custom' ?
+                    parseInt(document.getElementById('quickCustomDays').value) : null
+            } : null;
+
+            addTaskToSegment(taskText, currentSegmentId, recurringConfig);
+            quickAddModal.classList.remove('active');
+            currentSegmentId = null;
+        }
+    });
+}
+
+// Quick Add Modal - Cancel button
+if (quickAddCancel) {
+    quickAddCancel.addEventListener('click', () => {
+        quickAddModal.classList.remove('active');
+        currentSegmentId = null;
+    });
+}
+
+// Quick Add Modal - Enter key
+if (quickAddInput) {
+    quickAddInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !quickRecurringEnabled.checked) {
+            quickAddConfirm.click();
+        }
+    });
+}
+
+// Quick Add Modal - Close on background click
+if (quickAddModal) {
+    quickAddModal.addEventListener('click', (e) => {
+        if (e.target === quickAddModal) {
+            quickAddModal.classList.remove('active');
+            currentSegmentId = null;
+        }
     });
 }
 
