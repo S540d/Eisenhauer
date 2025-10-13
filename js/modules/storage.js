@@ -158,24 +158,25 @@ export async function updateTaskInFirestore(task, userId, db, firebase) {
         const updateData = {
             text: task.text,
             segment: task.segment,
-            checked: task.checked || false
+            checked: task.checked || false,
+            // Preserve existing createdAt if it exists, otherwise use server timestamp
+            createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
         };
 
         if (task.completedAt) {
             updateData.completedAt = task.completedAt;
-        } else {
-            updateData.completedAt = firebase.firestore.FieldValue.delete();
         }
 
         if (task.recurring) {
             updateData.recurring = task.recurring;
         }
 
+        // Use set with merge:true to handle both new and existing tasks
         await db.collection('users')
             .doc(userId)
             .collection('tasks')
             .doc(task.id.toString())
-            .update(updateData);
+            .set(updateData, { merge: true });
 
         console.log('Task updated in Firestore:', task.id);
     } catch (error) {
