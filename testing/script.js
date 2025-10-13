@@ -25,10 +25,12 @@ import {
     setAllTasks
 } from './js/modules/tasks.js';
 import {
-    saveTasks,
     saveGuestTasks,
     loadGuestTasks,
     loadUserTasks,
+    saveTaskToFirestore,
+    updateTaskInFirestore,
+    deleteTaskFromFirestore,
     exportData,
     importData,
     requestPersistentStorage
@@ -64,10 +66,19 @@ let isGuestMode = false;
 
 /**
  * Save all tasks (Guest or Firebase)
+ * Note: For Firebase users, this function is not typically called since
+ * individual task operations (add/update/delete) save directly to Firestore.
+ * This function is mainly used for bulk operations like import.
  */
 async function saveAllTasks() {
     if (currentUser && db && !isGuestMode) {
-        await saveTasks(tasks, currentUser.uid, db, firebase);
+        // For logged-in users, save each task individually to Firestore
+        const { saveTaskToFirestore } = await import('./js/modules/storage.js');
+        for (const segmentId in tasks) {
+            for (const task of tasks[segmentId]) {
+                await saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
+            }
+        }
     } else {
         await saveGuestTasks(tasks);
     }
@@ -92,10 +103,16 @@ async function loadAllTasks() {
 function handleAddTask(taskText, segment, recurringConfig = null) {
     if (!taskText || taskText.trim() === '') return;
 
-    addTaskToSegment(taskText, segment, recurringConfig, async () => {
-        await saveAllTasks();
-        renderTasksWithCallbacks();
-    });
+    const task = addTaskToSegment(taskText, segment, recurringConfig);
+
+    // Save to storage based on mode
+    if (currentUser && db && !isGuestMode) {
+        // Save to Firestore
+        saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
+    } else {
+        // Save to LocalForage (guest mode)
+        saveGuestTasks(tasks);
+    }
 
     renderTasksWithCallbacks();
 }
@@ -104,30 +121,59 @@ function handleAddTask(taskText, segment, recurringConfig = null) {
  * Delete task handler
  */
 function handleDeleteTask(taskId, segment) {
-    deleteTask(taskId, segment, async () => {
-        await saveAllTasks();
-        renderTasksWithCallbacks();
-    });
+    deleteTask(taskId, segment);
+
+    // Delete from storage based on mode
+    if (currentUser && db && !isGuestMode) {
+        // Delete from Firestore
+        deleteTaskFromFirestore(taskId, currentUser.uid, db);
+    } else {
+        // Save to LocalForage (guest mode)
+        saveGuestTasks(tasks);
+    }
+
+    renderTasksWithCallbacks();
 }
 
 /**
  * Move task handler
  */
 function handleMoveTask(taskId, fromSegment, toSegment) {
-    moveTask(taskId, fromSegment, toSegment, async () => {
-        await saveAllTasks();
-        renderTasksWithCallbacks();
-    });
+    const movedTask = moveTask(taskId, fromSegment, toSegment);
+
+    // Save to storage based on mode
+    if (currentUser && db && !isGuestMode && movedTask) {
+        // Update in Firestore
+        updateTaskInFirestore(movedTask, currentUser.uid, db, window.firebase);
+    } else {
+        // Save to LocalForage (guest mode)
+        saveGuestTasks(tasks);
+    }
+
+    renderTasksWithCallbacks();
 }
 
 /**
  * Toggle task handler
  */
 function handleToggleTask(taskId, segment) {
-    toggleTask(taskId, segment, async () => {
-        await saveAllTasks();
-        renderTasksWithCallbacks();
-    });
+    const result = toggleTask(taskId, segment);
+
+    // Save to storage based on mode
+    if (currentUser && db && !isGuestMode && result) {
+        // Update the completed/restored task in Firestore
+        updateTaskInFirestore(result.task, currentUser.uid, db, window.firebase);
+
+        // If a new recurring task was created, save it too
+        if (result.newRecurringTask) {
+            saveTaskToFirestore(result.newRecurringTask, currentUser.uid, db, window.firebase);
+        }
+    } else {
+        // Save to LocalForage (guest mode)
+        saveGuestTasks(tasks);
+    }
+
+    renderTasksWithCallbacks();
 }
 
 /**
