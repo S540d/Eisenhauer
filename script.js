@@ -1,5 +1,5 @@
 // App Version - loaded from package.json
-let APP_VERSION = 'v1.3.1'; // Fallback version
+let APP_VERSION = 'v1.4.6'; // Fallback version
 const BUILD_DATE = new Date().toISOString().split('T')[0]; // Auto-generated build date
 
 // Fetch version from package.json
@@ -125,6 +125,9 @@ let tasks = {
     5: []
 };
 
+// Archived tasks (tasks completed > 7 days ago)
+let archivedTasks = [];
+
 let currentTask = null;
 
 // DOM Elements
@@ -199,6 +202,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderAllTasks();
     setupDragAndDrop();
     updateOnlineStatus();
+
+    // Load and run auto-archive
+    await loadArchivedTasks();
+    autoArchiveOldTasks();
+
+    // Run auto-archive daily
+    setInterval(autoArchiveOldTasks, 24 * 60 * 60 * 1000);
 
     // Listen for online/offline events
     window.addEventListener('online', updateOnlineStatus);
@@ -622,6 +632,57 @@ function deleteTask(taskId, segmentId) {
         }
 
         renderSegment(segmentId);
+    }
+}
+
+// Auto-archive completed tasks older than 7 days
+function autoArchiveOldTasks() {
+    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const completedTasks = tasks[5]; // Done! segment
+
+    const tasksToArchive = completedTasks.filter(task => {
+        return task.completedAt && task.completedAt < sevenDaysAgo;
+    });
+
+    if (tasksToArchive.length > 0) {
+        // Move tasks to archive
+        archivedTasks.push(...tasksToArchive);
+
+        // Remove from Done! segment
+        tasks[5] = completedTasks.filter(task => {
+            return !task.completedAt || task.completedAt >= sevenDaysAgo;
+        });
+
+        // Save changes
+        if (currentUser) {
+            // Archive in Firestore
+            tasksToArchive.forEach(task => {
+                archiveTaskInFirestore(task);
+            });
+        } else {
+            saveTasks();
+            saveArchivedTasks();
+        }
+
+        renderSegment(5);
+        console.log(`Archived ${tasksToArchive.length} old completed tasks`);
+    }
+}
+
+// Save archived tasks to local storage
+function saveArchivedTasks() {
+    if (typeof localforage !== 'undefined') {
+        localforage.setItem('archivedTasks', archivedTasks);
+    }
+}
+
+// Load archived tasks from local storage
+async function loadArchivedTasks() {
+    if (typeof localforage !== 'undefined') {
+        const archived = await localforage.getItem('archivedTasks');
+        if (archived) {
+            archivedTasks = archived;
+        }
     }
 }
 
