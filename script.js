@@ -43,15 +43,17 @@ import {
     openSettingsModal,
     openMetricsModal,
     showDragHint,
-    updateOnlineStatus
+    updateOnlineStatus,
+    setupDropZones
 } from './js/modules/ui.js';
-import {
-    setupDragAndDrop,
-    setupTouchDrag,
-    setupSwipeToDelete,
-    handleDragStart,
-    handleDragEnd
-} from './js/modules/drag-drop.js';
+// Old drag-drop.js is now deprecated - using DragManager instead
+// import {
+//     setupDragAndDrop,
+//     setupTouchDrag,
+//     setupSwipeToDelete,
+//     handleDragStart,
+//     handleDragEnd
+// } from './js/modules/drag-drop.js';
 
 // ============================================
 // Global State
@@ -185,25 +187,20 @@ function handleToggleTask(taskId, segment) {
 }
 
 /**
- * Render all tasks with all callbacks
+ * Render all tasks with all callbacks (Drag & Drop 2.0)
  */
 function renderTasksWithCallbacks() {
     const callbacks = {
         onToggle: handleToggleTask,
-        onDragStart: handleDragStart,
-        onDragEnd: handleDragEnd,
-        onSetupTouchDrag: (element, task) => {
-            setupTouchDrag(element, task, handleMoveTask, handleDeleteTask);
-        },
-        onSetupSwipeDelete: (element, task) => {
-            setupSwipeToDelete(element, task, handleDeleteTask);
-        }
+        // DragManager handles these internally now
+        onDragEnd: handleMoveTask,
+        onSwipeDelete: handleDeleteTask
     };
 
     renderAllTasks(tasks, translations, currentLanguage, callbacks);
 
-    // Re-setup drag and drop handlers after rendering tasks
-    setupDragAndDropHandlers();
+    // Setup drop zones for desktop drag & drop
+    setupDropZones(handleMoveTask);
 }
 
 // ============================================
@@ -389,12 +386,13 @@ function setupEventListeners() {
 
 /**
  * Setup drag and drop functionality
+ * DEPRECATED: Now handled by DragManager in ui.js
  */
-function setupDragAndDropHandlers() {
-    setupDragAndDrop((taskId, fromSegment, toSegment) => {
-        handleMoveTask(taskId, fromSegment, toSegment);
-    });
-}
+// function setupDragAndDropHandlers() {
+//     setupDragAndDrop((taskId, fromSegment, toSegment) => {
+//         handleMoveTask(taskId, fromSegment, toSegment);
+//     });
+// }
 
 // ============================================
 // Authentication Integration
@@ -425,10 +423,8 @@ window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) 
         setupEventListeners();
 
         // Render tasks with callbacks (after DOM is ready)
+        // DragManager and drop zones are now setup in renderTasksWithCallbacks()
         renderTasksWithCallbacks();
-
-        // Setup drag and drop handlers (after tasks are rendered)
-        setupDragAndDropHandlers();
     }, 100);
 
     updateOnlineStatus();

@@ -666,3 +666,130 @@ See DRAG_DROP_REQUIREMENTS.md for full specification.
 **Neue Zeilen:** 898 (717 JS + 181 CSS)
 **Nächster Meilenstein:** Phase 3 - Integration
 
+
+---
+
+## ⚡ Phase 3: Integration mit bestehender App (2025-10-16) ✅
+
+**Ziel:** DragManager in bestehende App integrieren, alte drag-drop.js ersetzen
+
+### Änderungen in ui.js
+
+**1. Import DragManager:**
+```javascript
+import { DragManager } from './drag-manager.js';
+```
+
+**2. createTaskElement() refactored:**
+- ❌ Entfernt: Alte Callback-Parameter (onDragStart, onDragEnd, onSetupTouchDrag, onSetupSwipeDelete)
+- ✅ Neu: DragManager wird direkt in createTaskElement() initialisiert
+- ✅ Callbacks vereinfacht: nur noch onDragEnd und onSwipeDelete
+
+**Vorher (Callback-Hell):**
+```javascript
+callbacks.onDragStart(e)
+callbacks.onDragEnd(e)
+callbacks.onSetupTouchDrag(element, task)
+callbacks.onSetupSwipeDelete(element, task)
+```
+
+**Nachher (DragManager):**
+```javascript
+const dragManager = new DragManager({
+  element: div,
+  data: task,
+  onDragEnd: (event) => callbacks.onDragEnd(taskId, fromSegment, toSegment),
+  onSwipeDelete: (data) => callbacks.onSwipeDelete(data.id, data.segment)
+});
+```
+
+**3. setupDropZones() hinzugefügt:**
+- Neue Export-Funktion für Desktop Drop-Zones
+- Verwendet `setupDropZone()` aus drag-manager.js
+- Initialisiert alle `.task-list` Elemente als Drop-Targets
+
+### Änderungen in script.js
+
+**1. Imports aktualisiert:**
+```javascript
+// ❌ Alt (drag-drop.js):
+import { setupDragAndDrop, setupTouchDrag, ... } from './js/modules/drag-drop.js';
+
+// ✅ Neu (ui.js):
+import { ..., setupDropZones } from './js/modules/ui.js';
+```
+
+**2. renderTasksWithCallbacks() vereinfacht:**
+```javascript
+// Vorher: 5 Callbacks
+const callbacks = {
+  onToggle, onDragStart, onDragEnd,
+  onSetupTouchDrag, onSetupSwipeDelete
+};
+
+// Nachher: 3 Callbacks
+const callbacks = {
+  onToggle: handleToggleTask,
+  onDragEnd: handleMoveTask,
+  onSwipeDelete: handleDeleteTask
+};
+
+// Drop-Zones für Desktop
+setupDropZones(handleMoveTask);
+```
+
+**3. setupDragAndDropHandlers() deprecated:**
+- Funktion auskommentiert
+- Nicht mehr in onAuthStateChanged aufgerufen
+- DragManager übernimmt alle Funktionen
+
+### Callback-Reduktion
+
+**Vorher (6 Funktionen, 3 Module):**
+- `handleDragStart` → drag-drop.js
+- `handleDragEnd` → drag-drop.js
+- `setupTouchDrag` → drag-drop.js
+- `setupSwipeToDelete` → drag-drop.js
+- `setupDragAndDrop` → drag-drop.js
+- `setupDragAndDropHandlers` → script.js
+
+**Nachher (2 Funktionen, 1 Modul):**
+- `DragManager` constructor → drag-manager.js
+- `setupDropZones` → ui.js (wraps setupDropZone)
+
+**Reduktion:** -67% Funktionen, -66% Module
+
+### Status alte drag-drop.js
+
+**Entscheidung:** Vorerst NICHT gelöscht
+- Datei bleibt als Referenz
+- Import in script.js auskommentiert
+- Wird in Phase 6 (Final Cleanup) entfernt
+
+**Begründung:**
+- Ermöglicht einfachen Rollback bei Problemen
+- Code-Vergleich für Debugging
+- Sicherstellen dass nichts vergessen wurde
+
+### Test-Anweisungen
+
+**Manueller Test:**
+```bash
+cd /Users/svenstrohkark/Documents/Programmierung/Projects/Eisenhauer
+npm start
+# Öffne http://localhost:8000
+```
+
+**Zu testen:**
+- [ ] Task mit Maus verschieben (Desktop)
+- [ ] Task mit Long-Press verschieben (Touch simulieren in DevTools)
+- [ ] Task mit Swipe löschen (Touch simulieren)
+- [ ] Drop-Zone Highlighting
+- [ ] Haptic Feedback (auf echtem Mobile-Gerät)
+- [ ] Offline-Funktionalität
+
+**Status Phase 3:** ✅ Integration abgeschlossen (2025-10-16)
+**Änderungen:** 2 Dateien (ui.js, script.js)
+**LOC Diff:** +60 / -40 (Netto: +20 Zeilen)
+**Nächster Meilenstein:** Phase 4 - Offline-Support + Storage Integration
+
