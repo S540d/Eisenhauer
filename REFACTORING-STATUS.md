@@ -793,3 +793,89 @@ npm start
 **LOC Diff:** +60 / -40 (Netto: +20 Zeilen)
 **Nächster Meilenstein:** Phase 4 - Offline-Support + Storage Integration
 
+
+---
+
+## Phase 3.1: Cache-Fix für Browser & Service Worker
+
+**Datum:** 2025-10-16  
+**Problem:** Nach Phase 3 Integration wurde alte drag-drop.js noch vom Browser gecacht
+
+### Problem-Analyse
+
+**Symptom:**
+- Neue Tasks ließen sich verschieben
+- Alte Tasks ließen sich NICHT verschieben
+- Browser Console zeigte: `Drop event: ... (drag-drop.js, line 90)`
+- Import-Fehler: `SyntaxError: Importing binding name 'setupDropZones' is not found`
+
+**Root Cause:**
+1. **Browser Cache** lud alte JavaScript-Dateien trotz neuer Imports
+2. **Service Worker** cachte veraltete Versionen (CACHE_VERSION: 1.4.0)
+3. Timestamp-Parameter in index.html waren veraltet
+
+### Lösung
+
+#### 1. Cache-Buster Timestamps aktualisiert
+**Datei:** `index.html:411-415`
+```html
+<!-- Vorher: v=1760171768 -->
+<script src="firebase-config.js?v=1760641279851"></script>
+<script src="auth.js?v=1760641279851"></script>
+<script type="module" src="script.js?v=1760641279851"></script>
+```
+
+#### 2. Service Worker Version erhöht
+**Datei:** `service-worker.js:1-2`
+```javascript
+// Vorher:
+const CACHE_VERSION = '1.4.0';
+const BUILD_DATE = '2025-10-11';
+
+// Nachher:
+const CACHE_VERSION = '2.0.0';
+const BUILD_DATE = '2025-10-16'; // Phase 3: DragManager integration
+```
+
+### Testergebnis ✅
+
+**Desktop Drag&Drop:**
+- [x] Alte Tasks lassen sich verschieben
+- [x] Neue Tasks lassen sich verschieben
+- [x] Keine Console-Errors
+- [x] Korrekte Logs von DragManager (nicht drag-drop.js)
+
+**Browser Cache:**
+- [x] Hard Refresh (Cmd+Shift+R) lädt neue Version
+- [x] Service Worker Update funktioniert
+- [x] Kein Import-Fehler mehr
+
+### Lessons Learned
+
+**Cache-Management Strategie:**
+1. **Immer** Cache-Buster Timestamps bei JavaScript-Änderungen aktualisieren
+2. **Immer** Service Worker Version erhöhen bei Core-Module-Updates
+3. Bei Problemen: Service Worker deregistrieren und neu starten
+
+**Best Practice für zukünftige Updates:**
+```bash
+# 1. Timestamp generieren
+NEW_TS=$(node -e "console.log(Date.now())")
+
+# 2. In index.html ersetzen
+sed -i '' "s/v=[0-9]*/v=$NEW_TS/g" index.html
+
+# 3. Service Worker Version erhöhen (manuell in service-worker.js)
+```
+
+### Geänderte Dateien
+
+```
+M  index.html              (+3 lines)  - Cache-buster timestamps
+M  service-worker.js       (+2 lines)  - Version 2.0.0 + BUILD_DATE
+```
+
+**Status Phase 3.1:** ✅ Cache-Fix erfolgreich (2025-10-16)  
+**Änderungen:** 2 Dateien (index.html, service-worker.js)  
+**Impact:** Critical - App war nicht funktionsfähig ohne diesen Fix
+

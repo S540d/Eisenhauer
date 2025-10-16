@@ -125,3 +125,48 @@
 
 *Letzte Aktualisierung*: 9. Oktober 2025, 05:53 UTC  
 *Nächste Review*: Nach Implementierung Theme Toggle Fix
+---
+
+## 🟢 Phase 3.1: Cache-Fix erfolgreich implementiert
+
+### ✅ Issue: DragManager Integration Cache-Problem
+**Status**: 🟢 Gelöst (2025-10-16)  
+**Symptom**: 
+- Neue Tasks ließen sich verschieben, alte Tasks nicht
+- Browser Console zeigte alte `drag-drop.js` Logs
+- Import-Fehler: `SyntaxError: Importing binding name 'setupDropZones' is not found`
+
+**Root Cause**:
+1. Browser Cache lud alte JavaScript-Dateien
+2. Service Worker cachte veraltete Versionen (v1.4.0)
+3. Timestamp-Parameter in index.html waren veraltet (v=1760171768)
+
+**Lösung**:
+1. ✅ Cache-Buster Timestamps in index.html aktualisiert (v=1760641279851)
+2. ✅ Service Worker Version erhöht (1.4.0 → 2.0.0)
+3. ✅ BUILD_DATE aktualisiert (2025-10-11 → 2025-10-16)
+
+**Commit**: `[pending]` - fix(phase3.1): Update cache-busters for DragManager integration
+
+**Testergebnis**:
+- ✅ Alte Tasks lassen sich verschieben
+- ✅ Neue Tasks lassen sich verschieben
+- ✅ Keine Console-Errors
+- ✅ Korrekte Logs von DragManager
+
+**Lessons Learned**:
+- **Immer** Cache-Buster Timestamps bei JavaScript-Änderungen aktualisieren
+- **Immer** Service Worker Version erhöhen bei Core-Module-Updates
+- Bei Problemen: Service Worker deregistrieren (DevTools → Application → Service Workers → Unregister)
+
+**Best Practice Script**:
+```bash
+# Automatisches Cache-Buster Update
+NEW_TS=$(node -e "console.log(Date.now())")
+sed -i '' "s/v=[0-9]*/v=$NEW_TS/g" index.html
+# Dann manuell service-worker.js Version erhöhen
+```
+
+---
+
+*Letzte Aktualisierung*: 16. Oktober 2025, 19:05 UTC
