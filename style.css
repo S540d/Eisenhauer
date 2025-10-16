@@ -1168,3 +1168,185 @@ body.dark-mode .search-highlight {
         width: 100%;
     }
 }
+
+/* ============================================================================
+   Drag & Drop 2.0 Styles (Phase 2)
+   ============================================================================ */
+
+/* Prevent text selection during drag */
+.task-item {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Prevent pull-to-refresh interfering with drag */
+body {
+    overscroll-behavior-y: contain;
+}
+
+/* Drop zone highlighting */
+.task-list.drag-over {
+    border: 2px dashed var(--segment-color, #667eea);
+    background: linear-gradient(
+        to bottom,
+        rgba(var(--segment-color-rgb, 102, 126, 234), 0.05),
+        rgba(var(--segment-color-rgb, 102, 126, 234), 0.1)
+    );
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Invalid drop zone (if needed in future) */
+.task-list.drag-invalid {
+    border: 2px dashed #e74c3c;
+    background: rgba(231, 76, 60, 0.05);
+}
+
+/* Task being dragged (original element) */
+.task-item.dragging {
+    opacity: 0.3 !important;
+    transform: scale(0.98);
+    transition: all 0.2s ease;
+}
+
+/* Task moved successfully animation */
+@keyframes task-moved {
+    0% {
+        background: var(--segment-color);
+        transform: scale(1.05);
+    }
+    100% {
+        background: transparent;
+        transform: scale(1);
+    }
+}
+
+.task-item.just-moved {
+    animation: task-moved 0.6s ease;
+}
+
+/* Clone element styles (applied via JS) */
+/* These are set in drag-manager.js but documented here for reference:
+   - position: fixed
+   - z-index: 9999
+   - pointer-events: none
+   - transform: scale(1.05) rotate(2deg)
+   - opacity: 0.9
+   - box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3)
+*/
+
+/* Swipe to delete visual feedback */
+.task-item.swiping-left {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+/* Cursor styles for desktop drag */
+.task-item[draggable="true"] {
+    cursor: grab;
+}
+
+.task-item[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.task-list.drag-over {
+    cursor: move;
+}
+
+.task-list.drag-invalid {
+    cursor: not-allowed;
+}
+
+/* Touch device specific styles */
+@media (hover: none) and (pointer: coarse) {
+    /* Mobile/Touch devices */
+    .task-item {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Ensure smooth touch dragging */
+    .task-item {
+        touch-action: manipulation;
+    }
+}
+
+/* Hardware acceleration for smooth animations */
+.task-item,
+.task-list {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+}
+
+/* Segment-specific drop zone colors */
+.task-list[data-segment="1"].drag-over {
+    --segment-color: #e74c3c;
+    --segment-color-rgb: 231, 76, 60;
+}
+
+.task-list[data-segment="2"].drag-over {
+    --segment-color: #f39c12;
+    --segment-color-rgb: 243, 156, 18;
+}
+
+.task-list[data-segment="3"].drag-over {
+    --segment-color: #3498db;
+    --segment-color-rgb: 52, 152, 219;
+}
+
+.task-list[data-segment="4"].drag-over {
+    --segment-color: #95a5a6;
+    --segment-color-rgb: 149, 165, 166;
+}
+
+.task-list[data-segment="5"].drag-over {
+    --segment-color: #27ae60;
+    --segment-color-rgb: 39, 174, 96;
+}
+
+/* Animation for drag start (long press visual feedback) */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+    }
+}
+
+.task-item.long-press-active {
+    animation: pulse 0.3s ease-out;
+}
+
+/* Offline sync indicator on dragged items */
+.task-item[data-sync-status="pending"]::after {
+    content: "⏳";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.task-item[data-sync-status="failed"]::after {
+    content: "⚠️";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+}
+
+/* Accessibility: Focus indicators for keyboard navigation */
+.task-item:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.task-list:focus-visible {
+    outline: 2px dashed #667eea;
+    outline-offset: 4px;
+}
