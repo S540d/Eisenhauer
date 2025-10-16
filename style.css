@@ -376,6 +376,8 @@ header h1 {
     gap: 8px;
     padding-right: 5px;
     align-items: flex-start;
+    min-height: 60px; /* Ensure drop target is large enough even when empty */
+    transition: background 0.2s ease;
 }
 
 /* Custom Scrollbar */
@@ -423,7 +425,10 @@ header h1 {
 
 /* Drag over feedback */
 .task-list.drag-over {
-    background: rgba(102, 126, 234, 0.15);
+    background: rgba(102, 126, 234, 0.25);
+    border: 2px dashed rgba(102, 126, 234, 0.6);
+    border-radius: 8px;
+    min-height: 80px;
 }
 
 /* Checkbox */

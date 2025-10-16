@@ -12,6 +12,13 @@ let draggedElement = null;
  * Handle drag start event (desktop)
  */
 export function handleDragStart(e) {
+    console.log('🎯 handleDragStart called', {
+        target: e.target,
+        taskId: e.target.dataset?.taskId,
+        segmentId: e.target.dataset?.segmentId,
+        draggable: e.target.draggable
+    });
+
     draggedElement = e.target;
     e.target.style.opacity = '0.5';
     e.dataTransfer.effectAllowed = 'move';
@@ -22,15 +29,21 @@ export function handleDragStart(e) {
  * Handle drag end event (desktop)
  */
 export function handleDragEnd(e) {
-    e.target.style.opacity = '1';
+    console.log('🏁 handleDragEnd called', { draggedElement: !!draggedElement });
 
-    // Remove all drag-over styles
-    document.querySelectorAll('.task-list').forEach(list => {
-        list.classList.remove('drag-over');
-    });
+    // Use setTimeout to ensure drag end happens after drop
+    setTimeout(() => {
+        // Only reset if draggedElement still exists (wasn't cleared by drop)
+        if (draggedElement) {
+            e.target.style.opacity = '1';
+            draggedElement = null;
+        }
 
-    // Reset dragged element
-    draggedElement = null;
+        // Remove all drag-over styles
+        document.querySelectorAll('.task-list').forEach(list => {
+            list.classList.remove('drag-over');
+        });
+    }, 50);
 }
 
 /**
@@ -92,8 +105,29 @@ function handleDrop(e, onTaskMove) {
         willMove: fromSegment !== toSegment
     });
 
+    // Remove drag-over visual immediately
+    e.currentTarget.classList.remove('drag-over');
+
+    // Remove all drag-over styles from all lists
+    document.querySelectorAll('.task-list').forEach(list => {
+        list.classList.remove('drag-over');
+    });
+
     if (fromSegment !== toSegment && onTaskMove) {
         console.log('Calling onTaskMove callback');
+
+        // Store reference to element before clearing
+        const movedElement = draggedElement;
+
+        // Hide the element immediately to prevent snap-back
+        if (movedElement) {
+            movedElement.style.visibility = 'hidden';
+        }
+
+        // Clear draggedElement reference BEFORE callback
+        draggedElement = null;
+
+        // Call the move callback - this will trigger re-render
         onTaskMove(taskId, fromSegment, toSegment);
     } else {
         if (fromSegment === toSegment) {
@@ -104,7 +138,6 @@ function handleDrop(e, onTaskMove) {
         }
     }
 
-    e.currentTarget.classList.remove('drag-over');
     return false;
 }
 

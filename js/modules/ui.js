@@ -25,6 +25,14 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     div.dataset.taskId = task.id;
     div.dataset.segmentId = task.segment;
 
+    console.log('Creating task element:', {
+        taskId: task.id,
+        segment: task.segment,
+        draggable: div.draggable,
+        hasDragStartCallback: !!callbacks.onDragStart,
+        hasDragEndCallback: !!callbacks.onDragEnd
+    });
+
     // Set border color based on segment
     div.style.setProperty('--checkbox-color', COLORS[task.segment]);
 
@@ -85,9 +93,15 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     // Drag and Drop Events (Desktop)
     if (callbacks.onDragStart) {
         div.addEventListener('dragstart', callbacks.onDragStart);
+        console.log('Added dragstart listener to task', task.id);
+    } else {
+        console.warn('No onDragStart callback for task', task.id);
     }
     if (callbacks.onDragEnd) {
         div.addEventListener('dragend', callbacks.onDragEnd);
+        console.log('Added dragend listener to task', task.id);
+    } else {
+        console.warn('No onDragEnd callback for task', task.id);
     }
 
     // Touch Drag and Drop (Mobile)

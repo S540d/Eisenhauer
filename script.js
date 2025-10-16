@@ -139,9 +139,19 @@ function handleDeleteTask(taskId, segment) {
  * Move task handler
  */
 function handleMoveTask(taskId, fromSegment, toSegment) {
-    const movedTask = moveTask(taskId, fromSegment, toSegment);
+    console.log('🔄 handleMoveTask called:', { taskId, fromSegment, toSegment });
 
-    // Save to storage based on mode
+    const movedTask = moveTask(taskId, fromSegment, toSegment);
+    console.log('✅ Task moved in data model:', movedTask);
+
+    // Force SYNCHRONOUS re-render with a small delay to ensure DOM is updated
+    // This ensures the browser completes the drag operation first
+    setTimeout(() => {
+        renderTasksWithCallbacks();
+        console.log('🎨 Tasks re-rendered');
+    }, 0);
+
+    // Save to storage based on mode (async, happens after render)
     if (currentUser && db && !isGuestMode && movedTask) {
         // Update in Firestore
         updateTaskInFirestore(movedTask, currentUser.uid, db, window.firebase);
@@ -149,8 +159,6 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
         // Save to LocalForage (guest mode)
         saveGuestTasks(tasks);
     }
-
-    renderTasksWithCallbacks();
 }
 
 /**
@@ -403,15 +411,6 @@ window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) 
 
     console.log('onAuthStateChanged called:', user ? user.email : 'guest mode', 'isGuestMode:', isGuestMode);
 
-    // Wait for DOM to be fully visible after showApp()
-    setTimeout(() => {
-        // Setup event listeners (after showApp() has been called by auth.js)
-        setupEventListeners();
-
-        // Setup drag and drop
-        setupDragAndDropHandlers();
-    }, 100);
-
     if (user && !isGuestMode) {
         console.log('User logged in:', user.email);
         await loadAllTasks();
@@ -420,7 +419,18 @@ window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) 
         await loadAllTasks();
     }
 
-    renderTasksWithCallbacks();
+    // Wait for DOM to be fully visible after showApp()
+    setTimeout(() => {
+        // Setup event listeners (after showApp() has been called by auth.js)
+        setupEventListeners();
+
+        // Render tasks with callbacks (after DOM is ready)
+        renderTasksWithCallbacks();
+
+        // Setup drag and drop handlers (after tasks are rendered)
+        setupDragAndDropHandlers();
+    }, 100);
+
     updateOnlineStatus();
 
     // Show drag hint if not seen
