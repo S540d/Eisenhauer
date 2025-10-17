@@ -49,6 +49,11 @@ import {
     updateSyncStatus,
     setupDropZones
 } from './js/modules/ui.js';
+import {
+    KeyboardDragManager,
+    announceDragStart,
+    announceDragEnd
+} from './js/modules/accessibility.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
 // import {
 //     setupDragAndDrop,
@@ -64,6 +69,7 @@ import {
 let currentUser = null;
 let db = null;
 let isGuestMode = false;
+let keyboardDragManager = null;
 
 // ============================================
 // Core Functions
@@ -469,6 +475,11 @@ window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) 
     setTimeout(() => {
         // Setup event listeners (after showApp() has been called by auth.js)
         setupEventListeners();
+
+        // Initialize keyboard drag manager for accessibility
+        if (!keyboardDragManager) {
+            keyboardDragManager = new KeyboardDragManager(handleMoveTask);
+        }
 
         // Render tasks with callbacks (after DOM is ready)
         // DragManager and drop zones are now setup in renderTasksWithCallbacks()

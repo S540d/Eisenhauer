@@ -6,6 +6,7 @@
 import { COLORS, SEGMENTS } from './config.js';
 import { getTasks, getRecurringDescription } from './tasks.js';
 import { DragManager } from './drag-manager.js';
+import { announceDragStart, announceDragEnd } from './accessibility.js';
 
 /**
  * Create a task DOM element
@@ -23,6 +24,12 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     div.className = 'task-item';
     div.dataset.taskId = task.id;
     div.dataset.segmentId = task.segment;
+
+    // Accessibility: Make task items keyboard focusable
+    div.setAttribute('tabindex', '0');
+    div.setAttribute('role', 'button');
+    div.setAttribute('aria-pressed', 'false');
+    div.setAttribute('aria-label', `Task: ${task.text}. Press Space to select for moving.`);
 
     // Set border color based on segment
     div.style.setProperty('--checkbox-color', COLORS[task.segment]);
@@ -90,6 +97,9 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
             onDragStart: (event) => {
                 console.log('[DragManager] Drag started:', task.id);
                 div.classList.add('dragging');
+
+                // Announce to screen readers
+                announceDragStart(task.text);
             },
 
             onDragMove: (event) => {
@@ -105,6 +115,9 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
                     const fromSegment = task.segment;
 
                     if (toSegment && toSegment !== fromSegment) {
+                        // Announce to screen readers
+                        announceDragEnd(task.text, fromSegment, toSegment);
+
                         callbacks.onDragEnd(task.id, fromSegment, toSegment);
                     }
                 }
