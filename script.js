@@ -25,6 +25,7 @@ import {
     setAllTasks
 } from './js/modules/tasks.js';
 import {
+    initStorage,
     saveGuestTasks,
     loadGuestTasks,
     loadUserTasks,
@@ -33,7 +34,8 @@ import {
     deleteTaskFromFirestore,
     exportData,
     importData,
-    requestPersistentStorage
+    requestPersistentStorage,
+    getSyncStatus
 } from './js/modules/storage.js';
 import {
     renderAllTasks,
@@ -44,6 +46,7 @@ import {
     openMetricsModal,
     showDragHint,
     updateOnlineStatus,
+    updateSyncStatus,
     setupDropZones
 } from './js/modules/ui.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
@@ -449,12 +452,22 @@ async function initApp() {
     // Load version
     await initVersion();
 
+    // Initialize storage with offline queue support (Phase 4)
+    initStorage(updateSyncStatus);
+    console.log('✅ Storage initialized with offline queue');
+
     // Setup persistent storage
     await requestPersistentStorage();
 
     // Check online status
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener('online', () => {
+        updateOnlineStatus();
+        updateSyncStatus(getSyncStatus());
+    });
+    window.addEventListener('offline', () => {
+        updateOnlineStatus();
+        updateSyncStatus(getSyncStatus());
+    });
 
     // Note: Event listeners and tasks are loaded in onAuthStateChanged callback
     // which is triggered by auth.js after showApp() is called

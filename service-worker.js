@@ -1,5 +1,5 @@
-const CACHE_VERSION = '2.0.0';
-const BUILD_DATE = '2025-10-16'; // Cache busting - Phase 3: DragManager integration
+const CACHE_VERSION = '2.1.0';
+const BUILD_DATE = '2025-10-16'; // Cache busting - Phase 4: Offline-Support
 const CACHE_NAME = `eisenhauer-matrix-v${CACHE_VERSION}-${BUILD_DATE}`;
 const urlsToCache = [
   './',

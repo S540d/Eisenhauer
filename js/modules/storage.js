@@ -1,12 +1,116 @@
 /**
- * Storage Module
+ * Storage Module (Phase 4: Offline-Support Enhanced)
  * Handles data persistence (Firebase Firestore, LocalForage, Import/Export)
+ * Integrated with OfflineQueue for robust offline operations
  */
+
+import { OfflineQueue } from './offline-queue.js';
+import { ErrorHandler, NetworkError } from './error-handler.js';
+import { NotificationManager } from './notifications.js';
 
 // Note: This module expects auth.js to provide:
 // - currentUser, isGuestMode
 // - db (Firestore), firebase
 // - localforage
+
+// Initialize offline queue
+const offlineQueue = new OfflineQueue('eisenhauer-sync-queue');
+
+// Initialize notification manager
+let notificationManager = null;
+
+// UI update callback
+let syncStatusCallback = null;
+
+/**
+ * Initialize storage module with notification support
+ * @param {Function} onSyncStatusChange - Optional callback for sync status updates
+ */
+export function initStorage(onSyncStatusChange = null) {
+    notificationManager = new NotificationManager();
+    syncStatusCallback = onSyncStatusChange;
+
+    // Listen for network status changes
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Setup queue event listeners
+    offlineQueue.on('itemProcessed', (item) => {
+        console.log('[Storage] Queue item processed:', item.id);
+        updateSyncStatusUI();
+    });
+
+    offlineQueue.on('itemFailed', (item, error) => {
+        console.error('[Storage] Queue item failed:', item.id, error);
+        if (notificationManager) {
+            notificationManager.error(`Sync failed: ${item.operation}`, {
+                duration: 5000,
+                action: {
+                    label: 'Retry',
+                    callback: () => offlineQueue.processQueue()
+                }
+            });
+        }
+        updateSyncStatusUI();
+    });
+
+    offlineQueue.on('queueEmpty', () => {
+        console.log('[Storage] Sync queue empty');
+        if (notificationManager) {
+            notificationManager.success('All changes synced', { duration: 2000 });
+        }
+        updateSyncStatusUI();
+    });
+
+    // Initial status update
+    updateSyncStatusUI();
+}
+
+/**
+ * Update sync status UI via callback
+ */
+function updateSyncStatusUI() {
+    if (syncStatusCallback) {
+        syncStatusCallback(getSyncStatus());
+    }
+}
+
+/**
+ * Handle online event - start processing queue
+ */
+async function handleOnline() {
+    console.log('[Storage] Network online - processing queue');
+    if (notificationManager) {
+        notificationManager.info('Back online - syncing changes...', { duration: 3000 });
+    }
+    updateSyncStatusUI();
+    await offlineQueue.processQueue();
+}
+
+/**
+ * Handle offline event
+ */
+function handleOffline() {
+    console.log('[Storage] Network offline');
+    if (notificationManager) {
+        notificationManager.warning('You are offline - changes will be synced later', {
+            duration: 5000
+        });
+    }
+    updateSyncStatusUI();
+}
+
+/**
+ * Get current queue status
+ * @returns {object} Queue statistics
+ */
+export function getSyncStatus() {
+    return {
+        pendingItems: offlineQueue.queue.length,
+        isProcessing: offlineQueue.isProcessing,
+        isOnline: navigator.onLine
+    };
+}
 
 /**
  * Save all tasks to storage (Firebase or LocalForage depending on auth state)
@@ -105,7 +209,7 @@ export async function loadUserTasks(userId, db) {
 }
 
 /**
- * Save a single task to Firestore
+ * Save a single task to Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID
  * @param {object} db - Firestore database instance
@@ -114,38 +218,45 @@ export async function loadUserTasks(userId, db) {
 export async function saveTaskToFirestore(task, userId, db, firebase) {
     if (!userId || !db) return;
 
-    try {
-        const taskData = {
-            text: task.text,
-            segment: task.segment,
-            checked: task.checked || false,
-            // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
-            createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
-        };
+    const taskData = {
+        text: task.text,
+        segment: task.segment,
+        checked: task.checked || false,
+        // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+        createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-        // Add optional fields
-        if (task.completedAt) {
-            taskData.completedAt = task.completedAt;
-        }
-
-        if (task.recurring) {
-            taskData.recurring = task.recurring;
-        }
-
-        await db.collection('users')
-            .doc(userId)
-            .collection('tasks')
-            .doc(task.id.toString())
-            .set(taskData);
-
-        console.log('Task saved to Firestore:', task.id);
-    } catch (error) {
-        console.error('Error saving task to Firestore:', error);
+    // Add optional fields
+    if (task.completedAt) {
+        taskData.completedAt = task.completedAt;
     }
+
+    if (task.recurring) {
+        taskData.recurring = task.recurring;
+    }
+
+    // Add to offline queue with retry logic
+    await offlineQueue.add(
+        'saveTask',
+        async () => {
+            await db.collection('users')
+                .doc(userId)
+                .collection('tasks')
+                .doc(task.id.toString())
+                .set(taskData);
+            console.log('[Storage] Task saved to Firestore:', task.id);
+        },
+        {
+            taskId: task.id,
+            userId,
+            taskData
+        },
+        3 // maxRetries
+    );
 }
 
 /**
- * Update a task in Firestore
+ * Update a task in Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID
  * @param {object} db - Firestore database instance
@@ -154,38 +265,45 @@ export async function saveTaskToFirestore(task, userId, db, firebase) {
 export async function updateTaskInFirestore(task, userId, db, firebase) {
     if (!userId || !db) return;
 
-    try {
-        const updateData = {
-            text: task.text,
-            segment: task.segment,
-            checked: task.checked || false,
-            // Preserve existing createdAt if it exists, otherwise use server timestamp
-            createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
-        };
+    const updateData = {
+        text: task.text,
+        segment: task.segment,
+        checked: task.checked || false,
+        // Preserve existing createdAt if it exists, otherwise use server timestamp
+        createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+    };
 
-        if (task.completedAt) {
-            updateData.completedAt = task.completedAt;
-        }
-
-        if (task.recurring) {
-            updateData.recurring = task.recurring;
-        }
-
-        // Use set with merge:true to handle both new and existing tasks
-        await db.collection('users')
-            .doc(userId)
-            .collection('tasks')
-            .doc(task.id.toString())
-            .set(updateData, { merge: true });
-
-        console.log('Task updated in Firestore:', task.id);
-    } catch (error) {
-        console.error('Error updating task in Firestore:', error);
+    if (task.completedAt) {
+        updateData.completedAt = task.completedAt;
     }
+
+    if (task.recurring) {
+        updateData.recurring = task.recurring;
+    }
+
+    // Add to offline queue with retry logic
+    await offlineQueue.add(
+        'updateTask',
+        async () => {
+            // Use set with merge:true to handle both new and existing tasks
+            await db.collection('users')
+                .doc(userId)
+                .collection('tasks')
+                .doc(task.id.toString())
+                .set(updateData, { merge: true });
+            console.log('[Storage] Task updated in Firestore:', task.id);
+        },
+        {
+            taskId: task.id,
+            userId,
+            updateData
+        },
+        3 // maxRetries
+    );
 }
 
 /**
- * Delete a task from Firestore
+ * Delete a task from Firestore (with offline queue support)
  * @param {number} taskId - Task ID
  * @param {string} userId - User ID
  * @param {object} db - Firestore database instance
@@ -193,17 +311,23 @@ export async function updateTaskInFirestore(task, userId, db, firebase) {
 export async function deleteTaskFromFirestore(taskId, userId, db) {
     if (!userId || !db) return;
 
-    try {
-        await db.collection('users')
-            .doc(userId)
-            .collection('tasks')
-            .doc(taskId.toString())
-            .delete();
-
-        console.log('Task deleted from Firestore:', taskId);
-    } catch (error) {
-        console.error('Error deleting task from Firestore:', error);
-    }
+    // Add to offline queue with retry logic
+    await offlineQueue.add(
+        'deleteTask',
+        async () => {
+            await db.collection('users')
+                .doc(userId)
+                .collection('tasks')
+                .doc(taskId.toString())
+                .delete();
+            console.log('[Storage] Task deleted from Firestore:', taskId);
+        },
+        {
+            taskId,
+            userId
+        },
+        3 // maxRetries
+    );
 }
 
 /**

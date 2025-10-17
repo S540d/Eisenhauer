@@ -471,6 +471,46 @@ export function updateOnlineStatus() {
 }
 
 /**
+ * Update sync status indicator (Phase 4: Offline-Support)
+ * @param {object} syncStatus - Sync status from getSyncStatus()
+ */
+export function updateSyncStatus(syncStatus) {
+    const indicator = document.getElementById('offlineIndicator');
+    if (!indicator) return;
+
+    const { pendingItems, isProcessing, isOnline } = syncStatus;
+
+    if (!isOnline) {
+        indicator.innerHTML = `
+            <div class="offline-indicator-content">
+                <span class="offline-dot"></span>
+                <span>Offline</span>
+                ${pendingItems > 0 ? `<span class="pending-count">(${pendingItems} pending)</span>` : ''}
+            </div>
+        `;
+        indicator.style.display = 'block';
+    } else if (isProcessing && pendingItems > 0) {
+        indicator.innerHTML = `
+            <div class="offline-indicator-content">
+                <span class="syncing-spinner"></span>
+                <span>Syncing ${pendingItems} change${pendingItems !== 1 ? 's' : ''}...</span>
+            </div>
+        `;
+        indicator.style.display = 'block';
+    } else if (pendingItems > 0) {
+        indicator.innerHTML = `
+            <div class="offline-indicator-content">
+                <span class="pending-dot"></span>
+                <span>${pendingItems} change${pendingItems !== 1 ? 's' : ''} pending</span>
+            </div>
+        `;
+        indicator.style.display = 'block';
+    } else {
+        indicator.style.display = 'none';
+    }
+}
+
+/**
  * Update all UI text based on current language
  * @param {object} translations - Translations object
  * @param {string} currentLanguage - Current language
