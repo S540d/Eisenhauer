@@ -1,5 +1,5 @@
-const CACHE_VERSION = '2.1.0';
-const BUILD_DATE = '2025-10-16'; // Cache busting - Phase 4: Offline-Support
+const CACHE_VERSION = '2.1.1';
+const BUILD_DATE = '2025-10-17'; // Cache busting - Phase 4.1: Fix localforage import
 const CACHE_NAME = `eisenhauer-matrix-v${CACHE_VERSION}-${BUILD_DATE}`;
 const urlsToCache = [
   './',

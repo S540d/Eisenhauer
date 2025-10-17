@@ -15,7 +15,9 @@
  * @since 2025-10-16
  */
 
-import localforage from 'https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js';
+// LocalForage is loaded globally via index.html
+// Using global variable instead of import
+const localforage = window.localforage;
 
 /**
  * @typedef {Object} QueueAction
