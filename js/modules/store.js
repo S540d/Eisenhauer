@@ -236,19 +236,32 @@ class Store {
     const watchedKeys = Array.isArray(keys) ? keys : [keys];
 
     const wrappedListener = (newState, prevState) => {
-      // Check if any watched keys changed (use simple value comparison)
+      // Check if any watched keys changed
       const hasChanged = watchedKeys.some(key => {
         const newValue = newState[key];
         const prevValue = prevState[key];
+
+        // Handle undefined values
+        if (newValue === undefined && prevValue === undefined) {
+          return false;
+        }
+        if (newValue === undefined || prevValue === undefined) {
+          return true;
+        }
 
         // For primitives, use strict equality
         if (typeof newValue !== 'object' || newValue === null) {
           return newValue !== prevValue;
         }
 
-        // For objects/arrays, use JSON stringify for simple comparison
-        // (This is a pragmatic approach - for production, consider a deep-equal library)
-        return JSON.stringify(newValue) !== JSON.stringify(prevValue);
+        // For objects/arrays, use JSON stringify for deep comparison
+        try {
+          return JSON.stringify(newValue) !== JSON.stringify(prevValue);
+        } catch (e) {
+          // Fallback to reference comparison if JSON.stringify fails
+          console.warn('[Store] JSON.stringify failed for key:', key, e);
+          return newValue !== prevValue;
+        }
       });
 
       if (hasChanged) {

@@ -126,6 +126,11 @@ describe('Store', () => {
   describe('subscribeToKeys', () => {
     it('should only notify when watched keys change', () => {
       const listener = vi.fn();
+
+      // Set initial state to a known value
+      store.setState({ language: 'de' });
+
+      // Now subscribe and change to a different value
       store.subscribeToKeys('language', listener);
 
       store.setState({ language: 'en' });
@@ -137,6 +142,11 @@ describe('Store', () => {
 
     it('should support watching multiple keys', () => {
       const listener = vi.fn();
+
+      // Set initial state to known values
+      store.setState({ language: 'de', theme: 'light' });
+
+      // Now subscribe and make changes
       store.subscribeToKeys(['language', 'theme'], listener);
 
       store.setState({ language: 'en' });
