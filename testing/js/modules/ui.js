@@ -5,33 +5,24 @@
 
 import { COLORS, SEGMENTS } from './config.js';
 import { getTasks, getRecurringDescription } from './tasks.js';
+import { DragManager } from './drag-manager.js';
 
 /**
  * Create a task DOM element
  * @param {object} task - Task object
  * @param {object} translations - Translations object
  * @param {string} currentLanguage - Current language
- * @param {function} onToggle - Callback when task is toggled
- * @param {function} onDragStart - Drag start handler
- * @param {function} onDragEnd - Drag end handler
- * @param {function} onSetupTouchDrag - Touch drag setup
- * @param {function} onSetupSwipeDelete - Swipe delete setup
+ * @param {object} callbacks - Callback functions
+ * @param {function} callbacks.onToggle - Toggle task handler
+ * @param {function} callbacks.onDragEnd - Drag end handler (called after drop)
+ * @param {function} callbacks.onSwipeDelete - Swipe delete handler
  * @returns {HTMLElement} Task element
  */
 export function createTaskElement(task, translations, currentLanguage, callbacks = {}) {
     const div = document.createElement('div');
     div.className = 'task-item';
-    div.draggable = true;
     div.dataset.taskId = task.id;
     div.dataset.segmentId = task.segment;
-
-    console.log('Creating task element:', {
-        taskId: task.id,
-        segment: task.segment,
-        draggable: div.draggable,
-        hasDragStartCallback: !!callbacks.onDragStart,
-        hasDragEndCallback: !!callbacks.onDragEnd
-    });
 
     // Set border color based on segment
     div.style.setProperty('--checkbox-color', COLORS[task.segment]);
@@ -90,28 +81,49 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     div.appendChild(checkbox);
     div.appendChild(content);
 
-    // Drag and Drop Events (Desktop)
-    if (callbacks.onDragStart) {
-        div.addEventListener('dragstart', callbacks.onDragStart);
-        console.log('Added dragstart listener to task', task.id);
-    } else {
-        console.warn('No onDragStart callback for task', task.id);
-    }
-    if (callbacks.onDragEnd) {
-        div.addEventListener('dragend', callbacks.onDragEnd);
-        console.log('Added dragend listener to task', task.id);
-    } else {
-        console.warn('No onDragEnd callback for task', task.id);
-    }
+    // Setup Drag & Drop 2.0 with DragManager
+    if (callbacks.onDragEnd || callbacks.onSwipeDelete) {
+        const dragManager = new DragManager({
+            element: div,
+            data: task,
 
-    // Touch Drag and Drop (Mobile)
-    if (callbacks.onSetupTouchDrag) {
-        callbacks.onSetupTouchDrag(div, task);
-    }
+            onDragStart: (event) => {
+                console.log('[DragManager] Drag started:', task.id);
+                div.classList.add('dragging');
+            },
 
-    // Swipe to Delete
-    if (callbacks.onSetupSwipeDelete) {
-        callbacks.onSetupSwipeDelete(div, task);
+            onDragMove: (event) => {
+                // Optional: Update UI during drag
+            },
+
+            onDragEnd: (event) => {
+                console.log('[DragManager] Drag ended:', task.id, event.target);
+                div.classList.remove('dragging');
+
+                if (event.target && callbacks.onDragEnd) {
+                    const toSegment = parseInt(event.target.dataset.segment);
+                    const fromSegment = task.segment;
+
+                    if (toSegment && toSegment !== fromSegment) {
+                        callbacks.onDragEnd(task.id, fromSegment, toSegment);
+                    }
+                }
+            },
+
+            onSwipeDelete: (data) => {
+                console.log('[DragManager] Swipe delete:', data.id);
+                if (callbacks.onSwipeDelete) {
+                    callbacks.onSwipeDelete(data.id, data.segment);
+                }
+            },
+
+            enableSwipeDelete: true,
+            longPressDelay: 300,
+            swipeThreshold: 100
+        });
+
+        // Store reference for cleanup
+        div._dragManager = dragManager;
     }
 
     return div;
@@ -459,6 +471,46 @@ export function updateOnlineStatus() {
 }
 
 /**
+ * Update sync status indicator (Phase 4: Offline-Support)
+ * @param {object} syncStatus - Sync status from getSyncStatus()
+ */
+export function updateSyncStatus(syncStatus) {
+    const indicator = document.getElementById('offlineIndicator');
+    if (!indicator) return;
+
+    const { pendingItems, isProcessing, isOnline } = syncStatus;
+
+    if (!isOnline) {
+        indicator.innerHTML = `
+            <div class="offline-indicator-content">
+                <span class="offline-dot"></span>
+                <span>Offline</span>
+                ${pendingItems > 0 ? `<span class="pending-count">(${pendingItems} pending)</span>` : ''}
+            </div>
+        `;
+        indicator.style.display = 'block';
+    } else if (isProcessing && pendingItems > 0) {
+        indicator.innerHTML = `
+            <div class="offline-indicator-content">
+                <span class="syncing-spinner"></span>
+                <span>Syncing ${pendingItems} change${pendingItems !== 1 ? 's' : ''}...</span>
+            </div>
+        `;
+        indicator.style.display = 'block';
+    } else if (pendingItems > 0) {
+        indicator.innerHTML = `
+            <div class="offline-indicator-content">
+                <span class="pending-dot"></span>
+                <span>${pendingItems} change${pendingItems !== 1 ? 's' : ''} pending</span>
+            </div>
+        `;
+        indicator.style.display = 'block';
+    } else {
+        indicator.style.display = 'none';
+    }
+}
+
+/**
  * Update all UI text based on current language
  * @param {object} translations - Translations object
  * @param {string} currentLanguage - Current language
@@ -723,4 +775,30 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     };
     quickAddInput.removeEventListener('keypress', handleKeyPress);
     quickAddInput.addEventListener('keypress', handleKeyPress);
+}
+
+/**
+ * Setup drop zones for all task lists (Drag & Drop 2.0)
+ * @param {Function} onDrop - Callback when task is dropped (taskId, fromSegment, toSegment)
+ */
+export function setupDropZones(onDrop) {
+    import('./drag-manager.js').then(({ setupDropZone }) => {
+        const taskLists = document.querySelectorAll('.task-list');
+
+        taskLists.forEach(taskList => {
+            const segment = parseInt(taskList.dataset.segment);
+
+            setupDropZone(taskList, (data, dropZone) => {
+                const toSegment = parseInt(dropZone.dataset.segment);
+                const fromSegment = data.segment;
+
+                if (toSegment && toSegment !== fromSegment) {
+                    console.log('[DropZone] Task dropped:', data.id, fromSegment, '→', toSegment);
+                    onDrop(data.id, fromSegment, toSegment);
+                }
+            });
+        });
+
+        console.log('[DropZones] Setup complete for', taskLists.length, 'task lists');
+    });
 }

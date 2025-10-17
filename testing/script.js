@@ -25,6 +25,7 @@ import {
     setAllTasks
 } from './js/modules/tasks.js';
 import {
+    initStorage,
     saveGuestTasks,
     loadGuestTasks,
     loadUserTasks,
@@ -33,7 +34,8 @@ import {
     deleteTaskFromFirestore,
     exportData,
     importData,
-    requestPersistentStorage
+    requestPersistentStorage,
+    getSyncStatus
 } from './js/modules/storage.js';
 import {
     renderAllTasks,
@@ -43,15 +45,18 @@ import {
     openSettingsModal,
     openMetricsModal,
     showDragHint,
-    updateOnlineStatus
+    updateOnlineStatus,
+    updateSyncStatus,
+    setupDropZones
 } from './js/modules/ui.js';
-import {
-    setupDragAndDrop,
-    setupTouchDrag,
-    setupSwipeToDelete,
-    handleDragStart,
-    handleDragEnd
-} from './js/modules/drag-drop.js';
+// Old drag-drop.js is now deprecated - using DragManager instead
+// import {
+//     setupDragAndDrop,
+//     setupTouchDrag,
+//     setupSwipeToDelete,
+//     handleDragStart,
+//     handleDragEnd
+// } from './js/modules/drag-drop.js';
 
 // ============================================
 // Global State
@@ -185,25 +190,20 @@ function handleToggleTask(taskId, segment) {
 }
 
 /**
- * Render all tasks with all callbacks
+ * Render all tasks with all callbacks (Drag & Drop 2.0)
  */
 function renderTasksWithCallbacks() {
     const callbacks = {
         onToggle: handleToggleTask,
-        onDragStart: handleDragStart,
-        onDragEnd: handleDragEnd,
-        onSetupTouchDrag: (element, task) => {
-            setupTouchDrag(element, task, handleMoveTask, handleDeleteTask);
-        },
-        onSetupSwipeDelete: (element, task) => {
-            setupSwipeToDelete(element, task, handleDeleteTask);
-        }
+        // DragManager handles these internally now
+        onDragEnd: handleMoveTask,
+        onSwipeDelete: handleDeleteTask
     };
 
     renderAllTasks(tasks, translations, currentLanguage, callbacks);
 
-    // Re-setup drag and drop handlers after rendering tasks
-    setupDragAndDropHandlers();
+    // Setup drop zones for desktop drag & drop
+    setupDropZones(handleMoveTask);
 }
 
 // ============================================
@@ -389,12 +389,13 @@ function setupEventListeners() {
 
 /**
  * Setup drag and drop functionality
+ * DEPRECATED: Now handled by DragManager in ui.js
  */
-function setupDragAndDropHandlers() {
-    setupDragAndDrop((taskId, fromSegment, toSegment) => {
-        handleMoveTask(taskId, fromSegment, toSegment);
-    });
-}
+// function setupDragAndDropHandlers() {
+//     setupDragAndDrop((taskId, fromSegment, toSegment) => {
+//         handleMoveTask(taskId, fromSegment, toSegment);
+//     });
+// }
 
 // ============================================
 // Authentication Integration
@@ -425,10 +426,8 @@ window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) 
         setupEventListeners();
 
         // Render tasks with callbacks (after DOM is ready)
+        // DragManager and drop zones are now setup in renderTasksWithCallbacks()
         renderTasksWithCallbacks();
-
-        // Setup drag and drop handlers (after tasks are rendered)
-        setupDragAndDropHandlers();
     }, 100);
 
     updateOnlineStatus();
@@ -453,12 +452,22 @@ async function initApp() {
     // Load version
     await initVersion();
 
+    // Initialize storage with offline queue support (Phase 4)
+    initStorage(updateSyncStatus);
+    console.log('✅ Storage initialized with offline queue');
+
     // Setup persistent storage
     await requestPersistentStorage();
 
     // Check online status
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener('online', () => {
+        updateOnlineStatus();
+        updateSyncStatus(getSyncStatus());
+    });
+    window.addEventListener('offline', () => {
+        updateOnlineStatus();
+        updateSyncStatus(getSyncStatus());
+    });
 
     // Note: Event listeners and tasks are loaded in onAuthStateChanged callback
     // which is triggered by auth.js after showApp() is called
