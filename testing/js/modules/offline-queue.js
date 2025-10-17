@@ -1,426 +1,239 @@
 /**
- * @fileoverview Offline Queue Management
- * @module offline-queue
- * @description
- * Manages queued actions when offline, with automatic retry and synchronization.
- * Stores actions in IndexedDB and processes them when connection is restored.
+ * @fileoverview Offline Queue Management (Instance-based with Events)
+ * @version 3.0.0
+ * @since 2025-10-17
  *
- * Features:
- * - Action queuing with retry logic
- * - Automatic sync on network restore
- * - Conflict resolution
- * - Failed action management
- *
- * @version 2.0.0
- * @since 2025-10-16
+ * Complete rewrite: Static class → Instance class with Event Emitter
+ * Fixes: offlineQueue.on is not a function error
  */
 
-// LocalForage is loaded globally via index.html
-// Using global variable instead of import
 const localforage = window.localforage;
-
-/**
- * @typedef {Object} QueueAction
- * @property {string} id - Unique action ID
- * @property {'MOVE_TASK'|'ADD_TASK'|'DELETE_TASK'|'UPDATE_TASK'|'TOGGLE_TASK'} action - Action type
- * @property {Object} payload - Action data
- * @property {'pending'|'syncing'|'failed'} status - Action status
- * @property {number} retryCount - Number of retry attempts
- * @property {string} createdAt - ISO timestamp of creation
- * @property {string|null} lastAttempt - ISO timestamp of last sync attempt
- * @property {string|null} error - Last error message (if failed)
- */
-
-/**
- * Configure separate IndexedDB store for sync queue
- */
-const queueStore = localforage.createInstance({
-  name: 'eisenhauer',
-  storeName: 'sync_queue',
-  description: 'Offline action queue for sync'
-});
-
-/**
- * Maximum retry attempts before marking as failed
- */
-const MAX_RETRY_ATTEMPTS = 3;
-
-/**
- * Delay between retry attempts (exponential backoff)
- * @param {number} attempt - Current attempt number
- * @returns {number} Delay in milliseconds
- */
-function getRetryDelay(attempt) {
-  return Math.min(1000 * Math.pow(2, attempt), 30000); // Max 30 seconds
-}
 
 /**
  * Offline Queue Manager
  */
 export class OfflineQueue {
   /**
-   * Generate unique ID for queue items
-   * @private
-   * @returns {string}
+   * Create new queue instance
+   * @param {string} queueName - Queue identifier
    */
-  static #generateId() {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  constructor(queueName) {
+    this.queueName = queueName;
+    this.eventListeners = new Map();
+    this.queue = [];
+    this.isProcessing = false;
+
+    // Create IndexedDB store
+    this.store = localforage.createInstance({
+      name: 'eisenhauer',
+      storeName: `queue_${queueName}`
+    });
+
+    // Load existing queue
+    this._loadQueue();
+
+    console.log(`[OfflineQueue] Initialized: ${queueName}`);
   }
 
   /**
-   * Add action to queue
-   * @param {'MOVE_TASK'|'ADD_TASK'|'DELETE_TASK'|'UPDATE_TASK'|'TOGGLE_TASK'} actionType - Action type
-   * @param {Object} payload - Action data
-   * @returns {Promise<string>} Queue item ID
+   * Load queue from IndexedDB
+   * @private
    */
-  static async enqueue(actionType, payload) {
-    const id = this.#generateId();
+  async _loadQueue() {
+    try {
+      const stored = await this.store.getItem('queue');
+      if (stored && Array.isArray(stored)) {
+        this.queue = stored;
+        console.log(`[OfflineQueue] Loaded ${this.queue.length} items`);
+      }
+    } catch (error) {
+      console.error('[OfflineQueue] Load error:', error);
+    }
+  }
 
-    const queueItem = {
+  /**
+   * Save queue to IndexedDB
+   * @private
+   */
+  async _saveQueue() {
+    try {
+      await this.store.setItem('queue', this.queue);
+    } catch (error) {
+      console.error('[OfflineQueue] Save error:', error);
+    }
+  }
+
+  /**
+   * Generate unique ID
+   * @private
+   */
+  _generateId() {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    return `${timestamp}-${random}`;
+  }
+
+  /**
+   * Register event listener
+   * @param {string} event - Event name
+   * @param {Function} callback - Callback function
+   */
+  on(event, callback) {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event).push(callback);
+    console.log(`[OfflineQueue] Registered listener: ${event}`);
+  }
+
+  /**
+   * Emit event
+   * @private
+   */
+  _emit(event, ...args) {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      listeners.forEach(cb => {
+        try {
+          cb(...args);
+        } catch (error) {
+          console.error(`[OfflineQueue] Listener error (${event}):`, error);
+        }
+      });
+    }
+  }
+
+  /**
+   * Add item to queue
+   * @param {string} operation - Operation description
+   * @param {Function} executor - Async function to execute
+   * @param {Object} metadata - Additional data
+   * @param {number} maxRetries - Max retry attempts
+   */
+  async add(operation, executor, metadata = {}, maxRetries = 3) {
+    const id = this._generateId();
+
+    const item = {
       id,
-      action: actionType,
-      payload,
-      status: 'pending',
-      retryCount: 0,
+      operation,
+      executor, // Store function reference
+      metadata,
+      retries: 0,
+      maxRetries,
       createdAt: new Date().toISOString(),
-      lastAttempt: null,
+      status: 'pending',
       error: null
     };
 
-    await queueStore.setItem(id, queueItem);
+    this.queue.push(item);
+    await this._saveQueue();
 
-    console.log('[OfflineQueue] Enqueued action:', queueItem);
+    console.log(`[OfflineQueue] Added: ${operation} (${id})`);
+    this._emit('itemAdded', item);
+
+    // If online, try to process immediately
+    if (navigator.onLine && !this.isProcessing) {
+      setTimeout(() => this.processQueue(), 100);
+    }
 
     return id;
   }
 
   /**
-   * Remove action from queue
-   * @param {string} id - Queue item ID
-   * @returns {Promise<void>}
+   * Process all pending items in queue
    */
-  static async dequeue(id) {
-    await queueStore.removeItem(id);
-    console.log('[OfflineQueue] Dequeued action:', id);
-  }
-
-  /**
-   * Get all queued actions
-   * @param {string} [status] - Filter by status (optional)
-   * @returns {Promise<Array<QueueAction>>}
-   */
-  static async getAll(status = null) {
-    const items = [];
-
-    await queueStore.iterate((value) => {
-      if (!status || value.status === status) {
-        items.push(value);
-      }
-    });
-
-    // Sort by creation time (oldest first)
-    return items.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-  }
-
-  /**
-   * Get queue item by ID
-   * @param {string} id - Queue item ID
-   * @returns {Promise<QueueAction|null>}
-   */
-  static async getById(id) {
-    return await queueStore.getItem(id);
-  }
-
-  /**
-   * Update queue item
-   * @param {string} id - Queue item ID
-   * @param {Partial<QueueAction>} updates - Updates to apply
-   * @returns {Promise<QueueAction>}
-   */
-  static async update(id, updates) {
-    const item = await queueStore.getItem(id);
-    if (!item) {
-      throw new Error(`Queue item ${id} not found`);
-    }
-
-    const updated = { ...item, ...updates };
-    await queueStore.setItem(id, updated);
-
-    return updated;
-  }
-
-  /**
-   * Mark action as syncing
-   * @param {string} id - Queue item ID
-   * @returns {Promise<void>}
-   */
-  static async markSyncing(id) {
-    await this.update(id, {
-      status: 'syncing',
-      lastAttempt: new Date().toISOString()
-    });
-  }
-
-  /**
-   * Mark action as failed
-   * @param {string} id - Queue item ID
-   * @param {string} error - Error message
-   * @returns {Promise<void>}
-   */
-  static async markFailed(id, error) {
-    const item = await this.getById(id);
-
-    await this.update(id, {
-      status: 'failed',
-      error,
-      retryCount: item.retryCount + 1
-    });
-  }
-
-  /**
-   * Reset failed action to pending (for manual retry)
-   * @param {string} id - Queue item ID
-   * @returns {Promise<void>}
-   */
-  static async resetFailed(id) {
-    await this.update(id, {
-      status: 'pending',
-      error: null
-    });
-  }
-
-  /**
-   * Get count of pending actions
-   * @returns {Promise<number>}
-   */
-  static async getPendingCount() {
-    const pending = await this.getAll('pending');
-    return pending.length;
-  }
-
-  /**
-   * Get count of failed actions
-   * @returns {Promise<number>}
-   */
-  static async getFailedCount() {
-    const failed = await this.getAll('failed');
-    return failed.length;
-  }
-
-  /**
-   * Clear all completed actions from queue
-   * @returns {Promise<number>} Number of items cleared
-   */
-  static async clearCompleted() {
-    const allItems = await this.getAll();
-    let cleared = 0;
-
-    for (const item of allItems) {
-      if (item.status !== 'pending' && item.status !== 'syncing') {
-        await this.dequeue(item.id);
-        cleared++;
-      }
-    }
-
-    console.log(`[OfflineQueue] Cleared ${cleared} completed items`);
-    return cleared;
-  }
-
-  /**
-   * Clear entire queue (use with caution!)
-   * @returns {Promise<void>}
-   */
-  static async clearAll() {
-    await queueStore.clear();
-    console.log('[OfflineQueue] Cleared entire queue');
-  }
-
-  /**
-   * Process all pending actions in queue
-   * @param {Function} executor - Function to execute each action
-   * @param {Object} [options] - Processing options
-   * @param {boolean} [options.stopOnError=false] - Stop processing on first error
-   * @param {Function} [options.onProgress] - Progress callback
-   * @returns {Promise<Object>} Processing results
-   */
-  static async processQueue(executor, options = {}) {
-    const { stopOnError = false, onProgress = null } = options;
-
-    const queue = await this.getAll('pending');
-
-    if (queue.length === 0) {
-      console.log('[OfflineQueue] Queue is empty, nothing to process');
+  async processQueue() {
+    if (this.isProcessing) {
+      console.log('[OfflineQueue] Already processing');
       return { processed: 0, succeeded: 0, failed: 0 };
     }
 
-    console.log(`[OfflineQueue] Processing ${queue.length} items...`);
+    const pendingItems = this.queue.filter(i => i.status === 'pending');
+
+    if (pendingItems.length === 0) {
+      console.log('[OfflineQueue] Queue empty');
+      this._emit('queueEmpty');
+      return { processed: 0, succeeded: 0, failed: 0 };
+    }
+
+    this.isProcessing = true;
+    console.log(`[OfflineQueue] Processing ${pendingItems.length} items...`);
 
     let processed = 0;
     let succeeded = 0;
     let failed = 0;
 
-    for (const item of queue) {
-      // Call progress callback
-      if (onProgress) {
-        onProgress({
-          current: processed + 1,
-          total: queue.length,
-          item
-        });
-      }
-
+    for (const item of pendingItems) {
       try {
-        // Mark as syncing
-        await this.markSyncing(item.id);
+        item.status = 'processing';
+        await this._saveQueue();
 
-        // Execute action
-        await executor(item);
+        // Execute the stored function
+        if (typeof item.executor === 'function') {
+          await item.executor();
+        } else {
+          throw new Error('Executor is not a function');
+        }
 
         // Success - remove from queue
-        await this.dequeue(item.id);
-        succeeded++;
+        this.queue = this.queue.filter(i => i.id !== item.id);
+        await this._saveQueue();
 
-        console.log('[OfflineQueue] Successfully processed:', item.id);
+        succeeded++;
+        this._emit('itemProcessed', item);
+        console.log(`[OfflineQueue] ✓ Processed: ${item.operation}`);
+
       } catch (error) {
         failed++;
+        item.retries++;
+        item.error = error.message;
 
-        console.error('[OfflineQueue] Failed to process:', item.id, error);
+        console.error(`[OfflineQueue] ✗ Failed: ${item.operation}`, error);
 
-        // Check if we should retry
-        if (item.retryCount + 1 >= MAX_RETRY_ATTEMPTS) {
-          // Max retries reached - mark as failed
-          await this.markFailed(item.id, error.message);
-          console.warn('[OfflineQueue] Max retries reached:', item.id);
+        if (item.retries >= item.maxRetries) {
+          // Max retries reached
+          item.status = 'failed';
+          console.warn(`[OfflineQueue] Max retries: ${item.operation}`);
+          this._emit('itemFailed', item, error);
         } else {
-          // Schedule retry with exponential backoff
-          const delay = getRetryDelay(item.retryCount);
-
-          await this.update(item.id, {
-            status: 'pending',
-            retryCount: item.retryCount + 1,
-            error: error.message
-          });
-
-          console.log(`[OfflineQueue] Will retry ${item.id} after ${delay}ms`);
-
-          // Optional: Schedule automatic retry
-          setTimeout(async () => {
-            const current = await this.getById(item.id);
-            if (current && current.status === 'pending') {
-              console.log('[OfflineQueue] Auto-retrying:', item.id);
-              await this.processQueue(executor, options);
-            }
-          }, delay);
+          // Reset to pending for retry
+          item.status = 'pending';
+          console.log(`[OfflineQueue] Will retry: ${item.operation} (${item.retries}/${item.maxRetries})`);
         }
 
-        // Stop on error if requested
-        if (stopOnError) {
-          break;
-        }
+        await this._saveQueue();
       }
 
       processed++;
     }
 
+    this.isProcessing = false;
+
+    // Check if queue is now empty (all pending items processed)
+    const stillPending = this.queue.filter(i => i.status === 'pending').length;
+    if (stillPending === 0) {
+      this._emit('queueEmpty');
+    }
+
     const result = { processed, succeeded, failed };
-    console.log('[OfflineQueue] Processing complete:', result);
+    console.log('[OfflineQueue] Complete:', result);
 
     return result;
   }
 
   /**
-   * Check if there are pending actions
-   * @returns {Promise<boolean>}
+   * Get count of pending items
    */
-  static async hasPending() {
-    const count = await this.getPendingCount();
-    return count > 0;
+  getPendingCount() {
+    return this.queue.filter(i => i.status === 'pending').length;
   }
 
   /**
-   * Get queue statistics
-   * @returns {Promise<Object>}
+   * Clear all items
    */
-  static async getStats() {
-    const allItems = await this.getAll();
-
-    const stats = {
-      total: allItems.length,
-      pending: 0,
-      syncing: 0,
-      failed: 0,
-      byAction: {},
-      oldestPending: null
-    };
-
-    allItems.forEach(item => {
-      // Count by status
-      stats[item.status] = (stats[item.status] || 0) + 1;
-
-      // Count by action type
-      stats.byAction[item.action] = (stats.byAction[item.action] || 0) + 1;
-
-      // Track oldest pending
-      if (item.status === 'pending') {
-        if (!stats.oldestPending || new Date(item.createdAt) < new Date(stats.oldestPending)) {
-          stats.oldestPending = item.createdAt;
-        }
-      }
-    });
-
-    return stats;
+  async clearAll() {
+    this.queue = [];
+    await this._saveQueue();
+    this._emit('queueEmpty');
   }
-
-  /**
-   * Export queue for debugging/backup
-   * @returns {Promise<Array<QueueAction>>}
-   */
-  static async export() {
-    return await this.getAll();
-  }
-
-  /**
-   * Import queue from backup (use with caution!)
-   * @param {Array<QueueAction>} items - Queue items to import
-   * @param {boolean} [merge=true] - Merge with existing queue or replace
-   * @returns {Promise<number>} Number of imported items
-   */
-  static async import(items, merge = true) {
-    if (!merge) {
-      await this.clearAll();
-    }
-
-    let imported = 0;
-
-    for (const item of items) {
-      await queueStore.setItem(item.id, item);
-      imported++;
-    }
-
-    console.log(`[OfflineQueue] Imported ${imported} items`);
-    return imported;
-  }
-}
-
-/**
- * Setup automatic queue processing on network restore
- * @param {Function} executor - Function to execute queued actions
- */
-export function setupAutoSync(executor) {
-  window.addEventListener('online', async () => {
-    console.log('[OfflineQueue] Network restored, processing queue...');
-
-    try {
-      const result = await OfflineQueue.processQueue(executor, {
-        stopOnError: false,
-        onProgress: ({ current, total }) => {
-          console.log(`[OfflineQueue] Progress: ${current}/${total}`);
-        }
-      });
-
-      console.log('[OfflineQueue] Auto-sync complete:', result);
-    } catch (error) {
-      console.error('[OfflineQueue] Auto-sync failed:', error);
-    }
-  });
 }

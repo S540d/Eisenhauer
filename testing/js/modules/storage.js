@@ -92,7 +92,7 @@ function handleOffline() {
  */
 export function getSyncStatus() {
     return {
-        pendingItems: offlineQueue.queue.length,
+        pendingItems: offlineQueue.getPendingCount(),
         isProcessing: offlineQueue.isProcessing,
         isOnline: navigator.onLine
     };
