@@ -351,6 +351,51 @@ function setupEventListeners() {
         });
     }
 
+    // Recurring task toggle (Fix for Issue #76)
+    const recurringEnabled = document.getElementById('recurringEnabled');
+    const recurringOptions = document.getElementById('recurringOptions');
+    if (recurringEnabled && recurringOptions) {
+        recurringEnabled.addEventListener('change', (e) => {
+            recurringOptions.style.display = e.target.checked ? 'block' : 'none';
+        });
+    }
+
+    // Recurring interval selector (Fix for Issue #76)
+    const recurringInterval = document.getElementById('recurringInterval');
+    const weeklyOptions = document.getElementById('weeklyOptions');
+    const monthlyOptions = document.getElementById('monthlyOptions');
+    const customOptions = document.getElementById('customOptions');
+    if (recurringInterval) {
+        recurringInterval.addEventListener('change', (e) => {
+            // Hide all interval-specific options
+            if (weeklyOptions) weeklyOptions.style.display = 'none';
+            if (monthlyOptions) monthlyOptions.style.display = 'none';
+            if (customOptions) customOptions.style.display = 'none';
+
+            // Show relevant option based on selected interval
+            switch(e.target.value) {
+                case 'weekly':
+                    if (weeklyOptions) weeklyOptions.style.display = 'block';
+                    break;
+                case 'monthly':
+                    if (monthlyOptions) monthlyOptions.style.display = 'block';
+                    break;
+                case 'custom':
+                    if (customOptions) customOptions.style.display = 'block';
+                    break;
+            }
+        });
+    }
+
+    // Quick add recurring toggle (Fix for Issue #76)
+    const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
+    const quickRecurringOptions = document.getElementById('quickRecurringOptions');
+    if (quickRecurringEnabled && quickRecurringOptions) {
+        quickRecurringEnabled.addEventListener('change', () => {
+            quickRecurringOptions.style.display = quickRecurringEnabled.checked ? 'block' : 'none';
+        });
+    }
+
     // Logout button
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
