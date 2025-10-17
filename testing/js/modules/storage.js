@@ -6,7 +6,7 @@
 
 import { OfflineQueue } from './offline-queue.js';
 import { ErrorHandler, NetworkError } from './error-handler.js';
-import { NotificationManager } from './notifications.js';
+import { showError, showSuccess, showInfo, showWarning } from './notifications.js';
 
 // Note: This module expects auth.js to provide:
 // - currentUser, isGuestMode
@@ -16,9 +16,6 @@ import { NotificationManager } from './notifications.js';
 // Initialize offline queue
 const offlineQueue = new OfflineQueue('eisenhauer-sync-queue');
 
-// Initialize notification manager
-let notificationManager = null;
-
 // UI update callback
 let syncStatusCallback = null;
 
@@ -27,7 +24,6 @@ let syncStatusCallback = null;
  * @param {Function} onSyncStatusChange - Optional callback for sync status updates
  */
 export function initStorage(onSyncStatusChange = null) {
-    notificationManager = new NotificationManager();
     syncStatusCallback = onSyncStatusChange;
 
     // Listen for network status changes
@@ -42,23 +38,19 @@ export function initStorage(onSyncStatusChange = null) {
 
     offlineQueue.on('itemFailed', (item, error) => {
         console.error('[Storage] Queue item failed:', item.id, error);
-        if (notificationManager) {
-            notificationManager.error(`Sync failed: ${item.operation}`, {
-                duration: 5000,
-                action: {
-                    label: 'Retry',
-                    callback: () => offlineQueue.processQueue()
-                }
-            });
-        }
+        showError(`Sync failed: ${item.operation}`, {
+            duration: 5000,
+            actions: [{
+                label: 'Retry',
+                onClick: () => offlineQueue.processQueue()
+            }]
+        });
         updateSyncStatusUI();
     });
 
     offlineQueue.on('queueEmpty', () => {
         console.log('[Storage] Sync queue empty');
-        if (notificationManager) {
-            notificationManager.success('All changes synced', { duration: 2000 });
-        }
+        showSuccess('All changes synced', 2000);
         updateSyncStatusUI();
     });
 
@@ -80,9 +72,7 @@ function updateSyncStatusUI() {
  */
 async function handleOnline() {
     console.log('[Storage] Network online - processing queue');
-    if (notificationManager) {
-        notificationManager.info('Back online - syncing changes...', { duration: 3000 });
-    }
+    showInfo('Back online - syncing changes...', 3000);
     updateSyncStatusUI();
     await offlineQueue.processQueue();
 }
@@ -92,11 +82,7 @@ async function handleOnline() {
  */
 function handleOffline() {
     console.log('[Storage] Network offline');
-    if (notificationManager) {
-        notificationManager.warning('You are offline - changes will be synced later', {
-            duration: 5000
-        });
-    }
+    showWarning('You are offline - changes will be synced later', { duration: 5000 });
     updateSyncStatusUI();
 }
 
