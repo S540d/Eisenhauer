@@ -346,8 +346,8 @@ header h1 {
 
 /* Segment Add Button */
 .segment-add-btn {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     background: transparent;
     border: 1.5px solid var(--text-secondary);
@@ -362,8 +362,8 @@ header h1 {
 }
 
 .segment-add-btn svg {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     stroke-width: 1.5;
 }
 

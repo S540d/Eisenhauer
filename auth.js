@@ -157,6 +157,29 @@ async function deleteTaskFromFirestore(taskId) {
     }
 }
 
+// Archive task in Firestore
+async function archiveTaskInFirestore(task) {
+    if (!currentUser) return;
+
+    try {
+        // Add to archive collection
+        await db.collection('users')
+            .doc(currentUser.uid)
+            .collection('archived')
+            .doc(task.id.toString())
+            .set(task);
+
+        // Remove from tasks collection
+        await db.collection('users')
+            .doc(currentUser.uid)
+            .collection('tasks')
+            .doc(task.id.toString())
+            .delete();
+    } catch (error) {
+        console.error('Error archiving task:', error);
+    }
+}
+
 // Update task in Firestore
 async function updateTaskInFirestore(task) {
     if (!currentUser) return;
@@ -247,7 +270,26 @@ async function continueAsGuest() {
 
 async function loadGuestTasks() {
     try {
-        const savedTasks = await localforage.getItem('eisenhauerTasks');
+        // Try to load from IndexedDB first
+        let savedTasks = await localforage.getItem('eisenhauerTasks');
+
+        // If IndexedDB is empty, try localStorage backup
+        if (!savedTasks || Object.values(savedTasks).every(arr => arr.length === 0)) {
+            try {
+                const backupData = localStorage.getItem('eisenhauerTasks_backup');
+                if (backupData) {
+                    const backupTasks = JSON.parse(backupData);
+                    const backupTimestamp = localStorage.getItem('eisenhauerTasks_backup_timestamp');
+                    console.log('Restored tasks from localStorage backup', backupTimestamp ? `(${new Date(parseInt(backupTimestamp)).toLocaleString()})` : '');
+                    savedTasks = backupTasks;
+                    // Restore to IndexedDB
+                    await localforage.setItem('eisenhauerTasks', backupTasks);
+                }
+            } catch (backupError) {
+                console.warn('Could not restore from localStorage backup:', backupError);
+            }
+        }
+
         if (savedTasks) {
             tasks = savedTasks;
             renderAllTasks();
@@ -263,7 +305,16 @@ async function loadGuestTasks() {
 async function saveGuestTasks() {
     if (isGuestMode) {
         try {
+            // Save to IndexedDB (primary storage)
             await localforage.setItem('eisenhauerTasks', tasks);
+
+            // Also save to localStorage as backup (survives cache clearing)
+            try {
+                localStorage.setItem('eisenhauerTasks_backup', JSON.stringify(tasks));
+                localStorage.setItem('eisenhauerTasks_backup_timestamp', Date.now().toString());
+            } catch (localStorageError) {
+                console.warn('Could not save to localStorage backup:', localStorageError);
+            }
         } catch (error) {
             console.error('Error saving guest tasks:', error);
         }

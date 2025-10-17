@@ -30,7 +30,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea">
 
-    <link rel="stylesheet" href="style.css?v=1760205697157">
+    <link rel="stylesheet" href="style.css?v=1760731706437">
 </head>
 <body data-environment="testing">
     <!-- Login Screen -->
@@ -149,12 +149,6 @@
             <div class="segment q5" data-segment="5">
                 <div class="segment-header">
                     <h2>Done!</h2>
-                    <button class="segment-add-btn" data-segment="5" title="Aufgabe hinzufügen">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <line x1="12" y1="8" x2="12" y2="16"></line>
-                            <line x1="8" y1="12" x2="16" y2="12"></line>
-                        </svg>
-                    </button>
                 </div>
                 <div class="task-list" id="segment5" data-segment="5"></div>
             </div>
@@ -358,9 +352,9 @@
                 <!-- Metrics Link -->
                 <div class="settings-option">
                     <label class="settings-label">
-                        <span>📊 Metriken</span>
+                        <span>📊 Metrik</span>
+                        <button id="metricsBtn" class="settings-action-btn">Statistiken anzeigen</button>
                     </label>
-                    <button id="metricsBtn" class="settings-action-btn" style="width: 100%; margin-top: 8px;">Statistiken anzeigen</button>
                 </div>
 
                 <!-- Logout -->
@@ -418,21 +412,21 @@
     </div>
 
     <!-- localForage for better local storage -->
-    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js?v=1760205697157"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js?v=1760731706437"></script>
 
     <!-- Chart.js for metrics visualization -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js?v=1760205697157"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js?v=1760731706437"></script>
 
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js?v=1760205697157"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js?v=1760205697157"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js?v=1760205697157"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js?v=1760731706437"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js?v=1760731706437"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js?v=1760731706437"></script>
 
     <!-- Firebase Config -->
-    <script src="firebase-config.js?v=1760205697157"></script>
-    <script src="auth.js?v=1760205697157"></script>
+    <script src="firebase-config.js?v=1760731706437"></script>
+    <script src="auth.js?v=1760731706437"></script>
 
-    <script src="script.js?v=1760205697157"></script>
+    <script src="script.js?v=1760731706437"></script>
 
     <!-- Register Service Worker -->
     <script>
