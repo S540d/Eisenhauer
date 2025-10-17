@@ -31,6 +31,17 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Set Auth Persistence to LOCAL (stay signed in after browser close/restart)
+// This ensures users don't have to sign in every time they open the app
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() => {
+        console.log('✅ Auth Persistence: LOCAL (user stays signed in)');
+    })
+    .catch((error) => {
+        console.error('⚠️ Could not enable auth persistence:', error);
+        // Continue anyway - Firebase will fall back to default behavior
+    });
+
 // Auth Provider
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 googleProvider.setCustomParameters({
