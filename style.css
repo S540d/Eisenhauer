@@ -1350,3 +1350,105 @@ body {
     outline: 2px dashed #667eea;
     outline-offset: 4px;
 }
+
+/* ============================================
+   Accessibility: Keyboard Navigation Styles
+   ============================================ */
+
+/* Task item selected for keyboard move */
+.task-item.keyboard-selected {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);
+    background: rgba(0, 123, 255, 0.05);
+    position: relative;
+}
+
+.task-item.keyboard-selected::before {
+    content: "✓ Selected";
+    position: absolute;
+    top: -24px;
+    left: 0;
+    background: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 100;
+}
+
+/* Target quadrant highlight */
+.segment.keyboard-target {
+    outline: 3px dashed #28a745;
+    outline-offset: -3px;
+    background: rgba(40, 167, 69, 0.05);
+    position: relative;
+}
+
+.segment.keyboard-target::before {
+    content: "→ Target (Press Enter to move)";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #28a745;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced focus indicators for keyboard navigation */
+*:focus-visible {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.task-item:focus-visible {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+/* Dark mode adjustments for keyboard selection */
+@media (prefers-color-scheme: dark) {
+    .task-item.keyboard-selected {
+        background: rgba(0, 123, 255, 0.1);
+        outline-color: #4dabf7;
+    }
+
+    .task-item.keyboard-selected::before {
+        background: #4dabf7;
+    }
+
+    .segment.keyboard-target {
+        background: rgba(40, 167, 69, 0.1);
+        outline-color: #51cf66;
+    }
+
+    .segment.keyboard-target::before {
+        background: #51cf66;
+        color: #1a1a1a;
+    }
+}
+
+body.dark-mode .task-item.keyboard-selected {
+    background: rgba(0, 123, 255, 0.1);
+    outline-color: #4dabf7;
+}
+
+body.dark-mode .task-item.keyboard-selected::before {
+    background: #4dabf7;
+}
+
+body.dark-mode .segment.keyboard-target {
+    background: rgba(40, 167, 69, 0.1);
+    outline-color: #51cf66;
+}
+
+body.dark-mode .segment.keyboard-target::before {
+    background: #51cf66;
+    color: #1a1a1a;
+}
