@@ -16,13 +16,25 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:watch": "vitest --watch"
+    "test:watch": "vitest --watch",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/S540d/Eisenhauer.git"
   },
-  "keywords": ["eisenhauer", "matrix", "productivity", "todo", "task-management", "pwa"],
+  "keywords": [
+    "eisenhauer",
+    "matrix",
+    "productivity",
+    "todo",
+    "task-management",
+    "pwa"
+  ],
   "author": "Sven-Uwe Strohkark",
   "license": "MIT",
   "bugs": {
@@ -30,8 +42,9 @@
   },
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "devDependencies": {
-    "@vitest/ui": "^1.0.4",
+    "@playwright/test": "^1.56.1",
     "@vitest/coverage-v8": "^1.0.4",
+    "@vitest/ui": "^1.0.4",
     "happy-dom": "^12.10.3",
     "vitest": "^1.0.4"
   }
