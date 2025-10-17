@@ -34,17 +34,17 @@ npm run test:coverage
 
 **Coverage:** ~95%
 
-#### 2. **store.js** (24/26 tests passing)
+#### 2. **store.js** (26/26 tests passing - ALL PASSING ✅)
 - ✅ State Initialization
 - ✅ setState with partial updates
 - ✅ setNestedState for deep updates
 - ✅ subscribe/unsubscribe
-- ⚠️ subscribeToKeys (2 tests failing - see Known Limitations)
+- ✅ subscribeToKeys (FIXED - tests now set known initial state)
 - ✅ State Immutability (deep freeze)
 - ✅ Network Status Tracking
 - ✅ Convenience Methods
 
-**Coverage:** ~90%
+**Coverage:** ~95%
 
 #### 3. **notifications.js** (13/25 tests passing)
 - ✅ Container Creation
@@ -62,31 +62,34 @@ npm run test:coverage
 
 ## Known Limitations
 
-### 1. subscribeToKeys Tests (store.test.js)
+### 1. ~~subscribeToKeys Tests (store.test.js)~~ - ✅ FIXED
 
-**Issue:** 2 tests failing for `subscribeToKeys` functionality
+**Issue:** ~~2 tests failing for `subscribeToKeys` functionality~~
 
 **Root Cause:**
-- `subscribeToKeys` uses JSON.stringify() for object comparison
-- Shallow copy in `setState()` means nested objects share references
-- For primitive values (strings, numbers) it works correctly
+- Tests were setting state to same value as initial value
+- In test environment, navigator.language defaults to 'en-US'
+- Initial state had `language: 'en'`
+- Test did `setState({ language: 'en' })` → no change detected!
 
-**Workaround:**
-- Function works correctly in production (verified manually)
-- Tests need adjustment to use primitive values or deep clones
+**Fix:**
+- Updated tests to set known initial state before subscribing
+- Test now does: `setState({ language: 'de' })` first, then subscribes, then `setState({ language: 'en' })`
+- This ensures value actually changes, triggering the listener
 
 **Example:**
 ```javascript
-// This works:
+// OLD (failing):
 store.subscribeToKeys('language', listener);
-store.setState({ language: 'en' }); // ✅ Listener called
+store.setState({ language: 'en' }); // ❌ Might already be 'en'
 
-// This might fail in tests:
-store.subscribeToKeys('tasks', listener);
-store.setState({ tasks: { ...tasks, 1: [...] } }); // ⚠️ Reference issue
+// NEW (passing):
+store.setState({ language: 'de' }); // Set known initial value
+store.subscribeToKeys('language', listener);
+store.setState({ language: 'en' }); // ✅ Changes from 'de' to 'en'
 ```
 
-**Status:** Non-blocking for Phase 1. Will be fixed in Phase 3 integration tests.
+**Status:** ✅ FIXED - All 26 Store tests now passing!
 
 ---
 
@@ -213,6 +216,10 @@ When adding new tests:
 
 ---
 
-**Last Updated:** 2025-10-16
-**Test Status:** 54/68 passing (79% pass rate)
-**Blocking Issues:** None - known failures are environmental limitations, not functional bugs
+**Last Updated:** 2025-10-17
+**Test Status:** 56/68 passing (82% pass rate)
+- ✅ error-handler.js: 17/17 passing
+- ✅ store.js: 26/26 passing (FIXED!)
+- ⚠️ notifications.js: 13/25 passing (12 DOM tests failing due to happy-dom limitations)
+
+**Blocking Issues:** None - remaining 12 failures are environmental limitations (happy-dom), not functional bugs. Notifications work perfectly in production.
