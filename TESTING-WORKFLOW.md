@@ -29,9 +29,9 @@ testing Branch
     ↓
     ↓ Automatischer Deploy (GitHub Action)
     ↓
-gh-pages-testing
+gh-pages/testing/
     ↓
-    ↓ Partner testet auf https://s540d.github.io/Eisenhauer-testing/
+    ↓ Partner testet auf https://s540d.github.io/Eisenhauer/testing/
     ↓
     ↓ Partner approved PR
     ↓
@@ -71,12 +71,11 @@ git checkout -b testing
 git push -u origin testing
 ```
 
-### 3. GitHub Pages Testing Environment konfigurieren
+### 3. GitHub Pages konfigurieren
 
 1. Gehe zu: `https://github.com/S540d/Eisenhauer/settings/pages`
-2. Klicke auf "Add another branch"
-3. Wähle Branch: `gh-pages-testing`
-4. Speichern
+2. Stelle sicher, dass als Source `gh-pages` Branch (Root) eingestellt ist
+3. Das Testing Environment wird automatisch unter `/testing/` deployed
 
 **Fertig!** 🎉
 
@@ -125,15 +124,15 @@ git push origin testing
 **Automatisch passiert:**
 - ✅ GitHub Action startet
 - ✅ Build wird erstellt
-- ✅ Deploy auf `gh-pages-testing`
-- ✅ Verfügbar unter: https://s540d.github.io/Eisenhauer-testing/
+- ✅ Deploy auf `gh-pages` (Subdirectory: `/testing/`)
+- ✅ Verfügbar unter: https://s540d.github.io/Eisenhauer/testing/
 
 ### Schritt 4: Partner informieren
 
 ```bash
 # Partner-Nachricht (automatisch)
 echo "🧪 Testing Version bereit!"
-echo "URL: https://s540d.github.io/Eisenhauer-testing/"
+echo "URL: https://s540d.github.io/Eisenhauer/testing/"
 echo "PR: https://github.com/S540d/Eisenhauer/pulls"
 ```
 
@@ -161,7 +160,7 @@ npm start
 
 ### Schritt 2: Online Testing
 
-1. Öffne: https://s540d.github.io/Eisenhauer-testing/
+1. Öffne: https://s540d.github.io/Eisenhauer/testing/
 2. Teste alle Features
 3. Prüfe auf verschiedenen Geräten
 
@@ -248,8 +247,9 @@ gh run view <RUN-ID> --log
 ### Testing Environment prüfen
 
 ```bash
-# Welcher Commit ist deployed?
-gh api /repos/S540d/Eisenhauer/git/refs/heads/gh-pages-testing | jq -r '.object.sha'
+# Welcher Commit ist deployed (testing subdirectory)?
+git checkout gh-pages
+cd testing && git log -1 --oneline
 
 # Letzter Commit auf testing Branch
 git log testing -1 --oneline
@@ -304,12 +304,14 @@ gh run view <FAILED-RUN-ID> --log
 
 ### Problem: Testing URL 404 Error
 
-**Ursache:** GitHub Pages Environment nicht konfiguriert
+**Ursache:** Testing Deployment noch nicht durchgeführt oder GitHub Pages Cache
 
 **Lösung:**
-1. Gehe zu: https://github.com/S540d/Eisenhauer/settings/pages
-2. "Add another branch" → `gh-pages-testing`
-3. Warte 1-2 Minuten für Propagation
+1. Prüfe ob testing Branch gepusht wurde: `git log testing -1`
+2. Prüfe GitHub Actions: `gh run list --workflow=deploy-testing.yml`
+3. Gehe zu: https://github.com/S540d/Eisenhauer/settings/pages
+4. Stelle sicher, dass Source `gh-pages` Branch ist
+5. Warte 1-2 Minuten für GitHub Pages Propagation
 
 ---
 
@@ -369,7 +371,7 @@ gh pr create --base main --title "feat: xyz" --fill
 git checkout testing && git merge feature/xyz && git push
 
 # Testing URL öffnen
-open https://s540d.github.io/Eisenhauer-testing/
+open https://s540d.github.io/Eisenhauer/testing/
 
 # PR Status prüfen
 gh pr status

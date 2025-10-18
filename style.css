@@ -206,12 +206,12 @@ header h1 {
 
 /* Drag & Drop Hint */
 .drag-hint {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--text-primary);
+    color: var(--card-bg);
     padding: 15px 20px;
     margin: 0 10px 10px 10px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     text-align: center;
     animation: slideDown 0.4s ease-out;
 }
@@ -223,9 +223,9 @@ header h1 {
 }
 
 .close-hint-btn {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     padding: 8px 20px;
     border-radius: 6px;
     cursor: pointer;
@@ -234,7 +234,7 @@ header h1 {
 }
 
 .close-hint-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--task-bg);
 }
 
 .close-hint-btn:active {
@@ -254,14 +254,7 @@ header h1 {
 
 /* Add Task Section */
 .add-task-section {
-    background: transparent;
-    padding: 10px;
-    margin: 0 10px 10px 10px;
-    border-radius: 10px;
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-    align-items: center;
+    display: none; /* Hidden in v1.4.5 */
 }
 
 #taskInput {
@@ -328,8 +321,9 @@ header h1 {
     margin-bottom: 10px;
     flex-shrink: 0;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    gap: 8px;
 }
 
 .q1 .segment-header { border-color: #1f2937; }
@@ -342,40 +336,31 @@ header h1 {
     font-size: 1rem;
     color: var(--text-primary);
     font-weight: 700;
+    flex: 1;
 }
 
-/* Segment Add Button */
 .segment-add-btn {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: transparent;
     border: 1.5px solid var(--text-secondary);
+    color: var(--text-secondary);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 18px;
+    line-height: 1;
     transition: all 0.2s;
-    color: var(--text-secondary);
     flex-shrink: 0;
     padding: 0;
-}
-
-.segment-add-btn svg {
-    width: 16px;
-    height: 16px;
-    stroke-width: 1.5;
 }
 
 .segment-add-btn:hover {
     background: var(--text-secondary);
     color: var(--card-bg);
-    border-color: var(--text-secondary);
     transform: scale(1.1);
-}
-
-.segment-add-btn:hover svg {
-    stroke: var(--card-bg);
 }
 
 .segment-add-btn:active {
@@ -391,6 +376,8 @@ header h1 {
     gap: 8px;
     padding-right: 5px;
     align-items: flex-start;
+    min-height: 60px; /* Ensure drop target is large enough even when empty */
+    transition: background 0.2s ease;
 }
 
 /* Custom Scrollbar */
@@ -436,9 +423,40 @@ header h1 {
     background: rgba(255, 255, 255, 0.15);
 }
 
+/* Delete button */
+.task-delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 1.2rem;
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.task-item:hover .task-delete-btn {
+    opacity: 1;
+    color: #ff4444;
+}
+
+.task-delete-btn:active {
+    transform: scale(1.2);
+}
+
+/* Hide add button for Done segment */
+.q5 .segment-add-btn {
+    display: none;
+}
+
 /* Drag over feedback */
 .task-list.drag-over {
-    background: rgba(102, 126, 234, 0.15);
+    background: rgba(102, 126, 234, 0.25);
+    border: 2px dashed rgba(102, 126, 234, 0.6);
+    border-radius: 8px;
+    min-height: 80px;
 }
 
 /* Checkbox */
@@ -577,13 +595,6 @@ header h1 {
 .q1-btn:active { background: #fef2f2; }
 .q2-btn:active { background: #f0fdf4; }
 .q3-btn:active { background: #fffbeb; }
-
-@media (prefers-color-scheme: dark) {
-    .q1-btn:active { background: rgba(239, 68, 68, 0.2); }
-    .q2-btn:active { background: rgba(16, 185, 129, 0.2); }
-    .q3-btn:active { background: rgba(245, 158, 11, 0.2); }
-    .q4-btn:active { background: rgba(107, 114, 128, 0.2); }
-}
 .q4-btn:active { background: #f9fafb; }
 
 .cancel-btn {
@@ -1003,32 +1014,469 @@ body.dark-mode .search-highlight {
     padding: 10px;
 }
 
+/* ============================================================================
+   Footer Styles (v1.4.5+)
+   ============================================================================ */
+.app-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
 
-/* Floating Settings Button */
-.settings-btn-float {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
+.coffee-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #FFDD00;
+    color: #000;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: transform 0.2s;
+}
+
+.coffee-btn:hover {
+    transform: translateY(-2px);
+}
+
+.settings-btn-footer {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 50%;
-    background: var(--text-primary);
-    border: none;
-    cursor: pointer;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: all 0.2s;
+}
+
+.settings-btn-footer:hover {
+    background: var(--task-bg);
+    transform: scale(1.05);
+}
+
+.settings-btn-footer:active {
+    transform: scale(0.95);
+}
+
+/* ============================================================================
+   Quick Add Modal Styles (v1.4.5+)
+   ============================================================================ */
+.quick-add-modal {
+    max-width: 500px;
+}
+
+.quick-add-category {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: -5px 0 15px 0;
+    font-weight: 500;
+}
+
+.quick-add-input-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.quick-add-input-wrapper input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background: var(--task-bg);
+    color: var(--text-primary);
+    transition: border-color 0.2s;
+}
+
+.quick-add-input-wrapper input:focus {
+    outline: none;
+    border-color: var(--text-primary);
+}
+
+.char-counter {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.char-counter.warning {
+    color: #f59e0b;
+}
+
+.char-counter.error {
+    color: #ef4444;
+}
+
+.recurring-config-quick {
+    background: var(--task-bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.recurring-enable {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.recurring-enable input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.submit-btn {
+    background: var(--text-primary);
     color: var(--card-bg);
-    z-index: 999;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.settings-btn-float:hover {
-    transform: scale(1.1) rotate(90deg);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+.submit-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
 }
 
-.settings-btn-float:active {
-    transform: scale(0.95) rotate(90deg);
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+.submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================================================
+   Hidden Element Utility
+   ============================================================================ */
+.hidden {
+    display: none !important;
+}
+
+/* ============================================================================
+   Mobile Optimizations for v1.4.5
+   ============================================================================ */
+@media (max-width: 600px) {
+    .app-footer {
+        justify-content: center;
+    }
+
+    .quick-add-modal {
+        max-width: 95%;
+        margin: 20px;
+    }
+
+    .modal-buttons {
+        flex-direction: column-reverse;
+    }
+
+    .modal-buttons button {
+        width: 100%;
+    }
+}
+
+/* ============================================================================
+   Drag & Drop 2.0 Styles (Phase 2)
+   ============================================================================ */
+
+/* Prevent text selection during drag */
+.task-item {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Prevent pull-to-refresh interfering with drag */
+body {
+    overscroll-behavior-y: contain;
+}
+
+/* Drop zone highlighting */
+.task-list.drag-over {
+    border: 2px dashed var(--segment-color, #667eea);
+    background: linear-gradient(
+        to bottom,
+        rgba(var(--segment-color-rgb, 102, 126, 234), 0.05),
+        rgba(var(--segment-color-rgb, 102, 126, 234), 0.1)
+    );
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Invalid drop zone (if needed in future) */
+.task-list.drag-invalid {
+    border: 2px dashed #e74c3c;
+    background: rgba(231, 76, 60, 0.05);
+}
+
+/* Task being dragged (original element) */
+.task-item.dragging {
+    opacity: 0.3 !important;
+    transform: scale(0.98);
+    transition: all 0.2s ease;
+}
+
+/* Task moved successfully animation */
+@keyframes task-moved {
+    0% {
+        background: var(--segment-color);
+        transform: scale(1.05);
+    }
+    100% {
+        background: transparent;
+        transform: scale(1);
+    }
+}
+
+.task-item.just-moved {
+    animation: task-moved 0.6s ease;
+}
+
+/* Clone element styles (applied via JS) */
+/* These are set in drag-manager.js but documented here for reference:
+   - position: fixed
+   - z-index: 9999
+   - pointer-events: none
+   - transform: scale(1.05) rotate(2deg)
+   - opacity: 0.9
+   - box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3)
+*/
+
+/* Swipe to delete visual feedback */
+.task-item.swiping-left {
+    transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+/* Cursor styles for desktop drag */
+.task-item[draggable="true"] {
+    cursor: grab;
+}
+
+.task-item[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.task-list.drag-over {
+    cursor: move;
+}
+
+.task-list.drag-invalid {
+    cursor: not-allowed;
+}
+
+/* Touch device specific styles */
+@media (hover: none) and (pointer: coarse) {
+    /* Mobile/Touch devices */
+    .task-item {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Ensure smooth touch dragging */
+    .task-item {
+        touch-action: manipulation;
+    }
+}
+
+/* Hardware acceleration for smooth animations */
+.task-item,
+.task-list {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+}
+
+/* Segment-specific drop zone colors */
+.task-list[data-segment="1"].drag-over {
+    --segment-color: #e74c3c;
+    --segment-color-rgb: 231, 76, 60;
+}
+
+.task-list[data-segment="2"].drag-over {
+    --segment-color: #f39c12;
+    --segment-color-rgb: 243, 156, 18;
+}
+
+.task-list[data-segment="3"].drag-over {
+    --segment-color: #3498db;
+    --segment-color-rgb: 52, 152, 219;
+}
+
+.task-list[data-segment="4"].drag-over {
+    --segment-color: #95a5a6;
+    --segment-color-rgb: 149, 165, 166;
+}
+
+.task-list[data-segment="5"].drag-over {
+    --segment-color: #27ae60;
+    --segment-color-rgb: 39, 174, 96;
+}
+
+/* Animation for drag start (long press visual feedback) */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+    }
+}
+
+.task-item.long-press-active {
+    animation: pulse 0.3s ease-out;
+}
+
+/* Offline sync indicator on dragged items */
+.task-item[data-sync-status="pending"]::after {
+    content: "⏳";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+.task-item[data-sync-status="failed"]::after {
+    content: "⚠️";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 12px;
+}
+
+/* Accessibility: Focus indicators for keyboard navigation */
+.task-item:focus-visible {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+}
+
+.task-list:focus-visible {
+    outline: 2px dashed #667eea;
+    outline-offset: 4px;
+}
+
+/* ============================================
+   Accessibility: Keyboard Navigation Styles
+   ============================================ */
+
+/* Task item selected for keyboard move */
+.task-item.keyboard-selected {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.2);
+    background: rgba(0, 123, 255, 0.05);
+    position: relative;
+}
+
+.task-item.keyboard-selected::before {
+    content: "✓ Selected";
+    position: absolute;
+    top: -24px;
+    left: 0;
+    background: #007bff;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 100;
+}
+
+/* Target quadrant highlight */
+.segment.keyboard-target {
+    outline: 3px dashed #28a745;
+    outline-offset: -3px;
+    background: rgba(40, 167, 69, 0.05);
+    position: relative;
+}
+
+.segment.keyboard-target::before {
+    content: "→ Target (Press Enter to move)";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #28a745;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced focus indicators for keyboard navigation */
+*:focus-visible {
+    outline: 3px solid #007bff;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.task-item:focus-visible {
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+}
+
+/* Dark mode adjustments for keyboard selection */
+@media (prefers-color-scheme: dark) {
+    .task-item.keyboard-selected {
+        background: rgba(0, 123, 255, 0.1);
+        outline-color: #4dabf7;
+    }
+
+    .task-item.keyboard-selected::before {
+        background: #4dabf7;
+    }
+
+    .segment.keyboard-target {
+        background: rgba(40, 167, 69, 0.1);
+        outline-color: #51cf66;
+    }
+
+    .segment.keyboard-target::before {
+        background: #51cf66;
+        color: #1a1a1a;
+    }
+}
+
+body.dark-mode .task-item.keyboard-selected {
+    background: rgba(0, 123, 255, 0.1);
+    outline-color: #4dabf7;
+}
+
+body.dark-mode .task-item.keyboard-selected::before {
+    background: #4dabf7;
+}
+
+body.dark-mode .segment.keyboard-target {
+    background: rgba(40, 167, 69, 0.1);
+    outline-color: #51cf66;
+}
+
+body.dark-mode .segment.keyboard-target::before {
+    background: #51cf66;
+    color: #1a1a1a;
 }

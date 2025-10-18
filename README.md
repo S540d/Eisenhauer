@@ -4,6 +4,10 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 
 🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/)
 
+🧪 **Testing Version:** [https://s540d.github.io/Eisenhauer/testing/](https://s540d.github.io/Eisenhauer/testing/) - Latest features & fixes
+
+📋 **[Testing Guide](TESTING_GUIDE.md)** | 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)**
+
 ## Features
 
 ### 5 Segmente
@@ -20,15 +24,23 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
   - Flexible Intervall-Konfiguration
 - ✅ Automatisches Weiterschieben in nächste Kategorie (↓ Button)
 - ✅ Checkboxen zum Abhaken (verschiebt automatisch zu "Done!")
-- ✅ Drag & Drop zwischen Segmenten
+- ✅ **Drag & Drop zwischen Segmenten** - 3 Modi:
+  - **Maus:** Klicken & Ziehen
+  - **Touch:** Tap & Hold, dann ziehen (Mobile)
+  - **Keyboard:** Space → Arrow Keys → Enter (⭐ NEU: Accessibility)
 - ✅ **Swipe-to-Delete** - Tasks durch Wischgeste löschen (Mobile)
 - ✅ Löschen von Aufgaben mit Bestätigung
 
 ### Cloud & Sync
 - ✅ **Cloud-Synchronisation** mit Firebase
-- ✅ **Benutzer-Accounts** (Google Sign-In)
+- ✅ **Benutzer-Accounts** (Google/Apple Sign-In)
+- ✅ **Auth Persistence** - Dauerhaft angemeldet bleiben (⭐ NEU: kein wiederholtes Login mehr!)
 - ✅ **Gastmodus** - Ohne Anmeldung testen mit lokalem Speicher
 - ✅ **Geräte-übergreifende Sync** (bei Cloud-Login)
+- ✅ **Offline-First Architecture** mit OfflineQueue
+  - Änderungen werden lokal gespeichert wenn offline
+  - Automatische Synchronisation wenn wieder online
+  - Keine Datenverluste mehr (⭐ FIXED)
 - ✅ **Persistente Speicherung** mit IndexedDB (größer & sicherer als localStorage)
 - ✅ **Persistent Storage API** verhindert automatisches Löschen durch Browser
 - ✅ **Offline-Indikator** zeigt Verbindungsstatus
@@ -41,6 +53,23 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 - ✅ **Kompaktes Layout** mit scrollbaren Task-Listen
 - ✅ **Progressive Web App (PWA)** - Als App installierbar
 - ✅ **iOS-optimiert** mit speziellen Meta-Tags
+
+### ♿ Accessibility (Barrierefreiheit)
+- ✅ **WCAG 2.1 Level AA Fully Compliant** (⭐ NEU: 100% konform!)
+- ✅ **Vollständige Tastatursteuerung:**
+  - Space: Task auswählen
+  - Pfeiltasten: Zwischen Quadranten navigieren
+  - Enter: Verschieben bestätigen
+  - Escape: Abbrechen
+- ✅ **Screen Reader Support:**
+  - ARIA live region announcements
+  - Task-Bewegungen werden angesagt
+  - Kompatibel mit VoiceOver, NVDA, JAWS, TalkBack
+- ✅ **Visuelle Indikatoren:**
+  - Enhanced focus indicators
+  - Keyboard selection feedback
+  - Dark mode support
+- 📊 **Audit:** [Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)
 
 ### Datenmanagement
 - ✅ **Export/Import** - Daten als JSON exportieren und importieren

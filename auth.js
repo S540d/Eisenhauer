@@ -17,18 +17,29 @@ document.addEventListener('DOMContentLoaded', function() {
             isGuestMode = false;
             await localforage.removeItem('guestMode');
             showApp();
-            loadUserTasks();
+
+            // Call the callback from script.js (ES6 module)
+            if (typeof window.onAuthStateChanged === 'function') {
+                await window.onAuthStateChanged(user, db, false);
+            }
         } else {
             // Check if guest mode was active
             const wasGuestMode = await localforage.getItem('guestMode');
+            console.log('User is null, checking guestMode:', wasGuestMode);
+
             if (wasGuestMode === 'true') {
-                console.log('Continuing in guest mode');
+                console.log('Continuing in guest mode - showing app');
                 isGuestMode = true;
                 showApp();
-                await loadGuestTasks();
+
+                // Call the callback from script.js (ES6 module)
+                if (typeof window.onAuthStateChanged === 'function') {
+                    await window.onAuthStateChanged(null, db, true);
+                }
             } else {
-                // User is signed out
-                console.log('User signed out - showing login');
+                // User is signed out and not in guest mode
+                console.log('User signed out and guestMode not active - showing login screen');
+                isGuestMode = false;
                 showLogin();
             }
         }
@@ -82,39 +93,49 @@ async function signInWithApple() {
 // Sign Out
 async function signOut() {
     try {
+        console.log('signOut() called - clearing guestMode first');
+        // Clear guest mode flag BEFORE signing out to ensure onAuthStateChanged sees the correct state
+        await localforage.removeItem('guestMode');
+        isGuestMode = false;
+        console.log('guestMode cleared, now calling auth.signOut()');
+
+        // Now sign out - this will trigger onAuthStateChanged
         await auth.signOut();
-        console.log('User signed out successfully');
+        console.log('User signed out successfully - onAuthStateChanged should show login');
     } catch (error) {
         console.error('Sign-out error:', error);
         alert('Fehler beim Abmelden: ' + error.message);
     }
 }
 
-// Load user tasks from Firestore
-async function loadUserTasks() {
-    if (!currentUser) return;
+// Export signOut as global function for ES6 modules
+window.signOut = signOut;
 
-    try {
-        const snapshot = await db.collection('users')
-            .doc(currentUser.uid)
-            .collection('tasks')
-            .get();
-
-        // Clear current tasks
-        tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-
-        // Load tasks from Firestore
-        snapshot.forEach(doc => {
-            const task = doc.data();
-            task.id = doc.id; // Use Firestore document ID
-            tasks[task.segment].push(task);
-        });
-
-        renderAllTasks();
-    } catch (error) {
-        console.error('Error loading tasks:', error);
-    }
-}
+// DEPRECATED: This function is now handled by storage.js module
+// async function loadUserTasks() {
+//     if (!currentUser) return;
+//
+//     try {
+//         const snapshot = await db.collection('users')
+//             .doc(currentUser.uid)
+//             .collection('tasks')
+//             .get();
+//
+//         // Clear current tasks
+//         tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+//
+//         // Load tasks from Firestore
+//         snapshot.forEach(doc => {
+//             const task = doc.data();
+//             task.id = doc.id; // Use Firestore document ID
+//             tasks[task.segment].push(task);
+//         });
+//
+//         renderAllTasks();
+//     } catch (error) {
+//         console.error('Error loading tasks:', error);
+//     }
+// }
 
 // Save task to Firestore
 async function saveTaskToFirestore(task) {
@@ -154,29 +175,6 @@ async function deleteTaskFromFirestore(taskId) {
             .delete();
     } catch (error) {
         console.error('Error deleting task:', error);
-    }
-}
-
-// Archive task in Firestore
-async function archiveTaskInFirestore(task) {
-    if (!currentUser) return;
-
-    try {
-        // Add to archive collection
-        await db.collection('users')
-            .doc(currentUser.uid)
-            .collection('archived')
-            .doc(task.id.toString())
-            .set(task);
-
-        // Remove from tasks collection
-        await db.collection('users')
-            .doc(currentUser.uid)
-            .collection('tasks')
-            .doc(task.id.toString())
-            .delete();
-    } catch (error) {
-        console.error('Error archiving task:', error);
     }
 }
 
@@ -265,56 +263,33 @@ async function continueAsGuest() {
     }
 
     showApp();
-    await loadGuestTasks();
-}
 
-async function loadGuestTasks() {
-    try {
-        // Try to load from IndexedDB first
-        let savedTasks = await localforage.getItem('eisenhauerTasks');
-
-        // If IndexedDB is empty, try localStorage backup
-        if (!savedTasks || Object.values(savedTasks).every(arr => arr.length === 0)) {
-            try {
-                const backupData = localStorage.getItem('eisenhauerTasks_backup');
-                if (backupData) {
-                    const backupTasks = JSON.parse(backupData);
-                    const backupTimestamp = localStorage.getItem('eisenhauerTasks_backup_timestamp');
-                    console.log('Restored tasks from localStorage backup', backupTimestamp ? `(${new Date(parseInt(backupTimestamp)).toLocaleString()})` : '');
-                    savedTasks = backupTasks;
-                    // Restore to IndexedDB
-                    await localforage.setItem('eisenhauerTasks', backupTasks);
-                }
-            } catch (backupError) {
-                console.warn('Could not restore from localStorage backup:', backupError);
-            }
-        }
-
-        if (savedTasks) {
-            tasks = savedTasks;
-            renderAllTasks();
-        } else {
-            tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-        }
-    } catch (error) {
-        console.error('Error loading guest tasks:', error);
-        tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+    // Call the callback from script.js (ES6 module)
+    if (typeof window.onAuthStateChanged === 'function') {
+        await window.onAuthStateChanged(null, db, true);
     }
 }
+
+// DEPRECATED: This function is now handled by storage.js module
+// async function loadGuestTasks() {
+//     try {
+//         const savedTasks = await localforage.getItem('eisenhauerTasks');
+//         if (savedTasks) {
+//             tasks = savedTasks;
+//             renderAllTasks();
+//         } else {
+//             tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+//         }
+//     } catch (error) {
+//         console.error('Error loading guest tasks:', error);
+//         tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+//     }
+// }
 
 async function saveGuestTasks() {
     if (isGuestMode) {
         try {
-            // Save to IndexedDB (primary storage)
             await localforage.setItem('eisenhauerTasks', tasks);
-
-            // Also save to localStorage as backup (survives cache clearing)
-            try {
-                localStorage.setItem('eisenhauerTasks_backup', JSON.stringify(tasks));
-                localStorage.setItem('eisenhauerTasks_backup_timestamp', Date.now().toString());
-            } catch (localStorageError) {
-                console.warn('Could not save to localStorage backup:', localStorageError);
-            }
         } catch (error) {
             console.error('Error saving guest tasks:', error);
         }
@@ -326,6 +301,9 @@ function showLogin() {
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('appScreen').style.display = 'none';
 }
+
+// Export showLogin as global function for ES6 modules
+window.showLogin = showLogin;
 
 function showApp() {
     document.getElementById('loginScreen').style.display = 'none';
