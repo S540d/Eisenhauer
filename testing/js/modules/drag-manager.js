@@ -194,16 +194,15 @@ export class DragManager {
     this.state.deltaY = this.state.currentY - this.state.startY;
 
     // Check if movement cancels long press
-    if (!this.state.isDragging && !this.state.isSwipeDelete) {
+    if (!this.state.isDragging && !this.state.isSwipeDelete && this.state.longPressTimer) {
       const distance = Math.sqrt(
         this.state.deltaX * this.state.deltaX +
         this.state.deltaY * this.state.deltaY
       );
 
-      // If moved too much before long press, it's a scroll
+      // If moved too much before long press, cancel it (don't return - let swipe detection continue)
       if (distance > 10) {
         this.#cancelLongPress();
-        return;
       }
     }
 
