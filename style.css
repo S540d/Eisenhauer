@@ -446,6 +446,11 @@ header h1 {
     transform: scale(1.2);
 }
 
+/* Hide add button for Done segment */
+.q5 .segment-add-btn {
+    display: none;
+}
+
 /* Drag over feedback */
 .task-list.drag-over {
     background: rgba(102, 126, 234, 0.25);
