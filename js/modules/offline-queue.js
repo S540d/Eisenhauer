@@ -20,6 +20,7 @@ export class OfflineQueue {
   constructor(queueName) {
     this.queueName = queueName;
     this.eventListeners = new Map();
+    this.executors = new Map(); // Store executor functions separately
     this.queue = [];
     this.isProcessing = false;
 
@@ -113,10 +114,13 @@ export class OfflineQueue {
   async add(operation, executor, metadata = {}, maxRetries = 3) {
     const id = this._generateId();
 
+    // Store executor function separately (not serializable)
+    this.executors.set(id, executor);
+
+    // Create serializable item (without executor function)
     const item = {
       id,
       operation,
-      executor, // Store function reference
       metadata,
       retries: 0,
       maxRetries,
@@ -168,15 +172,17 @@ export class OfflineQueue {
         item.status = 'processing';
         await this._saveQueue();
 
-        // Execute the stored function
-        if (typeof item.executor === 'function') {
-          await item.executor();
+        // Get executor function from map
+        const executor = this.executors.get(item.id);
+        if (typeof executor === 'function') {
+          await executor();
         } else {
-          throw new Error('Executor is not a function');
+          throw new Error('Executor is not a function - queue may have been cleared');
         }
 
         // Success - remove from queue
         this.queue = this.queue.filter(i => i.id !== item.id);
+        this.executors.delete(item.id); // Clean up executor
         await this._saveQueue();
 
         succeeded++;
@@ -195,6 +201,7 @@ export class OfflineQueue {
           item.status = 'failed';
           console.warn(`[OfflineQueue] Max retries: ${item.operation}`);
           this._emit('itemFailed', item, error);
+          this.executors.delete(item.id); // Clean up executor
         } else {
           // Reset to pending for retry
           item.status = 'pending';
@@ -233,6 +240,7 @@ export class OfflineQueue {
    */
   async clearAll() {
     this.queue = [];
+    this.executors.clear(); // Clear executor functions too
     await this._saveQueue();
     this._emit('queueEmpty');
   }
