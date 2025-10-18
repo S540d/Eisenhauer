@@ -7,9 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Testing Branch
+## [1.5.0] - 2025-10-18
 
-### 🎉 Major Fixes & Features (2025-10-17)
+### ✨ New Features
+
+#### Swipe-to-Delete & Delete Button
+- **Swipe-to-Delete on Mobile:** Swipe left on any task to delete it with smooth animation
+- **Desktop Delete Button:** Easy delete button (✕) appears on hover for Done tasks on desktop only
+- **Better UX:** Alternative to swipe for desktop users
+
+#### UI/UX Improvements
+- Hide "+" add button in Done segment (completed tasks shouldn't get new items added)
+- Improved task item styling and interactions
+- Delete button with red hover state for better visibility
+
+### 🔧 Fixes & Improvements
+
+#### Critical Fixes
+- **Fixed DataCloneError in Offline Queue** - Executor functions now stored separately from serializable queue data, preventing IndexedDB serialization errors
+- **Fixed Swipe Detection** - Long-press cancellation no longer breaks swipe gesture detection
+- **Fixed Base href for /testing/ Subdirectory** - All resources now load correctly from testing subdirectory
+
+### 📝 Previous Improvements (2025-10-17)
 
 #### Fixed
 - **[#76] OfflineQueue Bug - Data Loss behoben** (`400ac6f`)
