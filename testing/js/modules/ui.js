@@ -88,6 +88,19 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     div.appendChild(checkbox);
     div.appendChild(content);
 
+    // Add delete button for easy access (alternative to swipe)
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'task-delete-btn';
+    deleteBtn.setAttribute('aria-label', `Delete task: ${task.text}`);
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (callbacks.onSwipeDelete) {
+            callbacks.onSwipeDelete(task.id, task.segment);
+        }
+    });
+    div.appendChild(deleteBtn);
+
     // Setup Drag & Drop 2.0 with DragManager
     if (callbacks.onDragEnd || callbacks.onSwipeDelete) {
         const dragManager = new DragManager({
