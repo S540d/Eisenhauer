@@ -211,23 +211,13 @@ export class DragManager {
       const absDeltaX = Math.abs(this.state.deltaX);
       const absDeltaY = Math.abs(this.state.deltaY);
 
-      console.log('[DragManager] Gesture detection:', {
-        deltaX: this.state.deltaX,
-        deltaY: this.state.deltaY,
-        absDeltaX,
-        absDeltaY,
-        enableSwipeDelete: this.config.enableSwipeDelete
-      });
-
       // Vertical movement → Drag
       if (absDeltaY > 20 && absDeltaY > absDeltaX) {
-        console.log('[DragManager] Activating drag mode');
         this.#cancelLongPress();
         this.#activateDragMode();
       }
       // Horizontal left swipe → Delete (if enabled)
       else if (this.config.enableSwipeDelete && this.state.deltaX < -50 && absDeltaX > absDeltaY) {
-        console.log('[DragManager] Activating swipe delete');
         this.#cancelLongPress();
         this.#activateSwipeDelete();
       }

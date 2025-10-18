@@ -113,7 +113,6 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
             data: task,
 
             onDragStart: (event) => {
-                console.log('[DragManager] Drag started:', task.id);
                 div.classList.add('dragging');
 
                 // Announce to screen readers
@@ -125,7 +124,6 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
             },
 
             onDragEnd: (event) => {
-                console.log('[DragManager] Drag ended:', task.id, event.target);
                 div.classList.remove('dragging');
 
                 if (event.target && callbacks.onDragEnd) {
@@ -142,12 +140,8 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
             },
 
             onSwipeDelete: (data) => {
-                console.log('[DragManager] Swipe delete:', data);
                 if (callbacks.onSwipeDelete) {
-                    console.log('[UI] Calling onSwipeDelete callback with:', data.id, data.segment);
                     callbacks.onSwipeDelete(data.id, data.segment);
-                } else {
-                    console.warn('[UI] No onSwipeDelete callback provided!');
                 }
             },
 
