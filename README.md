@@ -2,11 +2,9 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/)
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.5.0
 
-🧪 **Testing Version:** [https://s540d.github.io/Eisenhauer/testing/](https://s540d.github.io/Eisenhauer/testing/) - Latest features & fixes
-
-📋 **[Testing Guide](TESTING_GUIDE.md)** | 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)**
+📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 🔧 **[Installation](INSTALL.md)**
 
 ## Features
 
@@ -29,7 +27,7 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
   - **Touch:** Tap & Hold, dann ziehen (Mobile)
   - **Keyboard:** Space → Arrow Keys → Enter (⭐ NEU: Accessibility)
 - ✅ **Swipe-to-Delete** - Tasks durch Wischgeste löschen (Mobile)
-- ✅ Löschen von Aufgaben mit Bestätigung
+- ✅ **Delete Button** - Desktop-freundliche Lösch-Option (nur Done-Aufgaben)
 
 ### Cloud & Sync
 - ✅ **Cloud-Synchronisation** mit Firebase
@@ -97,7 +95,8 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
    - **🔁 Symbol** → Zeigt an, dass es sich um eine wiederkehrende Aufgabe handelt
 
 ### Mobile (Touch)
-- **Swipe links** auf Task → Löschen
+- **Swipe links** auf Task → Löschen mit Animations-Feedback
+- Alle anderen Features wie Desktop verfügbar
 - **Pull down** auf Task-Liste → Aktualisieren
 - **Tap & Hold** → Drag & Drop
 
