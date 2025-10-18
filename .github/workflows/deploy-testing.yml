@@ -39,11 +39,14 @@ jobs:
         node update-cache-version.js
         echo "✅ Cache version updated for testing environment"
 
-    - name: Add testing indicator
+    - name: Add testing indicator and base href
       run: |
         # Add a visible testing indicator to index.html
         sed -i 's/<body>/<body data-environment="testing">/' index.html || true
+        # Add base href for /testing/ subdirectory to fix resource loading
+        sed -i 's|</head>|  <base href="/Eisenhauer/testing/">\n</head>|' index.html || true
         echo "⚠️ Testing environment marker added"
+        echo "📍 Base href set to /Eisenhauer/testing/"
 
     - name: Deploy to Testing Subdirectory
       uses: peaceiris/actions-gh-pages@v3
