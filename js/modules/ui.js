@@ -124,9 +124,12 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
             },
 
             onSwipeDelete: (data) => {
-                console.log('[DragManager] Swipe delete:', data.id);
+                console.log('[DragManager] Swipe delete:', data);
                 if (callbacks.onSwipeDelete) {
+                    console.log('[UI] Calling onSwipeDelete callback with:', data.id, data.segment);
                     callbacks.onSwipeDelete(data.id, data.segment);
+                } else {
+                    console.warn('[UI] No onSwipeDelete callback provided!');
                 }
             },
 
