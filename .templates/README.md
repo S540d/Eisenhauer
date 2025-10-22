@@ -216,7 +216,29 @@ Diese Templates sind absichtlich **projektübergreifend generalisiert**:
 
 ---
 
+## Labels
+
+Siehe [LABELS.md](LABELS.md) für standardisiertes, einfaches Label-System:
+
+**9 Labels in 3 Kategorien:**
+- **Type:** `bug`, `feature`, `enhancement`, `docs`
+- **Priority:** `priority: high`, `priority: low`
+- **Status:** `blocked`, `ready-for-implementation`
+
+**Automatisiertes Setup** mit Script:
+```bash
+./scripts/setup-labels.sh S540d/Eisenhauer
+```
+
+---
+
 ## Aktualisierungshistorie
+
+### Version 2.2 (Labels)
+- ✅ Standardisiertes Label-System (9 Labels)
+- ✅ LABELS.md mit Dokumentation
+- ✅ scripts/setup-labels.sh für Automatisierung
+- ✅ Labels in allen 3 Projekten eingerichtet
 
 ### Version 2.1 (GitHub Integration)
 - ✅ `.github/ISSUE_TEMPLATE/` mit 4 Template-Typen
