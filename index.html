@@ -289,11 +289,10 @@
                 <button id="settingsCancelBtn" class="close-btn" aria-label="Close">×</button>
             </div>
 
-            <!-- Appearance Settings -->
+            <!-- Appearance Settings - Dark/System Only -->
             <div class="settings-section">
                 <h4 class="settings-section-title">APPEARANCE</h4>
                 <div id="themeToggleContainer" class="theme-toggle-container">
-                    <button class="theme-btn" data-theme="light" title="Light Mode">Light</button>
                     <button class="theme-btn" data-theme="dark" title="Dark Mode">Dark</button>
                     <button class="theme-btn" data-theme="system" title="System Mode">System</button>
                 </div>
@@ -301,9 +300,21 @@
 
             <div class="settings-separator"></div>
 
-            <!-- Feedback -->
+            <!-- Language Settings -->
             <div class="settings-section">
-                <a href="mailto:feedback@example.com" class="settings-link">Send Feedback</a>
+                <h4 class="settings-section-title">LANGUAGE</h4>
+                <div id="languageToggleContainer" class="theme-toggle-container">
+                    <button class="lang-btn" data-lang="en" title="English">English</button>
+                    <button class="lang-btn" data-lang="de" title="Deutsch">Deutsch</button>
+                </div>
+            </div>
+
+            <div class="settings-separator"></div>
+
+            <!-- Feedback and Support in One Row -->
+            <div class="settings-section settings-row">
+                <a href="mailto:feedback@example.com" class="settings-link settings-link-flex">Send Feedback</a>
+                <a href="https://buymeacoffee.com/sven4321" target="_blank" rel="noopener noreferrer" class="settings-link settings-link-flex">Buy Me a Coffee</a>
             </div>
 
             <div class="settings-separator"></div>
@@ -312,13 +323,7 @@
             <div class="settings-section">
                 <h4 class="settings-section-title">ABOUT</h4>
                 <p class="settings-info">Version 1.5.0</p>
-            </div>
-
-            <div class="settings-separator"></div>
-
-            <!-- Support -->
-            <div class="settings-section">
-                <a href="https://buymeacoffee.com/sven4321" target="_blank" rel="noopener noreferrer" class="settings-link">Buy Me a Coffee</a>
+                <p class="settings-info" style="margin-top: 8px;">License: MIT</p>
             </div>
         </div>
     </div>

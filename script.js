@@ -295,7 +295,6 @@ function setupEventListeners() {
     themeButtons.forEach(btn => {
         const theme = btn.dataset.theme;
         if ((theme === 'dark' && currentTheme === 'true') ||
-            (theme === 'light' && currentTheme === 'false') ||
             (theme === 'system' && currentTheme === null)) {
             btn.classList.add('active');
         }
@@ -313,10 +312,7 @@ function setupEventListeners() {
             if (theme === 'dark') {
                 localStorage.setItem(STORAGE_KEYS.DARK_MODE, 'true');
                 document.body.classList.add('dark-mode');
-            } else if (theme === 'light') {
-                localStorage.setItem(STORAGE_KEYS.DARK_MODE, 'false');
-                document.body.classList.remove('dark-mode');
-            } else {
+            } else if (theme === 'system') {
                 localStorage.removeItem(STORAGE_KEYS.DARK_MODE);
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 if (prefersDark) {
@@ -325,6 +321,31 @@ function setupEventListeners() {
                     document.body.classList.remove('dark-mode');
                 }
             }
+        });
+    });
+
+    // Language toggle buttons in settings modal
+    const langButtons = document.querySelectorAll('.lang-btn');
+    const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE) || 'en';
+
+    // Set initial active button
+    langButtons.forEach(btn => {
+        if (btn.dataset.lang === savedLanguage) {
+            btn.classList.add('active');
+        }
+    });
+
+    langButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const lang = btn.dataset.lang;
+
+            // Update active state
+            langButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update language
+            setLanguage(lang);
+            updateLanguageUI(() => renderTasksWithCallbacks());
         });
     });
 
