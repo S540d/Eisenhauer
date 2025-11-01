@@ -364,44 +364,48 @@ function showApp() {
     // Update user info
     if (currentUser) {
         const userInfo = document.getElementById('userInfo');
-        userInfo.textContent = ''; // Clear existing content
+        if (userInfo) {
+            userInfo.textContent = ''; // Clear existing content
 
-        // Create elements safely (prevents XSS)
-        const avatar = document.createElement('img');
-        avatar.src = currentUser.photoURL || 'icons/icon-72x72.png';
-        avatar.alt = 'User';
-        avatar.className = 'user-avatar';
+            // Create elements safely (prevents XSS)
+            const avatar = document.createElement('img');
+            avatar.src = currentUser.photoURL || 'icons/icon-72x72.png';
+            avatar.alt = 'User';
+            avatar.className = 'user-avatar';
 
-        const email = document.createElement('span');
-        email.className = 'user-email';
-        email.textContent = currentUser.email || 'User';
+            const email = document.createElement('span');
+            email.className = 'user-email';
+            email.textContent = currentUser.email || 'User';
 
-        const logoutBtn = document.createElement('button');
-        logoutBtn.className = 'logout-btn';
-        logoutBtn.textContent = 'Abmelden';
-        logoutBtn.onclick = signOut;
+            const logoutBtn = document.createElement('button');
+            logoutBtn.className = 'logout-btn';
+            logoutBtn.textContent = 'Abmelden';
+            logoutBtn.onclick = signOut;
 
-        userInfo.appendChild(avatar);
-        userInfo.appendChild(email);
-        userInfo.appendChild(logoutBtn);
+            userInfo.appendChild(avatar);
+            userInfo.appendChild(email);
+            userInfo.appendChild(logoutBtn);
+        }
     } else if (isGuestMode) {
         const userInfo = document.getElementById('userInfo');
-        userInfo.textContent = ''; // Clear existing content
+        if (userInfo) {
+            userInfo.textContent = ''; // Clear existing content
 
-        const guestLabel = document.createElement('span');
-        guestLabel.className = 'user-email';
-        guestLabel.textContent = 'Gastmodus (Lokal gespeichert)';
+            const guestLabel = document.createElement('span');
+            guestLabel.className = 'user-email';
+            guestLabel.textContent = 'Gastmodus (Lokal gespeichert)';
 
-        const logoutBtn = document.createElement('button');
-        logoutBtn.className = 'logout-btn';
-        logoutBtn.textContent = 'Beenden';
-        logoutBtn.onclick = async () => {
-            isGuestMode = false;
-            await localforage.removeItem('guestMode');
-            showLogin();
-        };
+            const logoutBtn = document.createElement('button');
+            logoutBtn.className = 'logout-btn';
+            logoutBtn.textContent = 'Beenden';
+            logoutBtn.onclick = async () => {
+                isGuestMode = false;
+                await localforage.removeItem('guestMode');
+                showLogin();
+            };
 
-        userInfo.appendChild(guestLabel);
-        userInfo.appendChild(logoutBtn);
+            userInfo.appendChild(guestLabel);
+            userInfo.appendChild(logoutBtn);
+        }
     }
 }

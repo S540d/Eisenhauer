@@ -63,7 +63,6 @@ header h1,
     font-size: 1.5rem;
     color: var(--text-primary);
     margin: 0;
-    text-decoration: line-through;
 }
 
 .settings-btn-header {
