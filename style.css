@@ -1469,3 +1469,115 @@ body.dark-mode .segment.keyboard-target::before {
     background: #51cf66;
     color: #1a1a1a;
 }
+
+/* Settings Modal Styles */
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--grid-color);
+}
+
+.settings-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px 8px;
+    color: var(--text-color);
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    opacity: 0.7;
+}
+
+.settings-section {
+    padding: 12px 16px;
+}
+
+.settings-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 12px 0;
+}
+
+.settings-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.theme-toggle-container {
+    display: flex;
+    gap: 8px;
+}
+
+.theme-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--grid-color);
+    color: var(--text-color);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 36px;
+}
+
+.theme-btn:hover {
+    opacity: 0.8;
+}
+
+.theme-btn.active {
+    background-color: #667eea;
+    color: white;
+}
+
+.settings-separator {
+    height: 1px;
+    background-color: var(--grid-color);
+    margin: 0;
+}
+
+.settings-link {
+    display: block;
+    padding: 12px 0;
+    color: #667eea;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+}
+
+.settings-link:hover {
+    opacity: 0.8;
+}
+
+.settings-link:active {
+    opacity: 0.6;
+}
+
+body.dark-mode .theme-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .theme-btn.active {
+    background-color: #667eea;
+}

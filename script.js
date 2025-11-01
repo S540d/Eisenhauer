@@ -287,6 +287,47 @@ function setupEventListeners() {
         });
     }
 
+    // Theme toggle buttons in settings modal
+    const themeButtons = document.querySelectorAll('.theme-btn');
+    const currentTheme = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
+
+    // Set initial active button
+    themeButtons.forEach(btn => {
+        const theme = btn.dataset.theme;
+        if ((theme === 'dark' && currentTheme === 'true') ||
+            (theme === 'light' && currentTheme === 'false') ||
+            (theme === 'system' && currentTheme === null)) {
+            btn.classList.add('active');
+        }
+    });
+
+    themeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const theme = btn.dataset.theme;
+
+            // Update active state
+            themeButtons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update theme
+            if (theme === 'dark') {
+                localStorage.setItem(STORAGE_KEYS.DARK_MODE, 'true');
+                document.body.classList.add('dark-mode');
+            } else if (theme === 'light') {
+                localStorage.setItem(STORAGE_KEYS.DARK_MODE, 'false');
+                document.body.classList.remove('dark-mode');
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.DARK_MODE);
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (prefersDark) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }
+        });
+    });
+
     // Language toggle
     const languageToggle = document.getElementById('languageToggle');
     if (languageToggle) {
