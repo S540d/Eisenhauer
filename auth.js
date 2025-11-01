@@ -2,9 +2,27 @@
 let currentUser = null;
 let isGuestMode = false;
 
+// Check if sessionStorage is available
+function isSessionStorageAvailable() {
+    try {
+        const testKey = '__storage_test__';
+        sessionStorage.setItem(testKey, 'test');
+        sessionStorage.removeItem(testKey);
+        return true;
+    } catch (e) {
+        console.warn('SessionStorage is not available:', e);
+        return false;
+    }
+}
+
 // Initialize auth after DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, initializing auth...');
+
+    // Check sessionStorage availability on load
+    if (!isSessionStorageAvailable()) {
+        console.warn('⚠️ SessionStorage is not available. Firebase auth may have issues.');
+    }
     
     // Auth State Observer
     auth.onAuthStateChanged(async user => {
@@ -67,7 +85,23 @@ async function signInWithGoogle() {
         await migrateLocalData(result.user.uid);
     } catch (error) {
         console.error('Google sign-in error:', error);
-        if (error.code !== 'auth/cancelled-popup-request' && error.code !== 'auth/popup-closed-by-user') {
+
+        // Handle specific error cases
+        if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+            // User closed popup - no error message needed
+            return;
+        }
+
+        // Handle "missing initial state" error with helpful message
+        if (error.message && error.message.includes('missing initial state')) {
+            alert('Anmeldefehler: Die Anmeldung konnte nicht abgeschlossen werden.\n\n' +
+                  'Mögliche Lösungen:\n' +
+                  '1. Aktivieren Sie Cookies in Ihren Browser-Einstellungen\n' +
+                  '2. Deaktivieren Sie "Cross-Site-Tracking verhindern" (Safari)\n' +
+                  '3. Versuchen Sie es im Inkognito-/Privat-Modus\n' +
+                  '4. Leeren Sie den Browser-Cache und versuchen Sie es erneut\n\n' +
+                  'Alternativ können Sie die App im Gastmodus ohne Anmeldung testen.');
+        } else {
             alert('Fehler beim Anmelden mit Google: ' + error.message);
         }
     } finally {
@@ -86,7 +120,25 @@ async function signInWithApple() {
         await migrateLocalData(result.user.uid);
     } catch (error) {
         console.error('Apple sign-in error:', error);
-        alert('Fehler beim Anmelden mit Apple: ' + error.message);
+
+        // Handle specific error cases
+        if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
+            // User closed popup - no error message needed
+            return;
+        }
+
+        // Handle "missing initial state" error with helpful message
+        if (error.message && error.message.includes('missing initial state')) {
+            alert('Anmeldefehler: Die Anmeldung konnte nicht abgeschlossen werden.\n\n' +
+                  'Mögliche Lösungen:\n' +
+                  '1. Aktivieren Sie Cookies in Ihren Browser-Einstellungen\n' +
+                  '2. Deaktivieren Sie "Cross-Site-Tracking verhindern" (Safari)\n' +
+                  '3. Versuchen Sie es im Inkognito-/Privat-Modus\n' +
+                  '4. Leeren Sie den Browser-Cache und versuchen Sie es erneut\n\n' +
+                  'Alternativ können Sie die App im Gastmodus ohne Anmeldung testen.');
+        } else {
+            alert('Fehler beim Anmelden mit Apple: ' + error.message);
+        }
     }
 }
 
