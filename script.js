@@ -261,12 +261,12 @@ function setupEventListeners() {
         });
     });
 
-    // Settings button (footer)
-    const settingsBtn = document.getElementById('settingsBtnFooter');
-    console.log('Settings button (footer) found:', !!settingsBtn);
+    // Settings button (header)
+    const settingsBtn = document.getElementById('settingsBtnHeader');
+    console.log('Settings button (header) found:', !!settingsBtn);
     if (settingsBtn) {
         settingsBtn.addEventListener('click', (e) => {
-            console.log('Settings button (footer) clicked', e);
+            console.log('Settings button (header) clicked', e);
             e.preventDefault();
             e.stopPropagation();
             openSettingsModal(currentUser, APP_VERSION, new Date().toISOString().split('T')[0], isGuestMode);

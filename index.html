@@ -72,12 +72,11 @@
 
     <!-- App Screen -->
     <div id="appScreen" class="container" style="display: none;">
-        <header style="display: none;">
-            <h1>Eisenhauer Matrix <span id="versionNumber" style="font-size: 0.5em; opacity: 0.6;"></span></h1>
-            <div id="userInfo" class="user-info"></div>
-            <div id="offlineIndicator" class="offline-indicator" style="display: none;">
-                📵 Offline-Modus
-            </div>
+        <header class="app-header">
+            <h1>Eisenhauer Matrix</h1>
+            <button id="settingsBtnHeader" class="settings-btn-header" title="Einstellungen" aria-label="Settings">
+                <span>⋮</span>
+            </button>
         </header>
 
         <!-- Drag & Drop Hint -->
@@ -136,19 +135,6 @@
                 <div class="task-list" id="segment5" data-segment="5"></div>
             </div>
         </div>
-
-        <footer class="app-footer">
-            <a href="https://buymeacoffee.com/sven4321" target="_blank" rel="noopener noreferrer" class="coffee-btn">
-                ☕ Buy me a coffee
-            </a>
-            <button id="settingsBtnFooter" class="settings-btn-footer" title="Einstellungen">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <circle cx="12" cy="5" r="2"></circle>
-                    <circle cx="12" cy="12" r="2"></circle>
-                    <circle cx="12" cy="19" r="2"></circle>
-                </svg>
-            </button>
-        </footer>
     </div>
 
     <!-- Quick Add Task Modal (v1.4.5+) -->
@@ -298,56 +284,13 @@
     <!-- Modal für Einstellungen -->
     <div id="settingsModal" class="modal">
         <div class="modal-content">
-            <h3>Einstellungen</h3>
+            <h3>Settings</h3>
             <div style="margin: 20px 0;">
-                <p id="settingsUserInfo" style="color: var(--text-secondary); margin-bottom: 10px;"></p>
-                <p id="settingsVersion" style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 20px;"></p>
-
-                <!-- Language Toggle -->
-                <div class="settings-option">
-                    <label for="languageToggle" class="settings-label">
-                        <span>🌍 Sprache / Language</span>
-                        <select id="languageToggle" class="language-select">
-                            <option value="en">English</option>
-                            <option value="de">Deutsch</option>
-                        </select>
-                    </label>
-                </div>
-
-                <!-- Dark Mode Toggle -->
-                <div class="settings-option">
-                    <label for="darkModeToggle" class="settings-label">
-                        <span>🌙 Dark Mode / System</span>
-                        <input type="checkbox" id="darkModeToggle" class="toggle-switch">
-                    </label>
-                </div>
-
-                <!-- Export/Import -->
-                <div class="settings-option">
-                    <label class="settings-label">
-                        <span>💾 Daten</span>
-                    </label>
-                    <div style="display: flex; gap: 10px; margin-top: 8px;">
-                        <button id="exportBtn" class="settings-action-btn">Export JSON</button>
-                        <button id="importBtn" class="settings-action-btn">Import JSON</button>
-                    </div>
-                    <input type="file" id="importFile" accept=".json" style="display: none;">
-                </div>
-
-                <!-- Metrics Link -->
-                <div class="settings-option">
-                    <label class="settings-label">
-                        <span>📊 Metriken</span>
-                    </label>
-                    <button id="metricsBtn" class="settings-action-btn" style="width: 100%; margin-top: 8px;">Statistiken anzeigen</button>
-                </div>
-
-                <!-- Logout -->
-                <div class="settings-option">
-                    <button id="logoutBtn" class="logout-btn-modal">Abmelden</button>
-                </div>
+                <a href="https://buymeacoffee.com/sven4321" target="_blank" rel="noopener noreferrer" class="settings-coffee-link">
+                    Buy Me a Coffee
+                </a>
             </div>
-            <button id="settingsCancelBtn" class="cancel-btn">Schließen</button>
+            <button id="settingsCancelBtn" class="cancel-btn">Close</button>
         </div>
     </div>
 

@@ -336,8 +336,6 @@ export function getRecurringConfig() {
  */
 export function openSettingsModal(currentUser, version, buildDate, isGuestMode = false) {
     const settingsModal = document.getElementById('settingsModal');
-    const settingsUserInfo = document.getElementById('settingsUserInfo');
-    const settingsVersion = document.getElementById('settingsVersion');
 
     if (!settingsModal) {
         console.error('Settings modal not found!');
@@ -345,61 +343,6 @@ export function openSettingsModal(currentUser, version, buildDate, isGuestMode =
     }
 
     console.log('Opening settings modal...');
-
-    if (settingsUserInfo) {
-        if (currentUser) {
-            settingsUserInfo.textContent = `Angemeldet als: ${currentUser.email}`;
-        } else {
-            settingsUserInfo.textContent = 'Nicht angemeldet (Lokaler Modus)';
-        }
-    }
-
-    if (settingsVersion) {
-        settingsVersion.textContent = `Version ${version} (${buildDate})`;
-    }
-
-    // Setup logout button event listener each time modal opens
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        console.log('Setting up logout button listener...');
-        // Remove old listener by cloning
-        const newLogoutBtn = logoutBtn.cloneNode(true);
-        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
-
-        // Add new listener
-        newLogoutBtn.addEventListener('click', async () => {
-            console.log('Logout button clicked in modal, isGuestMode:', isGuestMode);
-
-            // Close modal first
-            closeSettingsModal();
-
-            if (isGuestMode) {
-                // Guest mode: Clear data and show login directly
-                console.log('Guest mode logout - clearing data and showing login');
-                if (typeof window.localforage !== 'undefined') {
-                    await window.localforage.removeItem('guestMode');
-                    await window.localforage.removeItem('eisenhauerTasks');
-                }
-                // Show login screen directly
-                if (typeof window.showLogin === 'function') {
-                    window.showLogin();
-                } else {
-                    document.getElementById('loginScreen').style.display = 'flex';
-                    document.getElementById('appScreen').style.display = 'none';
-                }
-            } else {
-                // Firebase user: Use signOut function
-                if (typeof window.signOut === 'function') {
-                    console.log('Firebase user logout - calling window.signOut()');
-                    await window.signOut();
-                } else {
-                    console.error('window.signOut is not available!');
-                }
-            }
-        });
-    } else {
-        console.error('Logout button not found!');
-    }
 
     settingsModal.classList.remove('hidden');
     settingsModal.classList.add('active');
