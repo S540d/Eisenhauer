@@ -1628,3 +1628,38 @@ body.dark-mode .lang-btn {
 body.dark-mode .lang-btn.active {
     background-color: #667eea;
 }
+
+.settings-export-btn {
+    width: 100%;
+    padding: 10px 16px;
+    background-color: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.settings-export-btn:hover {
+    background-color: #5568d3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.settings-export-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.2);
+}
+
+body.dark-mode .settings-export-btn {
+    background-color: #667eea;
+}
+
+body.dark-mode .settings-export-btn:hover {
+    background-color: #7b8ef4;
+}

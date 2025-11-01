@@ -402,6 +402,14 @@ function setupEventListeners() {
         });
     }
 
+    // Export JSON button in settings modal
+    const exportJsonBtn = document.getElementById('exportJsonBtn');
+    if (exportJsonBtn) {
+        exportJsonBtn.addEventListener('click', () => {
+            exportData(tasks, APP_VERSION);
+        });
+    }
+
     // Metrics button
     const metricsBtn = document.getElementById('metricsBtn');
     if (metricsBtn) {
