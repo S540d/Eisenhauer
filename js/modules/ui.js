@@ -413,6 +413,8 @@ export function openSettingsModal(currentUser, version, buildDate, isGuestMode =
                 console.log('Sign out button clicked');
                 if (window.signOut) {
                     window.signOut();
+                    // Close settings modal after sign-out
+                    closeSettingsModal();
                 } else {
                     console.error('signOut function not available');
                 }

@@ -289,6 +289,14 @@
                 <button id="settingsCancelBtn" class="close-btn" aria-label="Close">×</button>
             </div>
 
+            <!-- Account Management (only visible when user is authenticated) -->
+            <div id="accountSection" class="settings-section" style="display: none;">
+                <h4 class="settings-section-title">ACCOUNT</h4>
+                <button id="signOutBtn" class="settings-signout-btn">Sign Out</button>
+            </div>
+
+            <div id="accountSeparator" class="settings-separator" style="display: none;"></div>
+
             <!-- Appearance Settings - Dark/System Only -->
             <div class="settings-section">
                 <h4 class="settings-section-title">APPEARANCE</h4>
@@ -310,14 +318,6 @@
             </div>
 
             <div class="settings-separator"></div>
-
-            <!-- Account Management (only visible when user is authenticated) -->
-            <div id="accountSection" class="settings-section" style="display: none;">
-                <h4 class="settings-section-title">ACCOUNT</h4>
-                <button id="signOutBtn" class="settings-signout-btn">Sign Out</button>
-            </div>
-
-            <div id="accountSeparator" class="settings-separator" style="display: none;"></div>
 
             <!-- JSON Export -->
             <div class="settings-section">
