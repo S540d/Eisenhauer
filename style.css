@@ -736,17 +736,16 @@ header h1,
     background: none;
     border: none;
     cursor: pointer;
-    opacity: 0.7;
+    color: var(--text-secondary);
+    opacity: 0.8;
     transition: opacity 0.2s ease, transform 0.1s ease;
     vertical-align: middle;
     min-width: 24px;
     min-height: 24px;
-    color: #6b7280; /* Gray color for visibility */
 }
 
 .recurring-indicator:hover {
     opacity: 1;
-    color: #4b5563; /* Darker gray on hover */
 }
 
 .recurring-indicator:active {
@@ -761,15 +760,6 @@ header h1,
     stroke-width: 2.5;
     stroke-linecap: round;
     stroke-linejoin: round;
-}
-
-/* Dark mode: lighter gray for better visibility */
-body.dark-mode .recurring-indicator {
-    color: #9ca3af;
-}
-
-body.dark-mode .recurring-indicator:hover {
-    color: #d1d5db;
 }
 
 /* Empty State */
