@@ -44,6 +44,7 @@ import {
     openQuickAddModal,
     openSettingsModal,
     openMetricsModal,
+    openEditRecurringModal,
     showDragHint,
     updateOnlineStatus,
     updateSyncStatus,
@@ -196,6 +197,41 @@ function handleToggleTask(taskId, segment) {
 }
 
 /**
+ * Handle edit recurring task settings
+ * @param {object} task - Task to edit
+ */
+function handleEditRecurring(task) {
+    openEditRecurringModal(task, (taskId, newRecurringConfig) => {
+        // Find the task
+        for (const segment in tasks) {
+            const taskIndex = tasks[segment].findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                // Update recurring config
+                if (newRecurringConfig === null) {
+                    // Remove recurring
+                    delete tasks[segment][taskIndex].recurring;
+                } else {
+                    // Update recurring
+                    tasks[segment][taskIndex].recurring = newRecurringConfig;
+                }
+
+                // Save to storage
+                const updatedTask = tasks[segment][taskIndex];
+                if (currentUser && db && !isGuestMode) {
+                    updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
+                } else {
+                    saveGuestTasks(tasks);
+                }
+
+                // Re-render
+                renderTasksWithCallbacks();
+                break;
+            }
+        }
+    }, translations, currentLanguage);
+}
+
+/**
  * Render all tasks with all callbacks (Drag & Drop 2.0)
  */
 function renderTasksWithCallbacks() {
@@ -203,7 +239,8 @@ function renderTasksWithCallbacks() {
         onToggle: handleToggleTask,
         // DragManager handles these internally now
         onDragEnd: handleMoveTask,
-        onSwipeDelete: handleDeleteTask
+        onSwipeDelete: handleDeleteTask,
+        onEditRecurring: handleEditRecurring
     };
 
     renderAllTasks(tasks, translations, currentLanguage, callbacks);

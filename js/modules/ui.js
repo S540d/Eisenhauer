@@ -58,10 +58,27 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
 
     // Add recurring indicator if task is recurring
     if (task.recurring && task.recurring.enabled) {
-        const recurringIndicator = document.createElement('span');
+        const recurringIndicator = document.createElement('button');
         recurringIndicator.className = 'recurring-indicator';
-        recurringIndicator.textContent = ' ' + translations[currentLanguage].recurring.indicator;
+        recurringIndicator.type = 'button';
+        recurringIndicator.setAttribute('aria-label', 'Edit recurring task settings');
         recurringIndicator.title = getRecurringDescription(task.recurring, translations[currentLanguage]);
+
+        // Create SVG icon (circular arrow)
+        recurringIndicator.innerHTML = `
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+        `;
+
+        // Click handler to open edit modal
+        recurringIndicator.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (callbacks.onEditRecurring) {
+                callbacks.onEditRecurring(task);
+            }
+        });
+
         textSpan.appendChild(recurringIndicator);
     }
 
@@ -834,4 +851,123 @@ export function setupDropZones(onDrop) {
 
         console.log('[DropZones] Setup complete for', taskLists.length, 'task lists');
     });
+}
+
+/**
+ * Open edit recurring task modal
+ * @param {object} task - Task to edit
+ * @param {function} onSave - Callback when changes are saved
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ */
+export function openEditRecurringModal(task, onSave, translations, currentLanguage) {
+    const modal = document.getElementById('editRecurringModal');
+    const taskNameElement = document.getElementById('editRecurringTaskName');
+    const titleElement = document.getElementById('editRecurringTitle');
+    const saveBtn = document.getElementById('editRecurringSaveBtn');
+    const cancelBtn = document.getElementById('editRecurringCancelBtn');
+    const disableRecurringCheckbox = document.getElementById('editDisableRecurring');
+
+    if (!modal || !task.recurring) {
+        console.error('Edit recurring modal not found or task has no recurring config');
+        return;
+    }
+
+    // Set task name and title
+    const lang = translations[currentLanguage];
+    taskNameElement.textContent = task.text;
+    titleElement.textContent = currentLanguage === 'de' ? 'Wiederholung bearbeiten' : 'Edit Recurring Task';
+
+    // Set current recurring type
+    const recurringType = task.recurring.interval || 'daily';
+    const recurringTypeRadio = document.querySelector(`input[name="editRecurringType"][value="${recurringType}"]`);
+    if (recurringTypeRadio) {
+        recurringTypeRadio.checked = true;
+    }
+
+    // Show/hide options based on type
+    const weekdaysContainer = document.getElementById('editWeekdaysContainer');
+    const monthDayContainer = document.getElementById('editMonthDayContainer');
+    const customDaysContainer = document.getElementById('editCustomDaysContainer');
+
+    weekdaysContainer.style.display = recurringType === 'weekly' ? 'flex' : 'none';
+    monthDayContainer.style.display = recurringType === 'monthly' ? 'block' : 'none';
+    customDaysContainer.style.display = recurringType === 'custom' ? 'block' : 'none';
+
+    // Set weekdays if weekly
+    if (recurringType === 'weekly' && task.recurring.weekdays) {
+        document.querySelectorAll('.edit-weekday-check').forEach(cb => {
+            cb.checked = task.recurring.weekdays.includes(parseInt(cb.value));
+        });
+    }
+
+    // Set month day if monthly
+    if (recurringType === 'monthly' && task.recurring.dayOfMonth) {
+        document.getElementById('editMonthDay').value = task.recurring.dayOfMonth;
+    }
+
+    // Set custom days if custom
+    if (recurringType === 'custom' && task.recurring.customDays) {
+        document.getElementById('editCustomDays').value = task.recurring.customDays;
+    }
+
+    // Reset disable checkbox
+    disableRecurringCheckbox.checked = false;
+
+    // Handle recurring type change
+    const recurringTypeRadios = document.querySelectorAll('input[name="editRecurringType"]');
+    recurringTypeRadios.forEach(radio => {
+        radio.addEventListener('change', () => {
+            weekdaysContainer.style.display = radio.value === 'weekly' ? 'flex' : 'none';
+            monthDayContainer.style.display = radio.value === 'monthly' ? 'block' : 'none';
+            customDaysContainer.style.display = radio.value === 'custom' ? 'block' : 'none';
+        });
+    });
+
+    // Show modal
+    modal.style.display = 'flex';
+
+    // Handle save
+    const handleSave = () => {
+        const selectedType = document.querySelector('input[name="editRecurringType"]:checked').value;
+
+        if (disableRecurringCheckbox.checked) {
+            // Remove recurring
+            onSave(task.id, null);
+        } else {
+            // Update recurring config
+            const newConfig = {
+                enabled: true,
+                interval: selectedType
+            };
+
+            if (selectedType === 'weekly') {
+                const checkedWeekdays = Array.from(document.querySelectorAll('.edit-weekday-check:checked'))
+                    .map(cb => parseInt(cb.value));
+                newConfig.weekdays = checkedWeekdays;
+            } else if (selectedType === 'monthly') {
+                newConfig.dayOfMonth = parseInt(document.getElementById('editMonthDay').value);
+            } else if (selectedType === 'custom') {
+                newConfig.customDays = parseInt(document.getElementById('editCustomDays').value);
+            }
+
+            onSave(task.id, newConfig);
+        }
+
+        modal.style.display = 'none';
+    };
+
+    // Handle cancel
+    const handleCancel = () => {
+        modal.style.display = 'none';
+    };
+
+    // Remove old listeners and add new ones
+    const newSaveBtn = saveBtn.cloneNode(true);
+    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+    newSaveBtn.addEventListener('click', handleSave);
+
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    newCancelBtn.addEventListener('click', handleCancel);
 }
