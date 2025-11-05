@@ -39,15 +39,83 @@ export function clearCurrentTask() {
 }
 
 /**
+ * Calculate next occurrence timestamp based on recurring config
+ * @param {object} recurringConfig - Recurring configuration
+ * @param {number} fromTimestamp - Calculate from this timestamp (default: now)
+ * @returns {number} Next occurrence timestamp
+ */
+function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
+    const now = new Date(fromTimestamp);
+    let nextDate = new Date(now);
+
+    // Set to start of next day (00:00)
+    nextDate.setDate(nextDate.getDate() + 1);
+    nextDate.setHours(0, 0, 0, 0);
+
+    switch (recurringConfig.interval) {
+        case 'daily':
+            // Already set to tomorrow 00:00
+            break;
+
+        case 'weekly':
+            // Find next occurrence of selected weekday(s)
+            if (recurringConfig.weekdays && recurringConfig.weekdays.length > 0) {
+                const sortedWeekdays = [...recurringConfig.weekdays].sort((a, b) => a - b);
+                const currentDay = nextDate.getDay();
+
+                // Find next weekday
+                let daysToAdd = null;
+                for (const weekday of sortedWeekdays) {
+                    const diff = weekday - currentDay;
+                    if (diff > 0) {
+                        daysToAdd = diff;
+                        break;
+                    }
+                }
+
+                // If no future weekday this week, wrap to next week
+                if (daysToAdd === null) {
+                    daysToAdd = 7 - currentDay + sortedWeekdays[0];
+                }
+
+                nextDate.setDate(nextDate.getDate() + daysToAdd);
+            } else {
+                // Default: 7 days from now
+                nextDate.setDate(nextDate.getDate() + 6); // +6 because we already added +1
+            }
+            break;
+
+        case 'monthly':
+            // Next month, same day
+            const targetDay = recurringConfig.dayOfMonth || 1;
+            nextDate.setMonth(nextDate.getMonth() + 1);
+            nextDate.setDate(Math.min(targetDay, new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate()));
+            break;
+
+        case 'custom':
+            // Custom days from now
+            const customDays = recurringConfig.customDays || 1;
+            nextDate.setDate(nextDate.getDate() + customDays - 1); // -1 because we already added +1
+            break;
+
+        default:
+            // Default to daily
+            break;
+    }
+
+    return nextDate.getTime();
+}
+
+/**
  * Create a new task object
  */
-function createTaskObject(taskText, segmentId, recurringConfig = null) {
+function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt = null) {
     const task = {
-        id: Date.now(),
+        id: Date.now() + Math.random(), // Add random to avoid ID collisions
         text: taskText,
         segment: segmentId,
         checked: false,
-        createdAt: Date.now(),
+        createdAt: createdAt || Date.now(),
         completedAt: null
     };
 
@@ -172,11 +240,20 @@ export function toggleTask(taskId, segmentId, saveCallback = null) {
 
         // Check if this is a recurring task
         if (task.recurring && task.recurring.enabled) {
-            // Create a new instance of the recurring task
-            newRecurringTask = createTaskObject(task.text, task.segment, {
-                enabled: true,
-                ...task.recurring
-            });
+            // Calculate next occurrence timestamp
+            const nextOccurrence = calculateNextOccurrence(task.recurring);
+
+            // Create a new instance of the recurring task with nextOccurrence as createdAt
+            // This ensures the task only appears when it's due
+            newRecurringTask = createTaskObject(
+                task.text,
+                task.segment,
+                {
+                    enabled: true,
+                    ...task.recurring
+                },
+                nextOccurrence // Set createdAt to future timestamp
+            );
 
             // Add the new task to the same segment
             tasks[segmentId].push(newRecurringTask);
@@ -240,7 +317,11 @@ export function toggleTask(taskId, segmentId, saveCallback = null) {
  * @returns {Array} Array of tasks
  */
 export function getTasks(segmentId) {
-    return tasks[segmentId] || [];
+    const now = Date.now();
+    const segmentTasks = tasks[segmentId] || [];
+
+    // Filter out future recurring tasks (not yet due)
+    return segmentTasks.filter(task => task.createdAt <= now);
 }
 
 /**

@@ -873,6 +873,7 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
     const saveBtn = document.getElementById('editRecurringSaveBtn');
     const cancelBtn = document.getElementById('editRecurringCancelBtn');
     const disableRecurringCheckbox = document.getElementById('editDisableRecurring');
+    const deleteTaskCheckbox = document.getElementById('editDeleteTask');
 
     if (!modal || !task.recurring) {
         console.error('Edit recurring modal not found or task has no recurring config');
@@ -917,8 +918,9 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
         document.getElementById('editCustomDays').value = task.recurring.customDays;
     }
 
-    // Reset disable checkbox
+    // Reset checkboxes
     disableRecurringCheckbox.checked = false;
+    deleteTaskCheckbox.checked = false;
 
     // Handle recurring type change
     const recurringTypeRadios = document.querySelectorAll('input[name="editRecurringType"]');
@@ -937,7 +939,10 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
     const handleSave = () => {
         const selectedType = document.querySelector('input[name="editRecurringType"]:checked').value;
 
-        if (disableRecurringCheckbox.checked) {
+        if (deleteTaskCheckbox.checked) {
+            // Delete task permanently
+            onSave(task.id, 'DELETE');
+        } else if (disableRecurringCheckbox.checked) {
             // Remove recurring
             onSave(task.id, null);
         } else {

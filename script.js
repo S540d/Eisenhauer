@@ -206,21 +206,39 @@ function handleEditRecurring(task) {
         for (const segment in tasks) {
             const taskIndex = tasks[segment].findIndex(t => t.id === taskId);
             if (taskIndex !== -1) {
-                // Update recurring config
-                if (newRecurringConfig === null) {
+                if (newRecurringConfig === 'DELETE') {
+                    // Delete task permanently
+                    const deletedTask = tasks[segment][taskIndex];
+                    deleteTask(taskId, segment, async (task) => {
+                        // Delete from Firestore if logged in
+                        if (currentUser && db && !isGuestMode) {
+                            await deleteTaskFromFirestore(task, currentUser.uid, db, window.firebase);
+                        } else {
+                            await saveGuestTasks(tasks);
+                        }
+                    });
+                } else if (newRecurringConfig === null) {
                     // Remove recurring
                     delete tasks[segment][taskIndex].recurring;
+
+                    // Save to storage
+                    const updatedTask = tasks[segment][taskIndex];
+                    if (currentUser && db && !isGuestMode) {
+                        updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
+                    } else {
+                        saveGuestTasks(tasks);
+                    }
                 } else {
                     // Update recurring
                     tasks[segment][taskIndex].recurring = newRecurringConfig;
-                }
 
-                // Save to storage
-                const updatedTask = tasks[segment][taskIndex];
-                if (currentUser && db && !isGuestMode) {
-                    updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
-                } else {
-                    saveGuestTasks(tasks);
+                    // Save to storage
+                    const updatedTask = tasks[segment][taskIndex];
+                    if (currentUser && db && !isGuestMode) {
+                        updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
+                    } else {
+                        saveGuestTasks(tasks);
+                    }
                 }
 
                 // Re-render
