@@ -82,6 +82,25 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
         textSpan.appendChild(recurringIndicator);
     }
 
+    // Add delete button inline after text (only for Done tasks on desktop)
+    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isDoneTask = task.segment === SEGMENTS.DONE;
+
+    if (isDoneTask && !isTouchDevice()) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'task-delete-btn';
+        deleteBtn.setAttribute('aria-label', `Delete task: ${task.text}`);
+        deleteBtn.textContent = '✕';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (callbacks.onSwipeDelete) {
+                callbacks.onSwipeDelete(task.id, task.segment);
+            }
+        });
+        // Add delete button inline in textSpan, right after text/recurring icon
+        textSpan.appendChild(deleteBtn);
+    }
+
     content.appendChild(textSpan);
 
     // Add completion timestamp for Done! segment
@@ -104,24 +123,6 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
 
     div.appendChild(checkbox);
     div.appendChild(content);
-
-    // Add delete button for easy access (only for Done tasks on desktop)
-    const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    const isDoneTask = task.segment === SEGMENTS.DONE;
-
-    if (isDoneTask && !isTouchDevice()) {
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'task-delete-btn';
-        deleteBtn.setAttribute('aria-label', `Delete task: ${task.text}`);
-        deleteBtn.textContent = '✕';
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (callbacks.onSwipeDelete) {
-                callbacks.onSwipeDelete(task.id, task.segment);
-            }
-        });
-        div.appendChild(deleteBtn);
-    }
 
     // Setup Drag & Drop 2.0 with DragManager
     if (callbacks.onDragEnd || callbacks.onSwipeDelete) {
