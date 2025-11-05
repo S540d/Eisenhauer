@@ -343,9 +343,8 @@ header h1,
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: space-between;
     gap: 8px;
-    flex-direction: row-reverse;
 }
 
 .q1 .segment-header { border-color: #1f2937; }
