@@ -782,7 +782,10 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
         let recurringConfig = null;
         if (quickRecurringEnabled.checked) {
             const selectedType = document.querySelector('input[name="quickRecurringType"]:checked')?.value;
-            recurringConfig = { type: selectedType };
+            recurringConfig = {
+                enabled: true,
+                interval: selectedType  // 'daily', 'weekly', 'monthly', 'custom'
+            };
 
             if (selectedType === 'weekly') {
                 const weekdays = Array.from(document.querySelectorAll('#quickWeekdaysContainer .weekday-check:checked'))
@@ -795,7 +798,7 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
                 recurringConfig.dayOfMonth = monthDay;
             } else if (selectedType === 'custom') {
                 const customDays = parseInt(document.getElementById('quickCustomDays')?.value || 1);
-                recurringConfig.interval = customDays;
+                recurringConfig.customDays = customDays;
             }
         }
 
