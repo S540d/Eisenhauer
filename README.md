@@ -2,7 +2,7 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.5.0
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.6.0
 
 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 🔧 **[Installation](INSTALL.md)**
 
@@ -17,8 +17,10 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 
 ### Kernfunktionen
 - ✅ Aufgaben mit max. 140 Zeichen erstellen
-- ✅ **Wiederkehrende Aufgaben** - Automatische Neuerstellung nach Abschluss
+- ✅ **Wiederkehrende Aufgaben** - Zeitbasierte automatische Neuerstellung (⭐ NEU: v1.6.0)
   - Täglich, Wöchentlich, Monatlich oder Benutzerdefiniert
+  - Erscheinen erst, wenn sie fällig sind (z.B. täglich morgen um 00:00)
+  - Serie komplett löschen via Edit-Modal
   - Flexible Intervall-Konfiguration
 - ✅ Automatisches Weiterschieben in nächste Kategorie (↓ Button)
 - ✅ Checkboxen zum Abhaken (verschiebt automatisch zu "Done!")
