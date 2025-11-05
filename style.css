@@ -1663,3 +1663,39 @@ body.dark-mode .settings-export-btn {
 body.dark-mode .settings-export-btn:hover {
     background-color: #7b8ef4;
 }
+
+/* Sign Out Button - Destructive Style */
+.settings-signout-btn {
+    width: 100%;
+    padding: 10px 16px;
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.settings-signout-btn:hover {
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.settings-signout-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(239, 68, 68, 0.2);
+}
+
+body.dark-mode .settings-signout-btn {
+    background-color: #ef4444;
+}
+
+body.dark-mode .settings-signout-btn:hover {
+    background-color: #f87171;
+}

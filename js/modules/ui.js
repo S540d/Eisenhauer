@@ -344,6 +344,38 @@ export function openSettingsModal(currentUser, version, buildDate, isGuestMode =
 
     console.log('Opening settings modal...');
 
+    // Show/hide account section based on authentication state
+    const accountSection = document.getElementById('accountSection');
+    const accountSeparator = document.getElementById('accountSeparator');
+    const signOutBtn = document.getElementById('signOutBtn');
+
+    if (currentUser && !isGuestMode) {
+        // User is authenticated - show sign out button
+        if (accountSection) accountSection.style.display = 'block';
+        if (accountSeparator) accountSeparator.style.display = 'block';
+
+        // Setup sign out button event listener
+        if (signOutBtn) {
+            // Remove old listener by cloning (prevent duplicate listeners)
+            const newSignOutBtn = signOutBtn.cloneNode(true);
+            signOutBtn.parentNode.replaceChild(newSignOutBtn, signOutBtn);
+
+            // Add new listener
+            newSignOutBtn.addEventListener('click', () => {
+                console.log('Sign out button clicked');
+                if (window.signOut) {
+                    window.signOut();
+                } else {
+                    console.error('signOut function not available');
+                }
+            });
+        }
+    } else {
+        // Guest mode or not authenticated - hide sign out button
+        if (accountSection) accountSection.style.display = 'none';
+        if (accountSeparator) accountSeparator.style.display = 'none';
+    }
+
     settingsModal.classList.remove('hidden');
     settingsModal.classList.add('active');
     settingsModal.style.display = 'flex';
