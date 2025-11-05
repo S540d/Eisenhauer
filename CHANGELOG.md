@@ -7,6 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2025-11-05
+
+### ✨ New Features
+
+#### Time-Based Recurring Tasks
+- **Smart Scheduling:** Recurring tasks now appear only when they're actually due
+  - **Daily tasks:** Appear tomorrow at 00:00, not immediately after completion
+  - **Weekly tasks:** Appear on the next selected weekday (e.g., next Monday)
+  - **Monthly tasks:** Appear on the same day next month
+  - **Custom interval:** Appear after X days from completion
+- **Predictable Behavior:** No more confusion with tasks appearing immediately after checking them off
+
+#### Delete Recurring Series
+- **Complete Deletion:** New option to permanently delete recurring tasks
+- **Edit Modal Options:**
+  - Remove recurring (convert to one-time task)
+  - Update recurring settings
+  - **Delete task permanently** ✨ NEW
+- **Clean Management:** Easy way to stop unwanted recurring tasks completely
+
+### 🎨 UI/UX Improvements
+
+#### Compact Edit Recurring Modal
+- **Tighter Layout:** Reduced padding (25px → 18px) and margins throughout
+- **Smaller Font Sizes:** More information in less space (0.85rem, 0.8rem)
+- **Consistent Spacing:** All elements use uniform 8-12px gaps
+- **Max-width:** 420px for focused, compact appearance
+
+#### Recurring Task Icon
+- **Smaller Size:** Icon reduced from 20px to 12px (matches timestamp size)
+- **Better Integration:** Visual weight matches "Done" timestamp
+- **Proportional Styling:** Stroke width adjusted to 1.5 (from 2.5)
+
+#### Dark Mode Fixes
+- **Readable Labels:** All checkbox and radio labels now visible in dark mode
+- **Consistent Colors:** Explicit text-primary colors for all form elements
+- **No More Black on Black:** Fixed recurring modal text visibility issues
+
+#### Settings Menu
+- **Sign-Out Improvements:** Button appears for both Firebase and guest mode users
+- **Gray Buttons:** Unified button styling (no more colored buttons)
+- **Clean Font:** Uses app's standard font family throughout
+
+### 🔧 Technical Improvements
+
+#### Recurring Task Architecture
+- **`calculateNextOccurrence()`:** New function calculates exact due dates
+- **Future Timestamps:** Tasks store `createdAt` in the future
+- **Filtered Rendering:** `getTasks()` only returns tasks where `createdAt <= Date.now()`
+- **Automatic Appearance:** Tasks automatically show when they become due
+
+#### Bug Fixes
+- **Recurring Icon Visibility:** Fixed critical bug where tasks weren't marked as recurring
+  - Wrong config structure: `{ type: selectedType }`
+  - Correct structure: `{ enabled: true, interval: selectedType }`
+- **Completed Tasks:** Recurring flag now removed from completed instances
+- **No More Confusion:** Done tasks appear without recurring icons
+
+### 📝 Changes from This Release
+
+- **3 Major Features:** Time-based scheduling, delete series, compact modal
+- **5 UI Refinements:** Smaller icon, dark mode fixes, gray buttons, layout improvements
+- **2 Critical Fixes:** Recurring creation bug, completed task recurring flag
+- **Clean Separation:** Active recurring tasks have icon, completed instances don't
+
+---
+
 ## [1.5.0] - 2025-10-18
 
 ### ✨ New Features
