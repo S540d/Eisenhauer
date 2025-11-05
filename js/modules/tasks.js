@@ -185,6 +185,12 @@ export function toggleTask(taskId, segmentId, saveCallback = null) {
         // Move original task to Done segment
         tasks[segmentId].splice(taskIndex, 1);
 
+        // Remove recurring config from completed instance
+        // (completed tasks should appear as normal tasks in Done segment, not as recurring)
+        if (task.recurring) {
+            delete task.recurring;
+        }
+
         task.segment = SEGMENTS.DONE;
         task.checked = true;
         task.completedAt = Date.now(); // Track completion time for productivity statistics
