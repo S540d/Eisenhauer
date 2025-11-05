@@ -575,6 +575,26 @@ window.onAuthStateChanged = async function(user, firebaseDb, guestMode = false) 
 async function initApp() {
     console.log('🚀 Initializing Eisenhauer Matrix (Modular)...');
 
+    // Initialize theme from localStorage (before anything visual loads)
+    const savedTheme = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
+    if (savedTheme === 'true') {
+        // User explicitly chose dark mode
+        document.body.classList.add('dark-mode');
+    } else if (savedTheme === null) {
+        // No preference saved - use system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+            document.body.classList.add('dark-mode');
+        }
+    }
+    // If savedTheme === 'false', stay in light mode (do nothing)
+
+    // Initialize language from localStorage
+    const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+    if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
+        setLanguage(savedLanguage);
+    }
+
     // Load version
     await initVersion();
 

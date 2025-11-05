@@ -344,13 +344,43 @@ export function openSettingsModal(currentUser, version, buildDate, isGuestMode =
 
     console.log('Opening settings modal...');
 
+    // Update theme toggle button active state based on current theme
+    const themeButtons = document.querySelectorAll('.theme-btn');
+    const savedTheme = localStorage.getItem('darkMode');
+    let activeTheme = 'system'; // Default to system
+
+    if (savedTheme === 'true') {
+        activeTheme = 'dark';
+    } else if (savedTheme === null) {
+        activeTheme = 'system';
+    }
+
+    themeButtons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.theme === activeTheme) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Update language toggle button active state
+    const langButtons = document.querySelectorAll('.lang-btn');
+    const savedLanguage = localStorage.getItem('language') || 'en';
+
+    langButtons.forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.lang === savedLanguage) {
+            btn.classList.add('active');
+        }
+    });
+
     // Show/hide account section based on authentication state
     const accountSection = document.getElementById('accountSection');
     const accountSeparator = document.getElementById('accountSeparator');
     const signOutBtn = document.getElementById('signOutBtn');
 
-    if (currentUser && !isGuestMode) {
-        // User is authenticated - show sign out button
+    // Show sign out button for both Firebase login and guest mode
+    if (currentUser || isGuestMode) {
+        // User is authenticated (Firebase) or in guest mode (local) - show sign out button
         if (accountSection) accountSection.style.display = 'block';
         if (accountSeparator) accountSeparator.style.display = 'block';
 
@@ -371,7 +401,7 @@ export function openSettingsModal(currentUser, version, buildDate, isGuestMode =
             });
         }
     } else {
-        // Guest mode or not authenticated - hide sign out button
+        // Not in app yet - hide sign out button
         if (accountSection) accountSection.style.display = 'none';
         if (accountSeparator) accountSeparator.style.display = 'none';
     }
