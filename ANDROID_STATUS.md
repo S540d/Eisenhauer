@@ -290,13 +290,14 @@ Bei Problemen oder Fragen:
 - ✅ Umfassende Dokumentation vorhanden
 
 **Was noch zu tun ist:**
-- ⚠️ Keystore generieren (10 Min)
-- ⚠️ Digital Asset Links finalisieren (5 Min)
-- ⚠️ Icons vorbereiten (30 Min)
-- ⚠️ Erste Builds testen (30 Min)
+- ⚠️ Keystore-Backup erstellen (2 Min) ← KRITISCH!
 - ⚠️ Play Store Assets erstellen (2-3 Stunden)
+  - Screenshots (min. 2)
+  - Feature Graphic (1024x500)
+  - Store Listing Text
+- ⚠️ AAB zum Play Store hochladen
 
-**Geschätzte Zeit bis Launch-Ready:** 4-5 Stunden Arbeit + Google Review (1-7 Tage)
+**Geschätzte Zeit bis Launch-Ready:** Backup jetzt (2 Min), dann Store Listing später (2-3 Stunden) + Google Review (1-7 Tage)
 
 ---
 
