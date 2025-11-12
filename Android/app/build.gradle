@@ -1,0 +1,68 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.sven4321.eisenhauer'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.sven4321.eisenhauer"
+        minSdk 21  // Android 5.0 Lollipop (per project-templates requirement)
+        targetSdk 34
+        versionCode 1
+        versionName "1.6.0"  // Match PWA version
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(project.hasProperty('SIGNING_KEY_STORE_PATH')
+                ? project.property('SIGNING_KEY_STORE_PATH')
+                : System.getenv('SIGNING_KEY_STORE_PATH'))
+            storePassword project.hasProperty('SIGNING_STORE_PASSWORD')
+                ? project.property('SIGNING_STORE_PASSWORD')
+                : System.getenv('SIGNING_STORE_PASSWORD')
+            keyAlias project.hasProperty('SIGNING_KEY_ALIAS')
+                ? project.property('SIGNING_KEY_ALIAS')
+                : System.getenv('SIGNING_KEY_ALIAS')
+            keyPassword project.hasProperty('SIGNING_KEY_PASSWORD')
+                ? project.property('SIGNING_KEY_PASSWORD')
+                : System.getenv('SIGNING_KEY_PASSWORD')
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-DEBUG"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // AndroidX Core
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.browser:browser:1.7.0'
+
+    // Google Android Browser Helper - TWA Support
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}

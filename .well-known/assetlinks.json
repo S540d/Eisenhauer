@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sven4321.eisenhauer",
+      "sha256_cert_fingerprints": [
+        "76:D6:96:79:8A:94:C1:9F:7C:8F:6B:69:BE:EA:C0:24:95:78:07:90:EC:C1:CE:ED:D0:16:71:34:5A:05:78:82"
+      ]
+    }
+  }
+]

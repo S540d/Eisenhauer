@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Eisenhauer Matrix</string>
+    <string name="app_short_name">Eisenhauer</string>
+    <string name="app_description">Task Management nach der Eisenhauer-Matrix-Methode</string>
+
+    <!-- TWA Configuration -->
+    <string name="twa_url">https://s540d.github.io/Eisenhauer/</string>
+    <string name="asset_statements">
+        [{
+            \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+            \"target\": {
+                \"namespace\": \"web\",
+                \"site\": \"https://s540d.github.io\"
+            }
+        }]
+    </string>
+</resources>
