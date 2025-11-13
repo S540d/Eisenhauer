@@ -33,7 +33,7 @@ Bevor du die App auf iOS installierst, musst du die App-Icons generieren:
    - Lade alle Dateien auf einen Webserver hoch (z.B. GitHub Pages, Netlify, Vercel)
    - ODER nutze einen lokalen Server für Tests:
      ```bash
-     cd kleines-langweiliges-Testprojekt
+     cd Eisenhauer
      python3 -m http.server 8000
      # Dann im iPhone-Safari: http://[deine-ip]:8000
      ```
@@ -73,7 +73,7 @@ Bevor du die App auf iOS installierst, musst du die App-Icons generieren:
 So hostest du die App kostenlos auf GitHub Pages:
 
 1. **Repository Settings öffnen:**
-   - Gehe zu: https://github.com/S540d/kleines-langweiliges-Testprojekt
+   - Gehe zu: https://github.com/S540d/Eisenhauer
    - Klicke auf "Settings"
 
 2. **GitHub Pages aktivieren:**
@@ -83,7 +83,7 @@ So hostest du die App kostenlos auf GitHub Pages:
 
 3. **Warte auf Deployment:**
    - Nach ca. 1-2 Minuten ist die App verfügbar unter:
-   - `https://s540d.github.io/kleines-langweiliges-Testprojekt/`
+   - `https://s540d.github.io/Eisenhauer/`
 
 4. **Diese URL auf dem iPhone öffnen und installieren!**
 

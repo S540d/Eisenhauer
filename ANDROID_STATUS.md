@@ -2,7 +2,7 @@
 
 **Projekt:** Eisenhauer Matrix - Android TWA für Google Play Store
 **Erstellt:** 2025-11-12
-**Status:** ✅ TWA-Projekt erstellt, bereit für Build & Testing
+**Status:** ✅ Play Store Eintrag erstellt, Store Listing in Arbeit
 
 ---
 
@@ -55,6 +55,144 @@ Android/
 - **Minimum SDK:** 21 (Android 5.0 Lollipop)
 - **PWA URL:** https://s540d.github.io/Eisenhauer/
 - **Version:** 1.6.0 (synchronized mit PWA)
+
+---
+
+## 🎯 Play Store Listing
+
+### Kurzbeschreibung (80 Zeichen max.)
+```
+Aufgaben priorisieren mit der Eisenhauer-Matrix. Produktiv & fokussiert.
+```
+
+### Langbeschreibung (4000 Zeichen max.)
+```
+🎯 Eisenhauer Matrix - Smarte Aufgabenverwaltung
+
+Organisiere deine Aufgaben nach dem bewährten Eisenhauer-Prinzip: Unterscheide zwischen wichtig und dringend, und erreiche deine Ziele fokussiert und stressfrei.
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+✨ KERNFUNKTIONEN
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 DIE 4 QUADRANTEN
+• Do! - Dringend & Wichtig (sofort erledigen)
+• Schedule! - Wichtig, aber nicht dringend (planen)
+• Delegate! - Dringend, aber nicht wichtig (delegieren)
+• Ignore! - Weder dringend noch wichtig (eliminieren)
+• Done! - Erledigte Aufgaben
+
+🔄 WIEDERKEHRENDE AUFGABEN
+• Täglich, wöchentlich, monatlich oder benutzerdefiniert
+• Erscheinen automatisch, wenn sie fällig sind
+• Perfekt für Routinen und Gewohnheiten
+
+☁️ CLOUD-SYNCHRONISATION
+• Synchronisiere deine Aufgaben über alle Geräte
+• Google Sign-In für schnellen Zugriff
+• Oder nutze die App ohne Anmeldung (Gastmodus)
+
+📴 OFFLINE-MODUS
+• Funktioniert auch ohne Internetverbindung
+• Änderungen werden automatisch synchronisiert
+• Deine Daten sind immer sicher gespeichert
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 BEDIENKOMFORT
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Drag & Drop zwischen Quadranten
+• Swipe-to-Delete auf dem Smartphone
+• Checkbox zum schnellen Abhaken
+• Dark Mode für angenehmes Arbeiten
+• Kompaktes, übersichtliches Design
+
+♿ BARRIEREFREIHEIT
+• Vollständige Tastatursteuerung
+• Screen Reader Unterstützung
+• WCAG 2.1 Level AA konform
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+💾 DATENMANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Export/Import als JSON-Backup
+• Suche durch alle Aufgaben
+• Sichere Speicherung in der Cloud oder lokal
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 DIE EISENHOWER-METHODE
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+Entwickelt vom 34. US-Präsidenten Dwight D. Eisenhower, hilft dir diese Methode:
+
+✓ Wichtiges von Unwichtigem zu trennen
+✓ Prioritäten klar zu setzen
+✓ Stress zu reduzieren
+✓ Produktiver zu arbeiten
+✓ Zeit für das Wesentliche zu haben
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+🔒 DATENSCHUTZ & SICHERHEIT
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Deine Daten gehören dir
+• Sichere Firebase-Verschlüsselung
+• Keine Werbung, keine Tracker
+• Open Source (GitHub: S540d/Eisenhauer)
+
+━━━━━━━━━━━━━━━━━━━━━━━━
+✨ PERFEKT FÜR
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Berufstätige mit vielen Projekten
+• Studierende im Prüfungsstress
+• Selbstständige und Freelancer
+• Alle, die produktiver werden wollen
+
+Starte jetzt mit der Eisenhauer Matrix und bring Struktur in deinen Alltag!
+
+Made with ❤️ | MIT License | Kostenfrei & werbefrei
+```
+
+### Assets (Grafiken)
+
+#### ✅ Automatisch generiert
+Alle Assets wurden mit Python-Script automatisch erstellt:
+
+```bash
+cd Android
+python3 generate-playstore-assets.py
+```
+
+**Generierte Dateien:**
+- ✅ **Feature Graphic** (1024x500px) → `Android/playstore-assets/feature-graphic.png`
+- ✅ **App-Icon** (512x512px) → `Android/playstore-assets/app-icon-512.png`
+- ✅ **Screenshot-Template** → `Android/playstore-assets/screenshot-frame-template.png`
+- ✅ **README mit Anleitung** → `Android/playstore-assets/README.md`
+
+#### ⚠️ Screenshots manuell erstellen
+Screenshots müssen manuell von der Live-App erstellt werden:
+
+**Empfohlene Methode (Browser):**
+1. Öffne https://s540d.github.io/Eisenhauer/ im Chrome/Edge
+2. Developer Tools (F12) → Device Toolbar (Cmd+Shift+M)
+3. iPhone 14 Pro Max auswählen (oder Custom: 1080x1920)
+4. Beispiel-Aufgaben in alle 4 Quadranten einfügen (siehe `playstore-assets/README.md`)
+5. Screenshot erstellen: Cmd+Shift+P → "Capture screenshot"
+6. Mindestens 2 Screenshots, maximal 8
+
+**Alternative (Automatisch, experimentell):**
+```bash
+cd Android
+pip3 install selenium pillow webdriver-manager
+python3 create-screenshots.py
+```
+
+**Benötigte Screenshots:**
+1. Hauptansicht mit Aufgaben in allen 4 Quadranten (PFLICHT)
+2. Dark Mode Ansicht (EMPFOHLEN)
+3. Optional: Aufgabe hinzufügen, Drag & Drop, Wiederkehrende Aufgaben
 
 ---
 
@@ -197,6 +335,7 @@ Siehe **Android/PLAYSTORE_CHECKLIST.md** für:
 
 Drucke diese Liste aus und hake ab:
 
+### Phase 1: Setup & Build
 - [ ] Gradle Wrapper initialisiert
 - [ ] Keystore generiert (`eisenhauer-release.keystore`)
 - [ ] Keystore-Backup erstellt (USB/Cloud)
@@ -212,11 +351,32 @@ Drucke diese Liste aus und hake ab:
 - [ ] AAB Build erfolgreich
 - [ ] Debug APK auf Gerät getestet
 - [ ] TWA Full-Screen funktioniert
-- [ ] Screenshots erstellt
-- [ ] Feature Graphic erstellt
-- [ ] Play Console Account aktiviert
-- [ ] Store Listing vorbereitet
+
+### Phase 2: Play Store Listing
+- [x] Play Console Account aktiviert
+- [x] App-Eintrag im Play Store angelegt
+- [x] Kurzbeschreibung verfasst (80 Zeichen)
+- [x] Langbeschreibung verfasst (4000 Zeichen)
+- [x] Feature Graphic erstellt (1024x500px)
+- [x] App-Icon erstellt (512x512px)
+- [x] Python-Scripts für Assets erstellt
+- [ ] Kurzbeschreibung im Play Store eingetragen
+- [ ] Langbeschreibung im Play Store eingetragen
+- [ ] App-Kategorie ausgewählt (Produktivität)
+- [ ] Screenshots erstellt (min. 2)
+- [ ] Screenshots hochgeladen
+- [ ] Feature Graphic hochgeladen
+- [ ] App-Icon hochgeladen
+- [ ] Content Rating Fragebogen ausgefüllt
+- [ ] Datenschutzerklärung URL hinzugefügt
+
+### Phase 3: Testing & Launch
 - [ ] AAB hochgeladen
+- [ ] Internal Testing Track konfiguriert
+- [ ] Tester eingeladen
+- [ ] Testing Phase abgeschlossen
+- [ ] Production Release erstellt
+- [ ] Google Review abwarten (1-7 Tage)
 - [ ] Launch! 🚀
 
 ---
@@ -228,11 +388,16 @@ Basierend auf **project-templates/GOOGLE_PLAY_STORE_ROADMAP.md**:
 | Phase | Dauer | Tasks | Status |
 |-------|-------|-------|--------|
 | **Phase 1: Setup** | Woche 1-2 | Keystore, Digital Asset Links, Icons, Erste Builds | ⚠️ In Progress |
-| **Phase 2: Store Listing** | Woche 3-4 | Screenshots, Feature Graphic, Store Text | 🔲 Pending |
+| **Phase 2: Store Listing** | Woche 3-4 | Screenshots, Feature Graphic, Store Text | ⚠️ In Progress (Text fertig) |
 | **Phase 3: Testing & Launch** | Woche 5-6 | Testing, AAB Upload, Google Review | 🔲 Pending |
 | **Phase 4: Monitoring** | Woche 7+ | Crash Reports, Reviews, Updates | 🔲 Pending |
 
 **ETA Launch:** ~6 Wochen ab heute (ca. Dezember 2025)
+
+**Aktueller Stand (2025-11-13):**
+- ✅ Play Store Eintrag angelegt
+- ✅ Kurz- und Langbeschreibung verfasst
+- ⚠️ Nächste Schritte: Keystore generieren, AAB bauen, Screenshots erstellen
 
 ---
 
@@ -288,16 +453,33 @@ Bei Problemen oder Fragen:
 - ✅ PWA ist production-ready und live
 - ✅ Build-System konfiguriert (Gradle 8.2)
 - ✅ Umfassende Dokumentation vorhanden
+- ✅ Play Store Eintrag angelegt
+- ✅ Store Listing Text verfasst (Kurz- & Langbeschreibung)
+- ✅ Feature Graphic automatisch generiert (1024x500px)
+- ✅ App-Icon für Play Store generiert (512x512px)
+- ✅ Python-Scripts für Asset-Generierung erstellt
 
 **Was noch zu tun ist:**
-- ⚠️ Keystore-Backup erstellen (2 Min) ← KRITISCH!
-- ⚠️ Play Store Assets erstellen (2-3 Stunden)
-  - Screenshots (min. 2)
-  - Feature Graphic (1024x500)
-  - Store Listing Text
+- ⚠️ Keystore generieren & Backup erstellen (10 Min) ← KRITISCH!
+- ⚠️ Digital Asset Links mit echtem SHA-256 aktualisieren
+- ⚠️ AAB Build erstellen
+- ⚠️ Screenshots erstellen (min. 2)
+  - Browser Developer Tools verwenden
+  - Oder: Automatisches Script nutzen
+  - Beispiel-Aufgaben einfügen (siehe playstore-assets/README.md)
+- ⚠️ Store Listing im Play Store vervollständigen
+  - Texte eintragen
+  - Assets hochladen (Feature Graphic, Icon, Screenshots)
+  - Content Rating ausfüllen
+  - Datenschutzerklärung verlinken
 - ⚠️ AAB zum Play Store hochladen
 
-**Geschätzte Zeit bis Launch-Ready:** Backup jetzt (2 Min), dann Store Listing später (2-3 Stunden) + Google Review (1-7 Tage)
+**Geschätzte Zeit bis Launch-Ready:**
+- Technical Setup (Keystore, Build): ~1 Stunde
+- Screenshots erstellen: ~30 Minuten
+- Store Listing vervollständigen: ~30 Minuten
+- Google Review: 1-7 Tage
+- **Total: ~1 Woche** (inkl. Google Review, da Graphics bereits fertig)
 
 ---
 
@@ -305,4 +487,4 @@ Bei Problemen oder Fragen:
 
 ---
 
-**Last Updated:** 2025-11-12
+**Last Updated:** 2025-11-13

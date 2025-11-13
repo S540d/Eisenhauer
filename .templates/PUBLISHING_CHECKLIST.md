@@ -14,11 +14,11 @@
     - "SChließen" Taste
     -  "Über" (hut im Projekt Pflanzkalender gelöst): App Name, Version oder Datum, Feedback:devsven@posteo.de
     - Lizenz (gut im Projekt Pflanzkalender gelöst), wenn Daten von Dritten verwendet werden
-- bymeacoffee- Link in die Fusszeile der Hauptseite: support me: https://buymeacoffee.com/sven4321 (kaffeetassensymbol + „Support me“ als Link) in gelbem Kasten, Die Fußzeile soll immer sichtbar sein, egal wie gescrollt wird
+- ~~bymeacoffee- Link in die Fusszeile der Hauptseite~~ **VERALTET** - Support-Link nur im Settings-Menü (siehe ux-vorgaben.md)
 - **App-Name**: NICHT im Header anzeigen, sondern nur in den Settings-Modal oben als erste Zeile
 - **Settings-Modal**: Kompakte Darstellung mit moderaten Abständen zwischen Elementen (nicht zu eng, aber auch nicht zu weit) 
 - Es soll - sofern irgendwo ein Icon verwendet wird, jenes sein, das im jeweiligen Projekt unter "icon.png" abgelegt ist
-- außer der Teetasse vor dem Footer mit "support me" soll nirgendswo ein Emoji auftauchen. Erst recht nicht in Zusammenhang mit einem Wort
+- Emojis sparsam verwenden, nicht in Zusammenhang mit Wörtern
 - **Settings-Icon**: Ausschließlich SVG-basierte drei Punkte verwenden (siehe Implementierung in Eisenhauer/index.html)
 
 
@@ -145,7 +145,7 @@ const handleExportData = async () => {
 <View style={[styles.footer, { backgroundColor: theme.background }]}>
   <TouchableOpacity 
     style={[styles.supportButton, { backgroundColor: '#FFD700' }]}
-    onPress={() => Linking.openURL('https://buymeacoffee.com/sven4321')}
+    onPress={() => Linking.openURL('https://ko-fi.com/devsven')}
   >
     <Text style={styles.coffeeIcon}>☕</Text>
     <Text style={styles.supportText}>Support me</Text>
@@ -377,7 +377,7 @@ console.log('✓ Fixed paths for GitHub Pages');
 ### Phase 2: Erweiterte Features (✅ Erfolgreich in Pflanzkalender implementiert)  
 5. **Metrik-Ansicht hinzufügen**: Projekt-spezifische Statistiken
 6. **JSON-Export implementieren**: Daten-Export-Funktionalität
-7. **Footer mit Support-Link**: Sticky buymeacoffee-Link in gelbem Kasten
+7. **~~Footer mit Support-Link~~**: **VERALTET** - Support-Link nur im Settings-Menü (siehe ux-vorgaben.md)
 
 ### Phase 3: Code-Cleanup & Deployment
 8. **Dependencies aktualisieren**: Benötigte Pakete installieren

@@ -273,7 +273,7 @@ Das Settings-Menü muss folgende Struktur haben, in dieser Reihenfolge:
 4. **Feedback und Support**
    - Single Link: "Send Feedback" mit Action: `mailto:feedback@example.com`
    - Plain Text, kein Emoji
-   - Single Link: "Buy Me a Coffee" zur URL `https://buymeacoffee.com/sven4321`
+   - Single Link: "support me" zur URL `https://ko-fi.com/devsven`
    - Plain Text, kein Emoji
 
 5. **About**
