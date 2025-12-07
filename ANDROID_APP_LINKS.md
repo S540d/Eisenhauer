@@ -52,7 +52,7 @@ mkdir -p public/.well-known
       "namespace": "android_app",
       "package_name": "com.yourcompany.yourapp",
       "sha256_cert_fingerprints": [
-        "SHA256_FROM_PLAY_CONSOLE"
+        "C9:B7:5C:A8:F4:23:48:5D:D6:E3:87:EB:9A:13:5B:4F:B8:24:A4:AE:E5:56:9C:58:56:E6:E6:AE:73:C4:BB:78"
       ]
     }
   }
@@ -130,7 +130,7 @@ npm run deploy
 2. Wähle deine App
 3. **Setup → App-Integrität → App signing key certificate**
 4. Kopiere den **SHA-256 Zertifikatfingerabdruck**
-5. Entferne die Doppelpunkte: `AA:BB:CC` → `AABBCC`
+5. **BEHALTE die Doppelpunkte!** Format: `C9:B7:5C:A8:...`
 6. Trage ihn in `assetlinks.json` ein
 7. Deploye erneut: `npm run deploy`
 
@@ -275,7 +275,7 @@ touch public/.nojekyll
 
 **Lösung:**
 1. Aktuellen Fingerabdruck aus Play Console holen
-2. **OHNE Doppelpunkte** eintragen
+2. **MIT Doppelpunkten** eintragen (Format: `C9:B7:5C:A8:...`)
 3. Neu deployen
 
 ### ❌ "Intent-Filter werden ignoriert"
