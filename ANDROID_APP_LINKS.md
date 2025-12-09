@@ -16,6 +16,27 @@ Android App Links ermöglichen es, dass beim Klicken auf einen Website-Link auto
 
 ---
 
+## ⚠️ WICHTIG: GitHub Pages mit mehreren Apps
+
+**Wenn du mehrere Apps auf derselben GitHub Pages Domain hostest (z.B. `s540d.github.io`):**
+
+1. Die `assetlinks.json` muss im **ROOT-Repository** (`S540d.github.io`) liegen
+2. Pfad: `https://s540d.github.io/.well-known/assetlinks.json` (NICHT im Unterverzeichnis!)
+3. Die Datei muss **alle Apps** der Domain enthalten (z.B. Trainer1x1, EnergyPriceGermany, Eisenhauer)
+
+**Warum?** Android sucht die assetlinks.json am **Host** (`android:host="s540d.github.io"`), nicht am vollständigen Pfad. Daher wird nur die Datei im Root-Verzeichnis verwendet.
+
+**Beispiel Root assetlinks.json:**
+```json
+[
+  { "package_name": "com.sven4321.trainer1x1", ... },
+  { "package_name": "com.sven4321.energypricegermany", ... },
+  { "package_name": "com.sven4321.eisenhauer", ... }
+]
+```
+
+---
+
 ## ✅ Checkliste
 
 ### 1. **Digital Asset Links** (Website)
@@ -269,6 +290,23 @@ touch public/.nojekyll
 }
 ```
 
+### ❌ "App fehlt in assetlinks.json" (Mehrere Apps auf einer Domain)
+
+**Problem:** Bei GitHub Pages mit mehreren Apps wird nur die Root assetlinks.json verwendet
+
+**Symptome:**
+- Play Store schlägt eine assetlinks.json vor, die identisch mit deiner ist
+- Deep Links funktionieren für andere Apps, aber nicht für diese
+
+**Lösung:**
+1. Öffne das **Root-Repository** (z.B. `S540d.github.io`)
+2. Bearbeite `.well-known/assetlinks.json` im Root
+3. Füge den Eintrag für die fehlende App hinzu
+4. Pushe zum Root-Repository
+5. Warte 1-24h auf Play Store Validierung
+
+**Wichtig:** Die assetlinks.json im Projekt-Unterverzeichnis wird **nicht** verwendet!
+
 ### ❌ "SHA-256 Fingerabdruck stimmt nicht überein"
 
 **Problem:** Falscher oder alter Fingerabdruck in assetlinks.json
@@ -292,20 +330,22 @@ touch public/.nojekyll
 
 ## 📊 Beispiel-Projekte
 
+**Wichtig:** Alle drei Apps verwenden die **gemeinsame Root assetlinks.json**: https://s540d.github.io/.well-known/assetlinks.json
+
 ### EnergyPriceGermany (Expo)
 - **URL:** https://s540d.github.io/Energy_Price_Germany/
 - **Package:** com.sven4321.energypricegermany
-- **assetlinks.json:** [Link](https://s540d.github.io/Energy_Price_Germany/.well-known/assetlinks.json)
+- **Status:** ✅ In Root assetlinks.json
 
 ### 1x1_Trainer (Expo)
 - **URL:** https://s540d.github.io/1x1_Trainer/
 - **Package:** com.sven4321.trainer1x1
-- **assetlinks.json:** [Link](https://s540d.github.io/1x1_Trainer/.well-known/assetlinks.json)
+- **Status:** ✅ In Root assetlinks.json
 
 ### Eisenhauer (TWA)
 - **URL:** https://s540d.github.io/Eisenhauer/
 - **Package:** com.sven4321.eisenhauer
-- **assetlinks.json:** [Link](https://s540d.github.io/Eisenhauer/.well-known/assetlinks.json)
+- **Status:** ✅ In Root assetlinks.json
 
 ---
 
