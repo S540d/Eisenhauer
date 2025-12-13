@@ -21,7 +21,9 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "validate": "./scripts/validate-release.sh",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
@@ -46,6 +48,7 @@
     "@vitest/coverage-v8": "^1.0.4",
     "@vitest/ui": "^1.0.4",
     "happy-dom": "^12.10.3",
+    "husky": "^9.1.7",
     "vitest": "^1.0.4"
   }
 }
