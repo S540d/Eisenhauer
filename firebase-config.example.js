@@ -14,16 +14,8 @@ const firebaseConfig = {
     measurementId: "YOUR_MEASUREMENT_ID"
 };
 
-// Prüfen ob Firebase SDK geladen wurde
-if (typeof firebase === 'undefined') {
-    console.error('Firebase SDK not loaded!');
-} else {
-    console.log('Firebase SDK loaded successfully');
-}
-
 // Firebase initialisieren
 firebase.initializeApp(firebaseConfig);
-console.log('Firebase initialized');
 
 // Firebase Services
 const auth = firebase.auth();
@@ -40,9 +32,5 @@ const appleProvider = new firebase.auth.OAuthProvider('apple.com');
 // Optional: Offline-Persistenz aktivieren
 db.enablePersistence()
     .catch((err) => {
-        if (err.code == 'failed-precondition') {
-            console.log('Persistence can only be enabled in one tab at a time.');
-        } else if (err.code == 'unimplemented') {
-            console.log('The current browser does not support persistence.');
-        }
+        // Handle persistence errors silently
     });

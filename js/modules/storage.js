@@ -24,66 +24,61 @@ let syncStatusCallback = null;
  * @param {Function} onSyncStatusChange - Optional callback for sync status updates
  */
 export function initStorage(onSyncStatusChange = null) {
-    syncStatusCallback = onSyncStatusChange;
+ syncStatusCallback = onSyncStatusChange;
 
-    // Listen for network status changes
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+ // Listen for network status changes
+ window.addEventListener('online', handleOnline);
+ window.addEventListener('offline', handleOffline);
 
-    // Setup queue event listeners
-    offlineQueue.on('itemProcessed', (item) => {
-        console.log('[Storage] Queue item processed:', item.id);
-        updateSyncStatusUI();
-    });
+ // Setup queue event listeners
+ offlineQueue.on('itemProcessed', (item) => {
+ updateSyncStatusUI();
+ });
 
-    offlineQueue.on('itemFailed', (item, error) => {
-        console.error('[Storage] Queue item failed:', item.id, error);
-        showError(`Sync failed: ${item.operation}`, {
-            duration: 5000,
-            actions: [{
-                label: 'Retry',
-                onClick: () => offlineQueue.processQueue()
-            }]
-        });
-        updateSyncStatusUI();
-    });
+ offlineQueue.on('itemFailed', (item, error) => {
+ showError(`Sync failed: ${item.operation}`, {
+ duration: 5000,
+ actions: [{
+ label: 'Retry',
+ onClick: () => offlineQueue.processQueue()
+ }]
+ });
+ updateSyncStatusUI();
+ });
 
-    offlineQueue.on('queueEmpty', () => {
-        console.log('[Storage] Sync queue empty');
-        showSuccess('All changes synced', 2000);
-        updateSyncStatusUI();
-    });
+ offlineQueue.on('queueEmpty', () => {
+ showSuccess('All changes synced', 2000);
+ updateSyncStatusUI();
+ });
 
-    // Initial status update
-    updateSyncStatusUI();
+ // Initial status update
+ updateSyncStatusUI();
 }
 
 /**
  * Update sync status UI via callback
  */
 function updateSyncStatusUI() {
-    if (syncStatusCallback) {
-        syncStatusCallback(getSyncStatus());
-    }
+ if (syncStatusCallback) {
+ syncStatusCallback(getSyncStatus());
+ }
 }
 
 /**
  * Handle online event - start processing queue
  */
 async function handleOnline() {
-    console.log('[Storage] Network online - processing queue');
-    showInfo('Back online - syncing changes...', 3000);
-    updateSyncStatusUI();
-    await offlineQueue.processQueue();
+ showInfo('Back online - syncing changes...', 3000);
+ updateSyncStatusUI();
+ await offlineQueue.processQueue();
 }
 
 /**
  * Handle offline event
  */
 function handleOffline() {
-    console.log('[Storage] Network offline');
-    showWarning('You are offline - changes will be synced later', { duration: 5000 });
-    updateSyncStatusUI();
+ showWarning('You are offline - changes will be synced later', { duration: 5000 });
+ updateSyncStatusUI();
 }
 
 /**
@@ -91,11 +86,11 @@ function handleOffline() {
  * @returns {object} Queue statistics
  */
 export function getSyncStatus() {
-    return {
-        pendingItems: offlineQueue.getPendingCount(),
-        isProcessing: offlineQueue.isProcessing,
-        isOnline: navigator.onLine
-    };
+ return {
+ pendingItems: offlineQueue.getPendingCount(),
+ isProcessing: offlineQueue.isProcessing,
+ isOnline: navigator.onLine
+ };
 }
 
 /**
@@ -103,11 +98,11 @@ export function getSyncStatus() {
  * @param {object} tasks - Tasks object to save
  */
 export async function saveTasks(tasks) {
-    // Use guest mode saving if in guest mode (delegates to localForage)
-    if (typeof isGuestMode !== 'undefined' && isGuestMode) {
-        await saveGuestTasks(tasks);
-    }
-    // If logged in, tasks are saved to Firestore automatically via individual save functions
+ // Use guest mode saving if in guest mode (delegates to localForage)
+ if (typeof isGuestMode !== 'undefined' && isGuestMode) {
+ await saveGuestTasks(tasks);
+ }
+ // If logged in, tasks are saved to Firestore automatically via individual save functions
 }
 
 /**
@@ -115,12 +110,10 @@ export async function saveTasks(tasks) {
  * @param {object} tasks - Tasks object
  */
 export async function saveGuestTasks(tasks) {
-    try {
-        await localforage.setItem('eisenhauerTasks', tasks);
-        console.log('Guest tasks saved to IndexedDB');
-    } catch (error) {
-        console.error('Error saving guest tasks:', error);
-    }
+ try {
+ await localforage.setItem('eisenhauerTasks', tasks);
+ } catch (error) {
+ }
 }
 
 /**
@@ -128,33 +121,30 @@ export async function saveGuestTasks(tasks) {
  * @returns {Promise<object>} Tasks object
  */
 export async function loadGuestTasks() {
-    try {
-        // Try IndexedDB first (new method)
-        let tasksData = await localforage.getItem('eisenhauerTasks');
+ try {
+ // Try IndexedDB first (new method)
+ let tasksData = await localforage.getItem('eisenhauerTasks');
 
-        // Fallback to localStorage for migration
-        if (!tasksData) {
-            const localTasks = localStorage.getItem('eisenhauerTasks');
-            if (localTasks) {
-                tasksData = JSON.parse(localTasks);
-                // Migrate to IndexedDB
-                await localforage.setItem('eisenhauerTasks', tasksData);
-                localStorage.removeItem('eisenhauerTasks');
-                console.log('Migrated tasks from localStorage to IndexedDB');
-            }
-        }
+ // Fallback to localStorage for migration
+ if (!tasksData) {
+ const localTasks = localStorage.getItem('eisenhauerTasks');
+ if (localTasks) {
+ tasksData = JSON.parse(localTasks);
+ // Migrate to IndexedDB
+ await localforage.setItem('eisenhauerTasks', tasksData);
+ localStorage.removeItem('eisenhauerTasks');
+ }
+ }
 
-        if (tasksData) {
-            console.log('Guest tasks loaded from IndexedDB');
-            return tasksData;
-        }
+ if (tasksData) {
+ return tasksData;
+ }
 
-        // Return empty tasks structure if no data
-        return { 1: [], 2: [], 3: [], 4: [], 5: [] };
-    } catch (error) {
-        console.error('Error loading guest tasks:', error);
-        return { 1: [], 2: [], 3: [], 4: [], 5: [] };
-    }
+ // Return empty tasks structure if no data
+ return { 1: [], 2: [], 3: [], 4: [], 5: [] };
+ } catch (error) {
+ return { 1: [], 2: [], 3: [], 4: [], 5: [] };
+ }
 }
 
 /**
@@ -164,34 +154,31 @@ export async function loadGuestTasks() {
  * @returns {Promise<object>} Tasks object
  */
 export async function loadUserTasks(userId, db) {
-    if (!userId || !db) return { 1: [], 2: [], 3: [], 4: [], 5: [] };
+ if (!userId || !db) return { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
-    try {
-        const snapshot = await db.collection('users')
-            .doc(userId)
-            .collection('tasks')
-            .get();
+ try {
+ const snapshot = await db.collection('users')
+ .doc(userId)
+ .collection('tasks')
+ .get();
 
-        // Initialize empty tasks structure
-        const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+ // Initialize empty tasks structure
+ const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
-        // Load tasks from Firestore
-        snapshot.forEach(doc => {
-            const task = doc.data();
-            task.id = doc.id; // Use Firestore document ID
+ // Load tasks from Firestore
+ snapshot.forEach(doc => {
+ const task = doc.data();
+ task.id = doc.id; // Use Firestore document ID
 
-            // Ensure segment exists
-            if (tasks[task.segment]) {
-                tasks[task.segment].push(task);
-            }
-        });
-
-        console.log('User tasks loaded from Firestore');
-        return tasks;
-    } catch (error) {
-        console.error('Error loading user tasks:', error);
-        return { 1: [], 2: [], 3: [], 4: [], 5: [] };
-    }
+ // Ensure segment exists
+ if (tasks[task.segment]) {
+ tasks[task.segment].push(task);
+ }
+ });
+ return tasks;
+ } catch (error) {
+ return { 1: [], 2: [], 3: [], 4: [], 5: [] };
+ }
 }
 
 /**
@@ -202,43 +189,42 @@ export async function loadUserTasks(userId, db) {
  * @param {object} firebase - Firebase instance
  */
 export async function saveTaskToFirestore(task, userId, db, firebase) {
-    if (!userId || !db) return;
+ if (!userId || !db) return;
 
-    const taskData = {
-        text: task.text,
-        segment: task.segment,
-        checked: task.checked || false,
-        // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
-        createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
-    };
+ const taskData = {
+ text: task.text,
+ segment: task.segment,
+ checked: task.checked || false,
+ // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+ createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+ };
 
-    // Add optional fields
-    if (task.completedAt) {
-        taskData.completedAt = task.completedAt;
-    }
+ // Add optional fields
+ if (task.completedAt) {
+ taskData.completedAt = task.completedAt;
+ }
 
-    if (task.recurring) {
-        taskData.recurring = task.recurring;
-    }
+ if (task.recurring) {
+ taskData.recurring = task.recurring;
+ }
 
-    // Add to offline queue with retry logic
-    await offlineQueue.add(
-        'saveTask',
-        async () => {
-            await db.collection('users')
-                .doc(userId)
-                .collection('tasks')
-                .doc(task.id.toString())
-                .set(taskData);
-            console.log('[Storage] Task saved to Firestore:', task.id);
-        },
-        {
-            taskId: task.id,
-            userId,
-            taskData
-        },
-        3 // maxRetries
-    );
+ // Add to offline queue with retry logic
+ await offlineQueue.add(
+ 'saveTask',
+ async () => {
+ await db.collection('users')
+ .doc(userId)
+ .collection('tasks')
+ .doc(task.id.toString())
+ .set(taskData);
+ },
+ {
+ taskId: task.id,
+ userId,
+ taskData
+ },
+ 3 // maxRetries
+ );
 }
 
 /**
@@ -249,43 +235,42 @@ export async function saveTaskToFirestore(task, userId, db, firebase) {
  * @param {object} firebase - Firebase instance
  */
 export async function updateTaskInFirestore(task, userId, db, firebase) {
-    if (!userId || !db) return;
+ if (!userId || !db) return;
 
-    const updateData = {
-        text: task.text,
-        segment: task.segment,
-        checked: task.checked || false,
-        // Preserve existing createdAt if it exists, otherwise use server timestamp
-        createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
-    };
+ const updateData = {
+ text: task.text,
+ segment: task.segment,
+ checked: task.checked || false,
+ // Preserve existing createdAt if it exists, otherwise use server timestamp
+ createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+ };
 
-    if (task.completedAt) {
-        updateData.completedAt = task.completedAt;
-    }
+ if (task.completedAt) {
+ updateData.completedAt = task.completedAt;
+ }
 
-    if (task.recurring) {
-        updateData.recurring = task.recurring;
-    }
+ if (task.recurring) {
+ updateData.recurring = task.recurring;
+ }
 
-    // Add to offline queue with retry logic
-    await offlineQueue.add(
-        'updateTask',
-        async () => {
-            // Use set with merge:true to handle both new and existing tasks
-            await db.collection('users')
-                .doc(userId)
-                .collection('tasks')
-                .doc(task.id.toString())
-                .set(updateData, { merge: true });
-            console.log('[Storage] Task updated in Firestore:', task.id);
-        },
-        {
-            taskId: task.id,
-            userId,
-            updateData
-        },
-        3 // maxRetries
-    );
+ // Add to offline queue with retry logic
+ await offlineQueue.add(
+ 'updateTask',
+ async () => {
+ // Use set with merge:true to handle both new and existing tasks
+ await db.collection('users')
+ .doc(userId)
+ .collection('tasks')
+ .doc(task.id.toString())
+ .set(updateData, { merge: true });
+ },
+ {
+ taskId: task.id,
+ userId,
+ updateData
+ },
+ 3 // maxRetries
+ );
 }
 
 /**
@@ -295,25 +280,24 @@ export async function updateTaskInFirestore(task, userId, db, firebase) {
  * @param {object} db - Firestore database instance
  */
 export async function deleteTaskFromFirestore(taskId, userId, db) {
-    if (!userId || !db) return;
+ if (!userId || !db) return;
 
-    // Add to offline queue with retry logic
-    await offlineQueue.add(
-        'deleteTask',
-        async () => {
-            await db.collection('users')
-                .doc(userId)
-                .collection('tasks')
-                .doc(taskId.toString())
-                .delete();
-            console.log('[Storage] Task deleted from Firestore:', taskId);
-        },
-        {
-            taskId,
-            userId
-        },
-        3 // maxRetries
-    );
+ // Add to offline queue with retry logic
+ await offlineQueue.add(
+ 'deleteTask',
+ async () => {
+ await db.collection('users')
+ .doc(userId)
+ .collection('tasks')
+ .doc(taskId.toString())
+ .delete();
+ },
+ {
+ taskId,
+ userId
+ },
+ 3 // maxRetries
+ );
 }
 
 /**
@@ -323,63 +307,60 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
  * @param {object} firebase - Firebase instance
  */
 export async function migrateLocalData(userId, db, firebase) {
-    try {
-        // Try to get data from IndexedDB (new method)
-        let tasksData = await localforage.getItem('eisenhauerTasks');
+ try {
+ // Try to get data from IndexedDB (new method)
+ let tasksData = await localforage.getItem('eisenhauerTasks');
 
-        // Fallback to old localStorage for migration
-        if (!tasksData) {
-            const localTasks = localStorage.getItem('eisenhauerTasks');
-            if (localTasks) {
-                tasksData = JSON.parse(localTasks);
-            }
-        }
+ // Fallback to old localStorage for migration
+ if (!tasksData) {
+ const localTasks = localStorage.getItem('eisenhauerTasks');
+ if (localTasks) {
+ tasksData = JSON.parse(localTasks);
+ }
+ }
 
-        if (!tasksData) {
-            console.log('No local data to migrate');
-            return;
-        }
+ if (!tasksData) {
+ return;
+ }
 
-        const batch = db.batch();
-        let taskCount = 0;
+ const batch = db.batch();
+ let taskCount = 0;
 
-        Object.keys(tasksData).forEach(segmentId => {
-            tasksData[segmentId].forEach(task => {
-                const docRef = db.collection('users')
-                    .doc(userId)
-                    .collection('tasks')
-                    .doc(task.id.toString());
+ Object.keys(tasksData).forEach(segmentId => {
+ tasksData[segmentId].forEach(task => {
+ const docRef = db.collection('users')
+ .doc(userId)
+ .collection('tasks')
+ .doc(task.id.toString());
 
-                const taskData = {
-                    text: task.text,
-                    segment: task.segment,
-                    checked: task.checked || false,
-                    // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
-                    createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
-                };
+ const taskData = {
+ text: task.text,
+ segment: task.segment,
+ checked: task.checked || false,
+ // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+ createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+ };
 
-                if (task.completedAt) {
-                    taskData.completedAt = task.completedAt;
-                }
+ if (task.completedAt) {
+ taskData.completedAt = task.completedAt;
+ }
 
-                if (task.recurring) {
-                    taskData.recurring = task.recurring;
-                }
+ if (task.recurring) {
+ taskData.recurring = task.recurring;
+ }
 
-                batch.set(docRef, taskData);
-                taskCount++;
-            });
-        });
+ batch.set(docRef, taskData);
+ taskCount++;
+ });
+ });
 
-        await batch.commit();
-        console.log(`Local data migrated to Firestore (${taskCount} tasks)`);
+ await batch.commit();`);
 
-        // Clear both storage methods after migration
-        await localforage.removeItem('eisenhauerTasks');
-        localStorage.removeItem('eisenhauerTasks');
-    } catch (error) {
-        console.error('Error migrating local data:', error);
-    }
+ // Clear both storage methods after migration
+ await localforage.removeItem('eisenhauerTasks');
+ localStorage.removeItem('eisenhauerTasks');
+ } catch (error) {
+ }
 }
 
 /**
@@ -388,25 +369,23 @@ export async function migrateLocalData(userId, db, firebase) {
  * @param {string} version - App version
  */
 export function exportData(tasks, version) {
-    const exportData = {
-        version: version || 'unknown',
-        exportDate: new Date().toISOString(),
-        tasks: tasks
-    };
+ const exportData = {
+ version: version || 'unknown',
+ exportDate: new Date().toISOString(),
+ tasks: tasks
+ };
 
-    const dataStr = JSON.stringify(exportData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+ const dataStr = JSON.stringify(exportData, null, 2);
+ const dataBlob = new Blob([dataStr], { type: 'application/json' });
 
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `eisenhauer-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    console.log('Data exported successfully');
+ const url = URL.createObjectURL(dataBlob);
+ const link = document.createElement('a');
+ link.href = url;
+ link.download = `eisenhauer-backup-${new Date().toISOString().split('T')[0]}.json`;
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ URL.revokeObjectURL(url);
 }
 
 /**
@@ -417,59 +396,56 @@ export function exportData(tasks, version) {
  * @returns {Promise<object>} Imported tasks object
  */
 export function importData(file, currentTasks, saveCallback) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
+ return new Promise((resolve, reject) => {
+ const reader = new FileReader();
 
-        reader.onload = async (e) => {
-            try {
-                const importedData = JSON.parse(e.target.result);
+ reader.onload = async (e) => {
+ try {
+ const importedData = JSON.parse(e.target.result);
 
-                // Validate data structure
-                if (!importedData.tasks) {
-                    throw new Error('Ungültiges Datenformat: Keine Tasks gefunden');
-                }
+ // Validate data structure
+ if (!importedData.tasks) {
+ throw new Error('Ungültiges Datenformat: Keine Tasks gefunden');
+ }
 
-                let finalTasks;
+ let finalTasks;
 
-                if (confirm('Möchtest du die importierten Daten mit den aktuellen Daten zusammenführen? (Abbrechen = Aktuelle Daten ersetzen)')) {
-                    // Merge: Add imported tasks to existing ones
-                    finalTasks = { ...currentTasks };
+ if (confirm('Möchtest du die importierten Daten mit den aktuellen Daten zusammenführen? (Abbrechen = Aktuelle Daten ersetzen)')) {
+ // Merge: Add imported tasks to existing ones
+ finalTasks = { ...currentTasks };
 
-                    Object.keys(importedData.tasks).forEach(segmentId => {
-                        if (!finalTasks[segmentId]) {
-                            finalTasks[segmentId] = [];
-                        }
+ Object.keys(importedData.tasks).forEach(segmentId => {
+ if (!finalTasks[segmentId]) {
+ finalTasks[segmentId] = [];
+ }
 
-                        importedData.tasks[segmentId].forEach(task => {
-                            // Generate new ID to avoid conflicts
-                            task.id = Date.now() + Math.random();
-                            finalTasks[segmentId].push(task);
-                        });
-                    });
-                } else {
-                    // Replace: Overwrite existing tasks
-                    finalTasks = importedData.tasks;
-                }
+ importedData.tasks[segmentId].forEach(task => {
+ // Generate new ID to avoid conflicts
+ task.id = Date.now() + Math.random();
+ finalTasks[segmentId].push(task);
+ });
+ });
+ } else {
+ // Replace: Overwrite existing tasks
+ finalTasks = importedData.tasks;
+ }
 
-                // Call save callback if provided
-                if (saveCallback) {
-                    await saveCallback(finalTasks);
-                }
+ // Call save callback if provided
+ if (saveCallback) {
+ await saveCallback(finalTasks);
+ }
+ resolve(finalTasks);
+ } catch (error) {
+ reject(error);
+ }
+ };
 
-                console.log('Data imported successfully');
-                resolve(finalTasks);
-            } catch (error) {
-                console.error('Import Error:', error);
-                reject(error);
-            }
-        };
+ reader.onerror = () => {
+ reject(new Error('Fehler beim Lesen der Datei'));
+ };
 
-        reader.onerror = () => {
-            reject(new Error('Fehler beim Lesen der Datei'));
-        };
-
-        reader.readAsText(file);
-    });
+ reader.readAsText(file);
+ });
 }
 
 /**
@@ -477,17 +453,15 @@ export function importData(file, currentTasks, saveCallback) {
  * @returns {Promise<boolean>} True if persistent storage is granted
  */
 export async function requestPersistentStorage() {
-    if (navigator.storage && navigator.storage.persist) {
-        try {
-            const isPersisted = await navigator.storage.persist();
-            console.log(`Persistent storage: ${isPersisted ? 'granted' : 'denied'}`);
-            return isPersisted;
-        } catch (error) {
-            console.error('Error requesting persistent storage:', error);
-            return false;
-        }
-    }
-    return false;
+ if (navigator.storage && navigator.storage.persist) {
+ try {
+ const isPersisted = await navigator.storage.persist();
+ return isPersisted;
+ } catch (error) {
+ return false;
+ }
+ }
+ return false;
 }
 
 /**
@@ -495,14 +469,13 @@ export async function requestPersistentStorage() {
  * @returns {Promise<boolean>} True if storage is persistent
  */
 export async function checkPersistentStorage() {
-    if (navigator.storage && navigator.storage.persisted) {
-        try {
-            const isPersisted = await navigator.storage.persisted();
-            return isPersisted;
-        } catch (error) {
-            console.error('Error checking persistent storage:', error);
-            return false;
-        }
-    }
-    return false;
+ if (navigator.storage && navigator.storage.persisted) {
+ try {
+ const isPersisted = await navigator.storage.persisted();
+ return isPersisted;
+ } catch (error) {
+ return false;
+ }
+ }
+ return false;
 }
