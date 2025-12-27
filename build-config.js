@@ -15,29 +15,29 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Read .env file
+// Read environment variables from process.env or .env file
 function loadEnv() {
+  const env = { ...process.env };
+
+  // If .env file exists, load it as fallback (local development)
   const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf8');
 
-  if (!fs.existsSync(envPath)) {
-    process.exit(1);
+    envContent.split('\n').forEach((line) => {
+      line = line.trim();
+      // Skip comments and empty lines
+      if (!line || line.startsWith('#')) return;
+
+      const [key, ...valueParts] = line.split('=');
+      const value = valueParts.join('=').trim();
+
+      // Only use .env values if not already in process.env (CI/CD priority)
+      if (key && value && !env[key]) {
+        env[key.trim()] = value;
+      }
+    });
   }
-
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const env = {};
-
-  envContent.split('\n').forEach((line) => {
-    line = line.trim();
-    // Skip comments and empty lines
-    if (!line || line.startsWith('#')) return;
-
-    const [key, ...valueParts] = line.split('=');
-    const value = valueParts.join('=').trim();
-
-    if (key && value) {
-      env[key.trim()] = value;
-    }
-  });
 
   return env;
 }

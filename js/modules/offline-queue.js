@@ -13,213 +13,212 @@ const localforage = window.localforage;
  * Offline Queue Manager
  */
 export class OfflineQueue {
- /**
- * Create new queue instance
- * @param {string} queueName - Queue identifier
- */
- constructor(queueName) {
- this.queueName = queueName;
- this.eventListeners = new Map();
- this.executors = new Map(); // Store executor functions separately
- this.queue = [];
- this.isProcessing = false;
+  /**
+   * Create new queue instance
+   * @param {string} queueName - Queue identifier
+   */
+  constructor(queueName) {
+    this.queueName = queueName;
+    this.eventListeners = new Map();
+    this.executors = new Map(); // Store executor functions separately
+    this.queue = [];
+    this.isProcessing = false;
 
- // Create IndexedDB store
- this.store = localforage.createInstance({
- name: 'eisenhauer',
- storeName: `queue_${queueName}`
- });
+    // Create IndexedDB store
+    this.store = localforage.createInstance({
+      name: 'eisenhauer',
+      storeName: `queue_${queueName}`,
+    });
 
- // Load existing queue
- this._loadQueue();
- }
+    // Load existing queue
+    this._loadQueue();
+  }
 
- /**
- * Load queue from IndexedDB
- * @private
- */
- async _loadQueue() {
- try {
- const stored = await this.store.getItem('queue');
- if (stored && Array.isArray(stored)) {
- this.queue = stored;
- }
- } catch (error) {
- }
- }
+  /**
+   * Load queue from IndexedDB
+   * @private
+   */
+  async _loadQueue() {
+    try {
+      const stored = await this.store.getItem('queue');
+      if (stored && Array.isArray(stored)) {
+        this.queue = stored;
+      }
+    } catch (error) {}
+  }
 
- /**
- * Save queue to IndexedDB
- * @private
- */
- async _saveQueue() {
- try {
- await this.store.setItem('queue', this.queue);
- } catch (error) {
- }
- }
+  /**
+   * Save queue to IndexedDB
+   * @private
+   */
+  async _saveQueue() {
+    try {
+      await this.store.setItem('queue', this.queue);
+    } catch (error) {}
+  }
 
- /**
- * Generate unique ID
- * @private
- */
- _generateId() {
- const timestamp = Date.now();
- const random = Math.random().toString(36).substr(2, 9);
- return `${timestamp}-${random}`;
- }
+  /**
+   * Generate unique ID
+   * @private
+   */
+  _generateId() {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    return `${timestamp}-${random}`;
+  }
 
- /**
- * Register event listener
- * @param {string} event - Event name
- * @param {Function} callback - Callback function
- */
- on(event, callback) {
- if (!this.eventListeners.has(event)) {
- this.eventListeners.set(event, []);
- }
- this.eventListeners.get(event).push(callback);
- }
+  /**
+   * Register event listener
+   * @param {string} event - Event name
+   * @param {Function} callback - Callback function
+   */
+  on(event, callback) {
+    if (!this.eventListeners.has(event)) {
+      this.eventListeners.set(event, []);
+    }
+    this.eventListeners.get(event).push(callback);
+  }
 
- /**
- * Emit event
- * @private
- */
- _emit(event, ...args) {
- const listeners = this.eventListeners.get(event);
- if (listeners) {
- listeners.forEach(cb => {
- try {
- cb(...args);
- } catch (error) {:`, error);
- }
- });
- }
- }
+  /**
+   * Emit event
+   * @private
+   */
+  _emit(event, ...args) {
+    const listeners = this.eventListeners.get(event);
+    if (listeners) {
+      listeners.forEach((cb) => {
+        try {
+          cb(...args);
+        } catch (error) {
+          console.error('Offline queue callback error:', error);
+        }
+      });
+    }
+  }
 
- /**
- * Add item to queue
- * @param {string} operation - Operation description
- * @param {Function} executor - Async function to execute
- * @param {Object} metadata - Additional data
- * @param {number} maxRetries - Max retry attempts
- */
- async add(operation, executor, metadata = {}, maxRetries = 3) {
- const id = this._generateId();
+  /**
+   * Add item to queue
+   * @param {string} operation - Operation description
+   * @param {Function} executor - Async function to execute
+   * @param {Object} metadata - Additional data
+   * @param {number} maxRetries - Max retry attempts
+   */
+  async add(operation, executor, metadata = {}, maxRetries = 3) {
+    const id = this._generateId();
 
- // Store executor function separately (not serializable)
- this.executors.set(id, executor);
+    // Store executor function separately (not serializable)
+    this.executors.set(id, executor);
 
- // Create serializable item (without executor function)
- const item = {
- id,
- operation,
- metadata,
- retries: 0,
- maxRetries,
- createdAt: new Date().toISOString(),
- status: 'pending',
- error: null
- };
+    // Create serializable item (without executor function)
+    const item = {
+      id,
+      operation,
+      metadata,
+      retries: 0,
+      maxRetries,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+      error: null,
+    };
 
- this.queue.push(item);
- await this._saveQueue();`);
- this._emit('itemAdded', item);
+    this.queue.push(item);
+    await this._saveQueue();
+    this._emit('itemAdded', item);
 
- // If online, try to process immediately
- if (navigator.onLine && !this.isProcessing) {
- setTimeout(() => this.processQueue(), 100);
- }
+    // If online, try to process immediately
+    if (navigator.onLine && !this.isProcessing) {
+      setTimeout(() => this.processQueue(), 100);
+    }
 
- return id;
- }
+    return id;
+  }
 
- /**
- * Process all pending items in queue
- */
- async processQueue() {
- if (this.isProcessing) {
- return { processed: 0, succeeded: 0, failed: 0 };
- }
+  /**
+   * Process all pending items in queue
+   */
+  async processQueue() {
+    if (this.isProcessing) {
+      return { processed: 0, succeeded: 0, failed: 0 };
+    }
 
- const pendingItems = this.queue.filter(i => i.status === 'pending');
+    const pendingItems = this.queue.filter((i) => i.status === 'pending');
 
- if (pendingItems.length === 0) {
- this._emit('queueEmpty');
- return { processed: 0, succeeded: 0, failed: 0 };
- }
+    if (pendingItems.length === 0) {
+      this._emit('queueEmpty');
+      return { processed: 0, succeeded: 0, failed: 0 };
+    }
 
- this.isProcessing = true;
- let processed = 0;
- let succeeded = 0;
- let failed = 0;
+    this.isProcessing = true;
+    let processed = 0;
+    let succeeded = 0;
+    let failed = 0;
 
- for (const item of pendingItems) {
- try {
- item.status = 'processing';
- await this._saveQueue();
+    for (const item of pendingItems) {
+      try {
+        item.status = 'processing';
+        await this._saveQueue();
 
- // Get executor function from map
- const executor = this.executors.get(item.id);
- if (typeof executor === 'function') {
- await executor();
- } else {
- throw new Error('Executor is not a function - queue may have been cleared');
- }
+        // Get executor function from map
+        const executor = this.executors.get(item.id);
+        if (typeof executor === 'function') {
+          await executor();
+        } else {
+          throw new Error('Executor is not a function - queue may have been cleared');
+        }
 
- // Success - remove from queue
- this.queue = this.queue.filter(i => i.id !== item.id);
- this.executors.delete(item.id); // Clean up executor
- await this._saveQueue();
+        // Success - remove from queue
+        this.queue = this.queue.filter((i) => i.id !== item.id);
+        this.executors.delete(item.id); // Clean up executor
+        await this._saveQueue();
 
- succeeded++;
- this._emit('itemProcessed', item);
- } catch (error) {
- failed++;
- item.retries++;
- item.error = error.message;
- if (item.retries >= item.maxRetries) {
- // Max retries reached
- item.status = 'failed';
- this._emit('itemFailed', item, error);
- this.executors.delete(item.id); // Clean up executor
- } else {
- // Reset to pending for retry
- item.status = 'pending';`);
- }
+        succeeded++;
+        this._emit('itemProcessed', item);
+      } catch (error) {
+        failed++;
+        item.retries++;
+        item.error = error.message;
+        if (item.retries >= item.maxRetries) {
+          // Max retries reached
+          item.status = 'failed';
+          this._emit('itemFailed', item, error);
+          this.executors.delete(item.id); // Clean up executor
+        } else {
+          // Reset to pending for retry
+          item.status = 'pending';
+        }
 
- await this._saveQueue();
- }
+        await this._saveQueue();
+      }
 
- processed++;
- }
+      processed++;
+    }
 
- this.isProcessing = false;
+    this.isProcessing = false;
 
- // Check if queue is now empty (all pending items processed)
- const stillPending = this.queue.filter(i => i.status === 'pending').length;
- if (stillPending === 0) {
- this._emit('queueEmpty');
- }
+    // Check if queue is now empty (all pending items processed)
+    const stillPending = this.queue.filter((i) => i.status === 'pending').length;
+    if (stillPending === 0) {
+      this._emit('queueEmpty');
+    }
 
- const result = { processed, succeeded, failed };
- return result;
- }
+    const result = { processed, succeeded, failed };
+    return result;
+  }
 
- /**
- * Get count of pending items
- */
- getPendingCount() {
- return this.queue.filter(i => i.status === 'pending').length;
- }
+  /**
+   * Get count of pending items
+   */
+  getPendingCount() {
+    return this.queue.filter((i) => i.status === 'pending').length;
+  }
 
- /**
- * Clear all items
- */
- async clearAll() {
- this.queue = [];
- this.executors.clear(); // Clear executor functions too
- await this._saveQueue();
- this._emit('queueEmpty');
- }
+  /**
+   * Clear all items
+   */
+  async clearAll() {
+    this.queue = [];
+    this.executors.clear(); // Clear executor functions too
+    await this._saveQueue();
+    this._emit('queueEmpty');
+  }
 }
