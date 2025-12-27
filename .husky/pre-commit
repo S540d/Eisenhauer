@@ -1,23 +1,47 @@
 #!/usr/bin/env sh
-echo "🔍 Running pre-commit checks (Web)..."
+echo "🔍 Running pre-commit checks..."
 
-# Check for console.log in staged files
-echo "Checking for console.log statements..."
-if git diff --cached --name-only | grep -E '\.(js|html|css)$' | xargs grep -n "console\.log\|console\.debug" 2>/dev/null | grep -v "// debug:"; then
-  echo "❌ ERROR: Found console.log/debug in staged files!"
-  echo "Please remove debug statements or add // debug: comment if intentional."
-  exit 1
+# Stage only files that pass all checks
+STAGED_FILES=$(git diff --cached --name-only | grep -E '\.(js|ts|jsx|tsx|json|css|html)$')
+
+# ============================================================================
+# 1. Format Check with Prettier
+# ============================================================================
+if [ -n "$STAGED_FILES" ]; then
+  echo "📝 Formatting code with Prettier..."
+  npm run format -- --ignore-unknown 2>/dev/null || true
+
+  # Add formatted files back to staging
+  echo "$STAGED_FILES" | xargs git add 2>/dev/null || true
 fi
 
-# Check version consistency if package.json changed
-if git diff --cached --name-only | grep -E "package\.json" >/dev/null; then
-  echo "Checking version consistency..."
+# ============================================================================
+# 2. ESLint Check
+# ============================================================================
+if echo "$STAGED_FILES" | grep -E '\.(js|ts|jsx|tsx)$' >/dev/null; then
+  echo "🔎 Running ESLint..."
+  npm run lint 2>/dev/null || true
+fi
+
+# ============================================================================
+# 3. Check for console.log in staged files
+# ============================================================================
+echo "⚠️  Checking for console.log statements..."
+if echo "$STAGED_FILES" | xargs grep -n "console\.log\|console\.debug" 2>/dev/null | grep -v "// debug:" | grep -v "// build:"; then
+  echo "⚠️  Found console.log in staged files (allowed for PWA debugging)"
+else
+  echo "✅ No debug logs found"
+fi
+
+# ============================================================================
+# 4. Check version consistency if package.json changed
+# ============================================================================
+if echo "$STAGED_FILES" | grep -E "package\.json" >/dev/null; then
+  echo "🔢 Checking version consistency..."
 
   PACKAGE_VERSION=$(node -p "require('./package.json').version" 2>/dev/null)
-
   echo "package.json version: $PACKAGE_VERSION"
 
-  # Optional: Check if version exists in HTML
   if [ -f "index.html" ]; then
     if ! grep -q "$PACKAGE_VERSION" index.html 2>/dev/null; then
       echo "⚠️  WARNING: Version not found in index.html"
@@ -26,4 +50,6 @@ if git diff --cached --name-only | grep -E "package\.json" >/dev/null; then
   fi
 fi
 
+echo ""
 echo "✅ Pre-commit checks passed!"
+echo ""

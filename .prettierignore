@@ -1,0 +1,12 @@
+node_modules
+dist
+build
+*.lock
+*.md
+.git
+.github
+coverage
+playwright-report
+test-results
+Android
+Eisenhauer

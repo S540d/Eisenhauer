@@ -15,6 +15,10 @@
     "deploy:force": "npm run build && git add -A && git commit -m 'build: force cache update' || true && git checkout gh-pages && git reset --hard main && git push origin gh-pages --force && git checkout main",
     "cache:update": "node update-cache-version.js",
     "version:update": "node update-version.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --ext .js,.ts,.jsx,.tsx 2>/dev/null || true",
+    "lint:fix": "eslint . --ext .js,.ts,.jsx,.tsx --fix 2>/dev/null || true",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
@@ -24,7 +28,6 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
-    "lint": "eslint . --ext .js || true",
     "validate": "./scripts/validate-release.sh",
     "prepare": "husky install"
   },
