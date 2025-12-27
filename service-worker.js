@@ -1,7 +1,16 @@
 const CACHE_VERSION = '2.1.2';
 const BUILD_DATE = '2025-12-26'; // Cache busting - updated 2025-12-26T16:50:13.702Z
 const CACHE_NAME = `eisenhauer-matrix-v${CACHE_VERSION}-${BUILD_DATE}`;
-const urlsToCache = ['./', './index.html', './style.css', './script.js', './manifest.json'];
+const urlsToCache = [
+  './',
+  './index.html',
+  './style.css',
+  './script.js',
+  './manifest.json',
+  './js/modules/firebase-init.js',
+  './js/modules/auth.js',
+  './js/modules/storage.js',
+];
 
 // Files that should always be fetched from network first
 // Expanded to ensure latest version is always loaded

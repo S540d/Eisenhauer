@@ -60,5 +60,8 @@
     "husky": "^9.1.7",
     "prettier": "^3.0.0",
     "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "firebase": "^10.13.2"
   }
 }
