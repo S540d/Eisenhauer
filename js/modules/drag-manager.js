@@ -84,7 +84,7 @@ export class DragManager {
     longPressTimer: null,
     dragClone: null,
     dropTarget: null,
-    originalOpacity: null
+    originalOpacity: null,
   };
 
   /**
@@ -101,7 +101,7 @@ export class DragManager {
       onSwipeDelete: config.onSwipeDelete || null,
       enableSwipeDelete: config.enableSwipeDelete !== false,
       longPressDelay: config.longPressDelay || 300,
-      swipeThreshold: config.swipeThreshold || 100
+      swipeThreshold: config.swipeThreshold || 100,
     };
 
     this.#init();
@@ -136,8 +136,12 @@ export class DragManager {
    * @private
    */
   #setupTouchEvents() {
-    this.element.addEventListener('touchstart', this.#handleTouchStart.bind(this), { passive: false });
-    this.element.addEventListener('touchmove', this.#handleTouchMove.bind(this), { passive: false });
+    this.element.addEventListener('touchstart', this.#handleTouchStart.bind(this), {
+      passive: false,
+    });
+    this.element.addEventListener('touchmove', this.#handleTouchMove.bind(this), {
+      passive: false,
+    });
     this.element.addEventListener('touchend', this.#handleTouchEnd.bind(this));
     this.element.addEventListener('touchcancel', this.#handleTouchCancel.bind(this));
 
@@ -196,8 +200,7 @@ export class DragManager {
     // Check if movement cancels long press
     if (!this.state.isDragging && !this.state.isSwipeDelete && this.state.longPressTimer) {
       const distance = Math.sqrt(
-        this.state.deltaX * this.state.deltaX +
-        this.state.deltaY * this.state.deltaY
+        this.state.deltaX * this.state.deltaX + this.state.deltaY * this.state.deltaY
       );
 
       // If moved too much before long press, cancel it (don't return - let swipe detection continue)
@@ -296,10 +299,13 @@ export class DragManager {
     this.element.style.opacity = '0.5';
 
     // Update store
-    store.setState({
-      isDragging: true,
-      draggedTask: this.data
-    }, 'drag-start');
+    store.setState(
+      {
+        isDragging: true,
+        draggedTask: this.data,
+      },
+      'drag-start'
+    );
 
     // Notify callback
     this.state.isDragging = true;
@@ -330,10 +336,13 @@ export class DragManager {
     this.element.style.opacity = this.state.originalOpacity;
 
     // Update store
-    store.setState({
-      isDragging: false,
-      draggedTask: null
-    }, 'drag-end');
+    store.setState(
+      {
+        isDragging: false,
+        draggedTask: null,
+      },
+      'drag-end'
+    );
 
     // Notify callback
     this.config.onDragEnd(this.#createDragEvent('end'));
@@ -361,11 +370,14 @@ export class DragManager {
     document.body.style.overflow = 'hidden';
 
     // Update store
-    store.setState({
-      isDragging: true,
-      draggedTask: this.data,
-      dragSource: this.element
-    }, 'drag-start');
+    store.setState(
+      {
+        isDragging: true,
+        draggedTask: this.data,
+        dragSource: this.element,
+      },
+      'drag-start'
+    );
 
     // Notify callback
     this.config.onDragStart(this.#createDragEvent('start'));
@@ -441,9 +453,8 @@ export class DragManager {
     }
 
     // Find task-list drop zone
-    const dropZone = elements.find(el =>
-      el.classList.contains('task-list') ||
-      el.classList.contains('drop-zone')
+    const dropZone = elements.find(
+      (el) => el.classList.contains('task-list') || el.classList.contains('drop-zone')
     );
 
     // Update drop target highlighting
@@ -496,12 +507,15 @@ export class DragManager {
     }
 
     // Update store
-    store.setState({
-      isDragging: false,
-      draggedTask: null,
-      dragSource: null,
-      dragTarget: this.state.dropTarget
-    }, 'drag-end');
+    store.setState(
+      {
+        isDragging: false,
+        draggedTask: null,
+        dragSource: null,
+        dragTarget: this.state.dropTarget,
+      },
+      'drag-end'
+    );
 
     // Notify callback
     this.config.onDragEnd(this.#createDragEvent('end'));
@@ -554,10 +568,13 @@ export class DragManager {
       this.state.dropTarget.classList.remove('drag-over');
     }
 
-    store.setState({
-      isDragging: false,
-      draggedTask: null
-    }, 'drag-cancel');
+    store.setState(
+      {
+        isDragging: false,
+        draggedTask: null,
+      },
+      'drag-cancel'
+    );
 
     this.config.onDragEnd(this.#createDragEvent('cancel'));
   }
@@ -603,7 +620,7 @@ export class DragManager {
       y: this.state.currentY,
       deltaX: this.state.deltaX,
       deltaY: this.state.deltaY,
-      target: this.state.dropTarget
+      target: this.state.dropTarget,
     };
   }
 
@@ -668,7 +685,7 @@ export function setupDropZone(dropZone, onDrop) {
     } catch (error) {
       ErrorHandler.handleError(error, {
         operation: 'drop',
-        silent: false
+        silent: false,
       });
     }
   });

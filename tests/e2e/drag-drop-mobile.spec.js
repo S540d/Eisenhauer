@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Mobile Drag & Drop', () => {
   test.use({
     ...test.use(),
-    viewport: { width: 375, height: 667 } // iPhone SE size
+    viewport: { width: 375, height: 667 }, // iPhone SE size
   });
 
   test.beforeEach(async ({ page }) => {
@@ -22,7 +22,9 @@ test.describe('Mobile Drag & Drop', () => {
     await page.waitForTimeout(1000);
   });
 
-  test('should drag task from Important+Urgent to Important+Not Urgent using touch', async ({ page }) => {
+  test('should drag task from Important+Urgent to Important+Not Urgent using touch', async ({
+    page,
+  }) => {
     // Create a test task in Quadrant 1 (Important + Urgent)
     const addButton1 = page.locator('#addBtn1');
     await addButton1.click();
@@ -56,7 +58,9 @@ test.describe('Mobile Drag & Drop', () => {
     await page.waitForTimeout(500);
 
     // Verify task moved to Quadrant 2
-    const taskInQuadrant2 = quadrant2.locator('.task-item').filter({ hasText: 'Mobile Drag Test Task' });
+    const taskInQuadrant2 = quadrant2
+      .locator('.task-item')
+      .filter({ hasText: 'Mobile Drag Test Task' });
     await expect(taskInQuadrant2).toBeVisible();
   });
 
@@ -102,7 +106,9 @@ test.describe('Mobile Drag & Drop', () => {
 
     // Get initial parent quadrant
     const quadrant1 = page.locator('#quadrant1');
-    const taskInQuadrant1Before = quadrant1.locator('.task-item').filter({ hasText: 'Scroll Cancel Test' });
+    const taskInQuadrant1Before = quadrant1
+      .locator('.task-item')
+      .filter({ hasText: 'Scroll Cancel Test' });
     await expect(taskInQuadrant1Before).toBeVisible();
 
     const taskBox = await task.boundingBox();
@@ -118,7 +124,9 @@ test.describe('Mobile Drag & Drop', () => {
     await page.waitForTimeout(300);
 
     // Task should still be in original quadrant
-    const taskInQuadrant1After = quadrant1.locator('.task-item').filter({ hasText: 'Scroll Cancel Test' });
+    const taskInQuadrant1After = quadrant1
+      .locator('.task-item')
+      .filter({ hasText: 'Scroll Cancel Test' });
     await expect(taskInQuadrant1After).toBeVisible();
   });
 
@@ -128,7 +136,7 @@ test.describe('Mobile Drag & Drop', () => {
       { id: 1, name: 'Important + Urgent' },
       { id: 2, name: 'Important + Not Urgent' },
       { id: 3, name: 'Not Important + Urgent' },
-      { id: 4, name: 'Not Important + Not Urgent' }
+      { id: 4, name: 'Not Important + Not Urgent' },
     ];
 
     // Create task in quadrant 1
@@ -157,7 +165,9 @@ test.describe('Mobile Drag & Drop', () => {
       await page.waitForTimeout(500);
 
       // Verify task is in target quadrant
-      const taskInTarget = targetQuadrant.locator('.task-item').filter({ hasText: 'Cross-Quadrant Test' });
+      const taskInTarget = targetQuadrant
+        .locator('.task-item')
+        .filter({ hasText: 'Cross-Quadrant Test' });
       await expect(taskInTarget).toBeVisible();
     }
   });

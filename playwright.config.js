@@ -13,7 +13,7 @@ export default defineConfig({
   // Test configuration
   expect: {
     // Maximum time expect() should wait for condition to be met
-    timeout: 5000
+    timeout: 5000,
   },
 
   // Run tests in files in parallel
@@ -29,10 +29,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   // Reporter to use
-  reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['list']
-  ],
+  reporter: [['html', { outputFolder: 'playwright-report' }], ['list']],
 
   // Shared settings for all projects
   use: {

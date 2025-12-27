@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Desktop Drag & Drop', () => {
   test.use({
     ...test.use(),
-    viewport: { width: 1280, height: 720 }
+    viewport: { width: 1280, height: 720 },
   });
 
   test.beforeEach(async ({ page }) => {
@@ -38,14 +38,16 @@ test.describe('Desktop Drag & Drop', () => {
 
     // Drag task to quadrant 3
     await task.dragTo(quadrant3, {
-      targetPosition: { x: 50, y: 50 }
+      targetPosition: { x: 50, y: 50 },
     });
 
     // Wait for animation
     await page.waitForTimeout(500);
 
     // Verify task moved
-    const taskInQuadrant3 = quadrant3.locator('.task-item').filter({ hasText: 'Desktop Drag Test' });
+    const taskInQuadrant3 = quadrant3
+      .locator('.task-item')
+      .filter({ hasText: 'Desktop Drag Test' });
     await expect(taskInQuadrant3).toBeVisible();
   });
 
@@ -60,7 +62,7 @@ test.describe('Desktop Drag & Drop', () => {
 
     // Hover over task - should show grab cursor
     await task.hover();
-    const cursor = await task.evaluate(el => window.getComputedStyle(el).cursor);
+    const cursor = await task.evaluate((el) => window.getComputedStyle(el).cursor);
     expect(cursor).toContain('grab');
 
     // Start dragging
@@ -146,14 +148,19 @@ test.describe('Desktop Drag & Drop', () => {
 
     // Quickly drag all tasks
     for (let i = 1; i <= 3; i++) {
-      const task = page.locator('.task-item').filter({ hasText: `Rapid Drag ${i}` }).first();
+      const task = page
+        .locator('.task-item')
+        .filter({ hasText: `Rapid Drag ${i}` })
+        .first();
       await task.dragTo(quadrant2, { targetPosition: { x: 50, y: 50 + i * 60 } });
       await page.waitForTimeout(200);
     }
 
     // Verify all tasks moved
     for (let i = 1; i <= 3; i++) {
-      const taskInQuadrant2 = quadrant2.locator('.task-item').filter({ hasText: `Rapid Drag ${i}` });
+      const taskInQuadrant2 = quadrant2
+        .locator('.task-item')
+        .filter({ hasText: `Rapid Drag ${i}` });
       await expect(taskInQuadrant2).toBeVisible();
     }
   });
@@ -169,7 +176,9 @@ test.describe('Desktop Drag & Drop', () => {
 
     // Verify task is in quadrant 1
     const quadrant1 = page.locator('#quadrant1');
-    const taskInQuadrant1Before = quadrant1.locator('.task-item').filter({ hasText: 'Escape Cancel Test' });
+    const taskInQuadrant1Before = quadrant1
+      .locator('.task-item')
+      .filter({ hasText: 'Escape Cancel Test' });
     await expect(taskInQuadrant1Before).toBeVisible();
 
     const taskBox = await task.boundingBox();
@@ -193,11 +202,15 @@ test.describe('Desktop Drag & Drop', () => {
     await page.waitForTimeout(300);
 
     // Task should still be in original quadrant
-    const taskInQuadrant1After = quadrant1.locator('.task-item').filter({ hasText: 'Escape Cancel Test' });
+    const taskInQuadrant1After = quadrant1
+      .locator('.task-item')
+      .filter({ hasText: 'Escape Cancel Test' });
     await expect(taskInQuadrant1After).toBeVisible();
 
     // Should not be in quadrant 3
-    const taskInQuadrant3 = quadrant3.locator('.task-item').filter({ hasText: 'Escape Cancel Test' });
+    const taskInQuadrant3 = quadrant3
+      .locator('.task-item')
+      .filter({ hasText: 'Escape Cancel Test' });
     await expect(taskInQuadrant3).toHaveCount(0);
   });
 });

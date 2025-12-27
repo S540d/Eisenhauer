@@ -24,7 +24,7 @@ describe('Store', () => {
         2: [],
         3: [],
         4: [],
-        5: []
+        5: [],
       });
       expect(state.isDragging).toBe(false);
       expect(state.draggedTask).toBeNull();
@@ -165,7 +165,7 @@ describe('Store', () => {
       store.setState({
         isGuestMode: false,
         language: 'en',
-        tasks: { 1: [{ id: '1', text: 'Task' }], 2: [], 3: [], 4: [], 5: [] }
+        tasks: { 1: [{ id: '1', text: 'Task' }], 2: [], 3: [], 4: [], 5: [] },
       });
 
       store.reset();

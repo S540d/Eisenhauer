@@ -134,7 +134,10 @@ test.describe('Swipe to Delete', () => {
 
     // Delete each task via swipe
     for (const quadrantId of quadrants) {
-      const task = page.locator('.task-item').filter({ hasText: `Q${quadrantId} Swipe Test` }).first();
+      const task = page
+        .locator('.task-item')
+        .filter({ hasText: `Q${quadrantId} Swipe Test` })
+        .first();
       await expect(task).toBeVisible();
 
       const taskBox = await task.boundingBox();
@@ -173,10 +176,12 @@ test.describe('Swipe to Delete', () => {
     await page.mouse.move(taskBox.x + taskBox.width / 2, taskBox.y + taskBox.height / 2);
 
     // Check for swipe indicator or visual feedback
-    const hasSwipeClass = await task.evaluate(el => {
-      return el.classList.contains('swiping') ||
-             el.classList.contains('swipe-left') ||
-             el.style.transform !== '';
+    const hasSwipeClass = await task.evaluate((el) => {
+      return (
+        el.classList.contains('swiping') ||
+        el.classList.contains('swipe-left') ||
+        el.style.transform !== ''
+      );
     });
 
     expect(hasSwipeClass).toBeTruthy();

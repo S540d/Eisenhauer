@@ -181,7 +181,10 @@ test.describe('Offline Sync', () => {
     await page.waitForTimeout(1000);
 
     // Task should still be visible (from localStorage)
-    const taskAfterReload = page.locator('.task-item').filter({ hasText: 'Persistence Test' }).first();
+    const taskAfterReload = page
+      .locator('.task-item')
+      .filter({ hasText: 'Persistence Test' })
+      .first();
     await expect(taskAfterReload).toBeVisible();
 
     // Offline indicator should still show pending

@@ -5,25 +5,20 @@ module.exports = {
     es2021: true,
     node: true,
   },
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-  ],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  plugins: [
-    '@typescript-eslint',
-  ],
+  plugins: ['@typescript-eslint'],
   rules: {
     // ===========================================================================
     // Code Quality Rules
     // ===========================================================================
 
     // Strict equality
-    'eqeqeq': ['error', 'always'],
+    eqeqeq: ['error', 'always'],
 
     // No var, use const/let
     'no-var': 'error',
@@ -76,9 +71,9 @@ module.exports = {
     // Code Style (works with Prettier)
     // ===========================================================================
 
-    'semi': 'off', // Prettier handles this
-    'quotes': 'off', // Prettier handles this
-    'indent': 'off', // Prettier handles this
+    semi: 'off', // Prettier handles this
+    quotes: 'off', // Prettier handles this
+    indent: 'off', // Prettier handles this
   },
   overrides: [
     {

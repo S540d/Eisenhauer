@@ -19,7 +19,7 @@ const localStorageMock = (() => {
     },
     clear: () => {
       store = {};
-    }
+    },
   };
 })();
 
@@ -28,7 +28,7 @@ global.localStorage = localStorageMock;
 // Mock navigator.onLine
 Object.defineProperty(global.navigator, 'onLine', {
   writable: true,
-  value: true
+  value: true,
 });
 
 // Mock navigator.vibrate
@@ -44,7 +44,7 @@ global.console = {
   debug: vi.fn(),
   info: vi.fn(),
   warn: vi.fn(),
-  error: vi.fn()
+  error: vi.fn(),
 };
 
 // Ensure document.body exists

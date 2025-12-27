@@ -50,20 +50,20 @@ let notificationContainer = null;
  * Initialize notification system
  */
 function initNotifications() {
- if (notificationContainer) return;
+  if (notificationContainer) return;
 
- // Create container
- notificationContainer = document.createElement('div');
- notificationContainer.id = 'notification-container';
- notificationContainer.className = 'notification-container';
- notificationContainer.setAttribute('role', 'region');
- notificationContainer.setAttribute('aria-label', 'Benachrichtigungen');
- notificationContainer.setAttribute('aria-live', 'polite');
+  // Create container
+  notificationContainer = document.createElement('div');
+  notificationContainer.id = 'notification-container';
+  notificationContainer.className = 'notification-container';
+  notificationContainer.setAttribute('role', 'region');
+  notificationContainer.setAttribute('aria-label', 'Benachrichtigungen');
+  notificationContainer.setAttribute('aria-live', 'polite');
 
- document.body.appendChild(notificationContainer);
+  document.body.appendChild(notificationContainer);
 
- // Add styles
- injectStyles();
+  // Add styles
+  injectStyles();
 }
 
 /**
@@ -72,61 +72,55 @@ function initNotifications() {
  * @returns {string} Notification ID
  */
 export function showNotification(options) {
- // Initialize if not done yet
- initNotifications();
+  // Initialize if not done yet
+  initNotifications();
 
- // Validate options
- if (!options.message) {
- return null;
- }
+  // Validate options
+  if (!options.message) {
+    return null;
+  }
 
- const {
- type = 'info',
- message,
- actions = [],
- duration = 5000,
- closable = true
- } = options;
+  const { type = 'info', message, actions = [], duration = 5000, closable = true } = options;
 
- // Generate unique ID
- const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  // Generate unique ID
+  const id = `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
- // Create notification element
- const notification = createNotificationElement(id, type, message, actions, closable);
+  // Create notification element
+  const notification = createNotificationElement(id, type, message, actions, closable);
 
- // Add to container
- notificationContainer.appendChild(notification);
+  // Add to container
+  notificationContainer.appendChild(notification);
 
- // Track active notification
- activeNotifications.push({ id, element: notification, dismissTimer: null });
+  // Track active notification
+  activeNotifications.push({ id, element: notification, dismissTimer: null });
 
- // Remove oldest if exceeding max
- if (activeNotifications.length > MAX_NOTIFICATIONS) {
- const oldest = activeNotifications.shift();
- dismissNotification(oldest.id, true);
- }
+  // Remove oldest if exceeding max
+  if (activeNotifications.length > MAX_NOTIFICATIONS) {
+    const oldest = activeNotifications.shift();
+    dismissNotification(oldest.id, true);
+  }
 
- // Trigger enter animation
- // Use setTimeout instead of requestAnimationFrame for test compatibility
- const animationDelay = typeof window !== 'undefined' && window.requestAnimationFrame ? 0 : 0;
- setTimeout(() => {
- notification.classList.add('notification-show');
- }, animationDelay);
+  // Trigger enter animation
+  // Use setTimeout instead of requestAnimationFrame for test compatibility
+  const animationDelay = typeof window !== 'undefined' && window.requestAnimationFrame ? 0 : 0;
+  setTimeout(() => {
+    notification.classList.add('notification-show');
+  }, animationDelay);
 
- // Auto-dismiss
- if (duration > 0) {
- const dismissTimer = setTimeout(() => {
- dismissNotification(id);
- }, duration);
+  // Auto-dismiss
+  if (duration > 0) {
+    const dismissTimer = setTimeout(() => {
+      dismissNotification(id);
+    }, duration);
 
- // Store timer reference
- const notif = activeNotifications.find(n => n.id === id);
- if (notif) {
- notif.dismissTimer = dismissTimer;
- }
- }
+    // Store timer reference
+    const notif = activeNotifications.find((n) => n.id === id);
+    if (notif) {
+      notif.dismissTimer = dismissTimer;
+    }
+  }
 
- return id;
+  return id;
 }
 
 /**
@@ -135,39 +129,39 @@ export function showNotification(options) {
  * @param {boolean} [immediate=false] - Skip animation
  */
 export function dismissNotification(id, immediate = false) {
- const index = activeNotifications.findIndex(n => n.id === id);
- if (index === -1) return;
+  const index = activeNotifications.findIndex((n) => n.id === id);
+  if (index === -1) return;
 
- const { element, dismissTimer } = activeNotifications[index];
+  const { element, dismissTimer } = activeNotifications[index];
 
- // Clear auto-dismiss timer
- if (dismissTimer) {
- clearTimeout(dismissTimer);
- }
+  // Clear auto-dismiss timer
+  if (dismissTimer) {
+    clearTimeout(dismissTimer);
+  }
 
- // Remove from tracking
- activeNotifications.splice(index, 1);
+  // Remove from tracking
+  activeNotifications.splice(index, 1);
 
- if (immediate) {
- element.remove();
- } else {
- // Trigger exit animation
- element.classList.remove('notification-show');
- element.classList.add('notification-hide');
+  if (immediate) {
+    element.remove();
+  } else {
+    // Trigger exit animation
+    element.classList.remove('notification-show');
+    element.classList.add('notification-hide');
 
- setTimeout(() => {
- element.remove();
- }, 300); // Match animation duration
- }
+    setTimeout(() => {
+      element.remove();
+    }, 300); // Match animation duration
+  }
 }
 
 /**
  * Dismiss all notifications
  */
 export function dismissAll() {
- [...activeNotifications].forEach(({ id }) => {
- dismissNotification(id);
- });
+  [...activeNotifications].forEach(({ id }) => {
+    dismissNotification(id);
+  });
 }
 
 /**
@@ -177,11 +171,11 @@ export function dismissAll() {
  * @returns {string} Notification ID
  */
 export function showSuccess(message, duration = 3000) {
- return showNotification({
- type: 'success',
- message,
- duration
- });
+  return showNotification({
+    type: 'success',
+    message,
+    duration,
+  });
 }
 
 /**
@@ -191,12 +185,12 @@ export function showSuccess(message, duration = 3000) {
  * @returns {string} Notification ID
  */
 export function showError(message, options = {}) {
- return showNotification({
- type: 'error',
- message,
- duration: 5000,
- ...options
- });
+  return showNotification({
+    type: 'error',
+    message,
+    duration: 5000,
+    ...options,
+  });
 }
 
 /**
@@ -206,12 +200,12 @@ export function showError(message, options = {}) {
  * @returns {string} Notification ID
  */
 export function showWarning(message, options = {}) {
- return showNotification({
- type: 'warning',
- message,
- duration: 4000,
- ...options
- });
+  return showNotification({
+    type: 'warning',
+    message,
+    duration: 4000,
+    ...options,
+  });
 }
 
 /**
@@ -221,11 +215,11 @@ export function showWarning(message, options = {}) {
  * @returns {string} Notification ID
  */
 export function showInfo(message, duration = 3000) {
- return showNotification({
- type: 'info',
- message,
- duration
- });
+  return showNotification({
+    type: 'info',
+    message,
+    duration,
+  });
 }
 
 /**
@@ -239,69 +233,69 @@ export function showInfo(message, duration = 3000) {
  * @returns {HTMLElement}
  */
 function createNotificationElement(id, type, message, actions, closable) {
- const notification = document.createElement('div');
- notification.id = id;
- notification.className = `notification notification-${type}`;
- notification.setAttribute('role', 'alert');
- notification.setAttribute('aria-live', 'assertive');
+  const notification = document.createElement('div');
+  notification.id = id;
+  notification.className = `notification notification-${type}`;
+  notification.setAttribute('role', 'alert');
+  notification.setAttribute('aria-live', 'assertive');
 
- // Icon
- const icon = document.createElement('span');
- icon.className = 'notification-icon';
- icon.innerHTML = getIconForType(type);
- notification.appendChild(icon);
+  // Icon
+  const icon = document.createElement('span');
+  icon.className = 'notification-icon';
+  icon.innerHTML = getIconForType(type);
+  notification.appendChild(icon);
 
- // Content
- const content = document.createElement('div');
- content.className = 'notification-content';
+  // Content
+  const content = document.createElement('div');
+  content.className = 'notification-content';
 
- const messageEl = document.createElement('p');
- messageEl.className = 'notification-message';
- messageEl.textContent = message;
- content.appendChild(messageEl);
+  const messageEl = document.createElement('p');
+  messageEl.className = 'notification-message';
+  messageEl.textContent = message;
+  content.appendChild(messageEl);
 
- // Actions
- if (actions.length > 0) {
- const actionsEl = document.createElement('div');
- actionsEl.className = 'notification-actions';
+  // Actions
+  if (actions.length > 0) {
+    const actionsEl = document.createElement('div');
+    actionsEl.className = 'notification-actions';
 
- actions.forEach(action => {
- const button = document.createElement('button');
- button.className = 'notification-action-btn';
- button.textContent = action.label;
- button.type = 'button';
+    actions.forEach((action) => {
+      const button = document.createElement('button');
+      button.className = 'notification-action-btn';
+      button.textContent = action.label;
+      button.type = 'button';
 
- button.addEventListener('click', () => {
- if (action.onClick) {
- action.onClick();
- }
- dismissNotification(id);
- });
+      button.addEventListener('click', () => {
+        if (action.onClick) {
+          action.onClick();
+        }
+        dismissNotification(id);
+      });
 
- actionsEl.appendChild(button);
- });
+      actionsEl.appendChild(button);
+    });
 
- content.appendChild(actionsEl);
- }
+    content.appendChild(actionsEl);
+  }
 
- notification.appendChild(content);
+  notification.appendChild(content);
 
- // Close button
- if (closable) {
- const closeBtn = document.createElement('button');
- closeBtn.className = 'notification-close';
- closeBtn.type = 'button';
- closeBtn.setAttribute('aria-label', 'Schließen');
- closeBtn.innerHTML = '&times;';
+  // Close button
+  if (closable) {
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'notification-close';
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Schließen');
+    closeBtn.innerHTML = '&times;';
 
- closeBtn.addEventListener('click', () => {
- dismissNotification(id);
- });
+    closeBtn.addEventListener('click', () => {
+      dismissNotification(id);
+    });
 
- notification.appendChild(closeBtn);
- }
+    notification.appendChild(closeBtn);
+  }
 
- return notification;
+  return notification;
 }
 
 /**
@@ -311,14 +305,14 @@ function createNotificationElement(id, type, message, actions, closable) {
  * @returns {string}
  */
 function getIconForType(type) {
- const icons = {
- success: '✓',
- error: '✕',
- warning: '⚠',
- info: 'ℹ'
- };
+  const icons = {
+    success: '✓',
+    error: '✕',
+    warning: '⚠',
+    info: 'ℹ',
+  };
 
- return icons[type] || icons.info;
+  return icons[type] || icons.info;
 }
 
 /**
@@ -326,12 +320,12 @@ function getIconForType(type) {
  * @private
  */
 function injectStyles() {
- // Check if styles already injected
- if (document.getElementById('notification-styles')) return;
+  // Check if styles already injected
+  if (document.getElementById('notification-styles')) return;
 
- const style = document.createElement('style');
- style.id = 'notification-styles';
- style.textContent = `
+  const style = document.createElement('style');
+  style.id = 'notification-styles';
+  style.textContent = `
  .notification-container {
  position: fixed;
  top: 20px;
@@ -519,7 +513,7 @@ function injectStyles() {
  }
  `;
 
- document.head.appendChild(style);
+  document.head.appendChild(style);
 }
 
 /**
@@ -527,7 +521,7 @@ function injectStyles() {
  * @returns {number}
  */
 export function getActiveCount() {
- return activeNotifications.length;
+  return activeNotifications.length;
 }
 
 /**
@@ -536,5 +530,5 @@ export function getActiveCount() {
  * @returns {boolean}
  */
 export function isActive(id) {
- return activeNotifications.some(n => n.id === id);
+  return activeNotifications.some((n) => n.id === id);
 }

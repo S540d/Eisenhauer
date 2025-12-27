@@ -7,11 +7,11 @@ import { SEGMENTS } from './config.js';
 
 // Task storage
 export let tasks = {
-    1: [],
-    2: [],
-    3: [],
-    4: [],
-    5: []
+  1: [],
+  2: [],
+  3: [],
+  4: [],
+  5: [],
 };
 
 // Current task being processed (for modal)
@@ -21,21 +21,21 @@ export let currentTask = null;
  * Set current task (used by modal)
  */
 export function setCurrentTask(task) {
-    currentTask = task;
+  currentTask = task;
 }
 
 /**
  * Get current task
  */
 export function getCurrentTask() {
-    return currentTask;
+  return currentTask;
 }
 
 /**
  * Clear current task
  */
 export function clearCurrentTask() {
-    currentTask = null;
+  currentTask = null;
 }
 
 /**
@@ -45,92 +45,94 @@ export function clearCurrentTask() {
  * @returns {number} Next occurrence timestamp
  */
 function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
-    const now = new Date(fromTimestamp);
-    let nextDate = new Date(now);
+  const now = new Date(fromTimestamp);
+  let nextDate = new Date(now);
 
-    // Set to start of next day (00:00)
-    nextDate.setDate(nextDate.getDate() + 1);
-    nextDate.setHours(0, 0, 0, 0);
+  // Set to start of next day (00:00)
+  nextDate.setDate(nextDate.getDate() + 1);
+  nextDate.setHours(0, 0, 0, 0);
 
-    switch (recurringConfig.interval) {
-        case 'daily':
-            // Already set to tomorrow 00:00
+  switch (recurringConfig.interval) {
+    case 'daily':
+      // Already set to tomorrow 00:00
+      break;
+
+    case 'weekly':
+      // Find next occurrence of selected weekday(s)
+      if (recurringConfig.weekdays && recurringConfig.weekdays.length > 0) {
+        const sortedWeekdays = [...recurringConfig.weekdays].sort((a, b) => a - b);
+        const currentDay = nextDate.getDay();
+
+        // Find next weekday
+        let daysToAdd = null;
+        for (const weekday of sortedWeekdays) {
+          const diff = weekday - currentDay;
+          if (diff > 0) {
+            daysToAdd = diff;
             break;
+          }
+        }
 
-        case 'weekly':
-            // Find next occurrence of selected weekday(s)
-            if (recurringConfig.weekdays && recurringConfig.weekdays.length > 0) {
-                const sortedWeekdays = [...recurringConfig.weekdays].sort((a, b) => a - b);
-                const currentDay = nextDate.getDay();
+        // If no future weekday this week, wrap to next week
+        if (daysToAdd === null) {
+          daysToAdd = 7 - currentDay + sortedWeekdays[0];
+        }
 
-                // Find next weekday
-                let daysToAdd = null;
-                for (const weekday of sortedWeekdays) {
-                    const diff = weekday - currentDay;
-                    if (diff > 0) {
-                        daysToAdd = diff;
-                        break;
-                    }
-                }
+        nextDate.setDate(nextDate.getDate() + daysToAdd);
+      } else {
+        // Default: 7 days from now
+        nextDate.setDate(nextDate.getDate() + 6); // +6 because we already added +1
+      }
+      break;
 
-                // If no future weekday this week, wrap to next week
-                if (daysToAdd === null) {
-                    daysToAdd = 7 - currentDay + sortedWeekdays[0];
-                }
+    case 'monthly':
+      // Next month, same day
+      const targetDay = recurringConfig.dayOfMonth || 1;
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      nextDate.setDate(
+        Math.min(targetDay, new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate())
+      );
+      break;
 
-                nextDate.setDate(nextDate.getDate() + daysToAdd);
-            } else {
-                // Default: 7 days from now
-                nextDate.setDate(nextDate.getDate() + 6); // +6 because we already added +1
-            }
-            break;
+    case 'custom':
+      // Custom days from now
+      const customDays = recurringConfig.customDays || 1;
+      nextDate.setDate(nextDate.getDate() + customDays - 1); // -1 because we already added +1
+      break;
 
-        case 'monthly':
-            // Next month, same day
-            const targetDay = recurringConfig.dayOfMonth || 1;
-            nextDate.setMonth(nextDate.getMonth() + 1);
-            nextDate.setDate(Math.min(targetDay, new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate()));
-            break;
+    default:
+      // Default to daily
+      break;
+  }
 
-        case 'custom':
-            // Custom days from now
-            const customDays = recurringConfig.customDays || 1;
-            nextDate.setDate(nextDate.getDate() + customDays - 1); // -1 because we already added +1
-            break;
-
-        default:
-            // Default to daily
-            break;
-    }
-
-    return nextDate.getTime();
+  return nextDate.getTime();
 }
 
 /**
  * Create a new task object
  */
 function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt = null) {
-    const task = {
-        id: Date.now() + Math.random(), // Add random to avoid ID collisions
-        text: taskText,
-        segment: segmentId,
-        checked: false,
-        createdAt: createdAt || Date.now(),
-        completedAt: null
+  const task = {
+    id: Date.now() + Math.random(), // Add random to avoid ID collisions
+    text: taskText,
+    segment: segmentId,
+    checked: false,
+    createdAt: createdAt || Date.now(),
+    completedAt: null,
+  };
+
+  // Add recurring configuration if enabled
+  if (recurringConfig && recurringConfig.enabled) {
+    task.recurring = {
+      enabled: true,
+      interval: recurringConfig.interval,
+      weekdays: recurringConfig.weekdays || [],
+      dayOfMonth: recurringConfig.dayOfMonth || 1,
+      customDays: recurringConfig.customDays || 1,
     };
+  }
 
-    // Add recurring configuration if enabled
-    if (recurringConfig && recurringConfig.enabled) {
-        task.recurring = {
-            enabled: true,
-            interval: recurringConfig.interval,
-            weekdays: recurringConfig.weekdays || [],
-            dayOfMonth: recurringConfig.dayOfMonth || 1,
-            customDays: recurringConfig.customDays || 1
-        };
-    }
-
-    return task;
+  return task;
 }
 
 /**
@@ -142,15 +144,15 @@ function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt
  * @returns {object} The created task
  */
 export function addTaskToSegment(taskText, segmentId, recurringConfig = null, saveCallback = null) {
-    const task = createTaskObject(taskText, segmentId, recurringConfig);
-    tasks[segmentId].push(task);
+  const task = createTaskObject(taskText, segmentId, recurringConfig);
+  tasks[segmentId].push(task);
 
-    // Call save callback if provided
-    if (saveCallback) {
-        saveCallback(task);
-    }
+  // Call save callback if provided
+  if (saveCallback) {
+    saveCallback(task);
+  }
 
-    return task;
+  return task;
 }
 
 /**
@@ -161,17 +163,17 @@ export function addTaskToSegment(taskText, segmentId, recurringConfig = null, sa
  * @returns {boolean} True if task was deleted
  */
 export function deleteTask(taskId, segmentId, deleteCallback = null) {
-    const taskIndex = tasks[segmentId].findIndex(t => t.id === taskId);
-    if (taskIndex === -1) return false;
+  const taskIndex = tasks[segmentId].findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) return false;
 
-    tasks[segmentId].splice(taskIndex, 1);
+  tasks[segmentId].splice(taskIndex, 1);
 
-    // Call delete callback if provided
-    if (deleteCallback) {
-        deleteCallback(taskId);
-    }
+  // Call delete callback if provided
+  if (deleteCallback) {
+    deleteCallback(taskId);
+  }
 
-    return true;
+  return true;
 }
 
 /**
@@ -183,42 +185,42 @@ export function deleteTask(taskId, segmentId, deleteCallback = null) {
  * @returns {object|null} The moved task or null if not found
  */
 export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
-    const taskIndex = tasks[fromSegment].findIndex(t => t.id === taskId);
-    if (taskIndex === -1) return null;
+  const taskIndex = tasks[fromSegment].findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) return null;
 
-    const task = tasks[fromSegment][taskIndex];
+  const task = tasks[fromSegment][taskIndex];
 
-    // Remove from old segment
-    tasks[fromSegment].splice(taskIndex, 1);
+  // Remove from old segment
+  tasks[fromSegment].splice(taskIndex, 1);
 
-    // Create updated task for new segment
-    const movedTask = {
-        id: task.id,
-        text: task.text,
-        segment: toSegment,
-        checked: false,
-        createdAt: task.createdAt
-    };
+  // Create updated task for new segment
+  const movedTask = {
+    id: task.id,
+    text: task.text,
+    segment: toSegment,
+    checked: false,
+    createdAt: task.createdAt,
+  };
 
-    // Preserve recurring config if exists
-    if (task.recurring) {
-        movedTask.recurring = { ...task.recurring };
-    }
+  // Preserve recurring config if exists
+  if (task.recurring) {
+    movedTask.recurring = { ...task.recurring };
+  }
 
-    // Clear completedAt when moving away from Done segment
-    if (fromSegment !== SEGMENTS.DONE && task.completedAt) {
-        movedTask.completedAt = task.completedAt;
-    }
+  // Clear completedAt when moving away from Done segment
+  if (fromSegment !== SEGMENTS.DONE && task.completedAt) {
+    movedTask.completedAt = task.completedAt;
+  }
 
-    // Add to new segment
-    tasks[toSegment].push(movedTask);
+  // Add to new segment
+  tasks[toSegment].push(movedTask);
 
-    // Call save callback if provided
-    if (saveCallback) {
-        saveCallback(movedTask);
-    }
+  // Call save callback if provided
+  if (saveCallback) {
+    saveCallback(movedTask);
+  }
 
-    return movedTask;
+  return movedTask;
 }
 
 /**
@@ -229,86 +231,86 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
  * @returns {object|null} Result object with task and action info
  */
 export function toggleTask(taskId, segmentId, saveCallback = null) {
-    const taskIndex = tasks[segmentId].findIndex(t => t.id === taskId);
-    if (taskIndex === -1) return null;
+  const taskIndex = tasks[segmentId].findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) return null;
 
-    const task = tasks[segmentId][taskIndex];
+  const task = tasks[segmentId][taskIndex];
 
-    // Move to Done segment (5)
-    if (!task.checked && segmentId !== SEGMENTS.DONE) {
-        let newRecurringTask = null;
+  // Move to Done segment (5)
+  if (!task.checked && segmentId !== SEGMENTS.DONE) {
+    let newRecurringTask = null;
 
-        // Check if this is a recurring task
-        if (task.recurring && task.recurring.enabled) {
-            // Calculate next occurrence timestamp
-            const nextOccurrence = calculateNextOccurrence(task.recurring);
+    // Check if this is a recurring task
+    if (task.recurring && task.recurring.enabled) {
+      // Calculate next occurrence timestamp
+      const nextOccurrence = calculateNextOccurrence(task.recurring);
 
-            // Create a new instance of the recurring task with nextOccurrence as createdAt
-            // This ensures the task only appears when it's due
-            newRecurringTask = createTaskObject(
-                task.text,
-                task.segment,
-                {
-                    enabled: true,
-                    ...task.recurring
-                },
-                nextOccurrence // Set createdAt to future timestamp
-            );
+      // Create a new instance of the recurring task with nextOccurrence as createdAt
+      // This ensures the task only appears when it's due
+      newRecurringTask = createTaskObject(
+        task.text,
+        task.segment,
+        {
+          enabled: true,
+          ...task.recurring,
+        },
+        nextOccurrence // Set createdAt to future timestamp
+      );
 
-            // Add the new task to the same segment
-            tasks[segmentId].push(newRecurringTask);
-        }
-
-        // Move original task to Done segment
-        tasks[segmentId].splice(taskIndex, 1);
-
-        // Remove recurring config from completed instance
-        // (completed tasks should appear as normal tasks in Done segment, not as recurring)
-        if (task.recurring) {
-            delete task.recurring;
-        }
-
-        task.segment = SEGMENTS.DONE;
-        task.checked = true;
-        task.completedAt = Date.now(); // Track completion time for productivity statistics
-        tasks[SEGMENTS.DONE].push(task);
-
-        // Call save callback if provided
-        if (saveCallback) {
-            saveCallback(task, newRecurringTask);
-        }
-
-        return {
-            action: 'completed',
-            task,
-            newRecurringTask,
-            fromSegment: segmentId,
-            toSegment: SEGMENTS.DONE
-        };
-    }
-    // Restore from Done segment to segment 1
-    else if (task.checked && segmentId === SEGMENTS.DONE) {
-        tasks[segmentId].splice(taskIndex, 1);
-
-        task.segment = SEGMENTS.DO;
-        task.checked = false;
-        task.completedAt = null; // Reset completion time
-        tasks[SEGMENTS.DO].push(task);
-
-        // Call save callback if provided
-        if (saveCallback) {
-            saveCallback(task, null);
-        }
-
-        return {
-            action: 'restored',
-            task,
-            fromSegment: SEGMENTS.DONE,
-            toSegment: SEGMENTS.DO
-        };
+      // Add the new task to the same segment
+      tasks[segmentId].push(newRecurringTask);
     }
 
-    return null;
+    // Move original task to Done segment
+    tasks[segmentId].splice(taskIndex, 1);
+
+    // Remove recurring config from completed instance
+    // (completed tasks should appear as normal tasks in Done segment, not as recurring)
+    if (task.recurring) {
+      delete task.recurring;
+    }
+
+    task.segment = SEGMENTS.DONE;
+    task.checked = true;
+    task.completedAt = Date.now(); // Track completion time for productivity statistics
+    tasks[SEGMENTS.DONE].push(task);
+
+    // Call save callback if provided
+    if (saveCallback) {
+      saveCallback(task, newRecurringTask);
+    }
+
+    return {
+      action: 'completed',
+      task,
+      newRecurringTask,
+      fromSegment: segmentId,
+      toSegment: SEGMENTS.DONE,
+    };
+  }
+  // Restore from Done segment to segment 1
+  else if (task.checked && segmentId === SEGMENTS.DONE) {
+    tasks[segmentId].splice(taskIndex, 1);
+
+    task.segment = SEGMENTS.DO;
+    task.checked = false;
+    task.completedAt = null; // Reset completion time
+    tasks[SEGMENTS.DO].push(task);
+
+    // Call save callback if provided
+    if (saveCallback) {
+      saveCallback(task, null);
+    }
+
+    return {
+      action: 'restored',
+      task,
+      fromSegment: SEGMENTS.DONE,
+      toSegment: SEGMENTS.DO,
+    };
+  }
+
+  return null;
 }
 
 /**
@@ -317,11 +319,11 @@ export function toggleTask(taskId, segmentId, saveCallback = null) {
  * @returns {Array} Array of tasks
  */
 export function getTasks(segmentId) {
-    const now = Date.now();
-    const segmentTasks = tasks[segmentId] || [];
+  const now = Date.now();
+  const segmentTasks = tasks[segmentId] || [];
 
-    // Filter out future recurring tasks (not yet due)
-    return segmentTasks.filter(task => task.createdAt <= now);
+  // Filter out future recurring tasks (not yet due)
+  return segmentTasks.filter((task) => task.createdAt <= now);
 }
 
 /**
@@ -331,7 +333,7 @@ export function getTasks(segmentId) {
  * @returns {object|null} Task object or null if not found
  */
 export function getTask(taskId, segmentId) {
-    return tasks[segmentId].find(t => t.id === taskId) || null;
+  return tasks[segmentId].find((t) => t.id === taskId) || null;
 }
 
 /**
@@ -339,7 +341,7 @@ export function getTask(taskId, segmentId) {
  * @returns {object} All tasks grouped by segment
  */
 export function getAllTasks() {
-    return tasks;
+  return tasks;
 }
 
 /**
@@ -347,13 +349,13 @@ export function getAllTasks() {
  * @param {object} newTasks - Tasks object
  */
 export function setAllTasks(newTasks) {
-    tasks = newTasks || {
-        1: [],
-        2: [],
-        3: [],
-        4: [],
-        5: []
-    };
+  tasks = newTasks || {
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+    5: [],
+  };
 }
 
 /**
@@ -362,7 +364,7 @@ export function setAllTasks(newTasks) {
  * @returns {number} Number of tasks in segment
  */
 export function getTaskCount(segmentId) {
-    return tasks[segmentId] ? tasks[segmentId].length : 0;
+  return tasks[segmentId] ? tasks[segmentId].length : 0;
 }
 
 /**
@@ -370,7 +372,7 @@ export function getTaskCount(segmentId) {
  * @returns {number} Total number of tasks
  */
 export function getTotalTaskCount() {
-    return Object.values(tasks).reduce((sum, segment) => sum + segment.length, 0);
+  return Object.values(tasks).reduce((sum, segment) => sum + segment.length, 0);
 }
 
 /**
@@ -381,11 +383,11 @@ export function getTotalTaskCount() {
  * @returns {object|null} Updated task or null if not found
  */
 export function updateTask(taskId, segmentId, updates) {
-    const task = tasks[segmentId].find(t => t.id === taskId);
-    if (!task) return null;
+  const task = tasks[segmentId].find((t) => t.id === taskId);
+  if (!task) return null;
 
-    Object.assign(task, updates);
-    return task;
+  Object.assign(task, updates);
+  return task;
 }
 
 /**
@@ -394,18 +396,18 @@ export function updateTask(taskId, segmentId, updates) {
  * @returns {object} Filtered tasks by segment
  */
 export function filterTasks(searchTerm) {
-    if (!searchTerm) return tasks;
+  if (!searchTerm) return tasks;
 
-    const filtered = {};
-    const lowerSearch = searchTerm.toLowerCase();
+  const filtered = {};
+  const lowerSearch = searchTerm.toLowerCase();
 
-    for (let segmentId = 1; segmentId <= 5; segmentId++) {
-        filtered[segmentId] = tasks[segmentId].filter(task =>
-            task.text.toLowerCase().includes(lowerSearch)
-        );
-    }
+  for (let segmentId = 1; segmentId <= 5; segmentId++) {
+    filtered[segmentId] = tasks[segmentId].filter((task) =>
+      task.text.toLowerCase().includes(lowerSearch)
+    );
+  }
 
-    return filtered;
+  return filtered;
 }
 
 /**
@@ -413,7 +415,7 @@ export function filterTasks(searchTerm) {
  * @returns {Array} Array of completed tasks
  */
 export function getCompletedTasks() {
-    return tasks[SEGMENTS.DONE] || [];
+  return tasks[SEGMENTS.DONE] || [];
 }
 
 /**
@@ -421,12 +423,12 @@ export function getCompletedTasks() {
  * @param {function} deleteCallback - Callback to delete from storage
  */
 export function clearCompletedTasks(deleteCallback = null) {
-    const completedIds = tasks[SEGMENTS.DONE].map(t => t.id);
-    tasks[SEGMENTS.DONE] = [];
+  const completedIds = tasks[SEGMENTS.DONE].map((t) => t.id);
+  tasks[SEGMENTS.DONE] = [];
 
-    if (deleteCallback) {
-        deleteCallback(completedIds);
-    }
+  if (deleteCallback) {
+    deleteCallback(completedIds);
+  }
 }
 
 /**
@@ -436,23 +438,23 @@ export function clearCompletedTasks(deleteCallback = null) {
  * @returns {string} Human-readable description
  */
 export function getRecurringDescription(recurring, translations) {
-    if (!recurring || !recurring.enabled) return '';
+  if (!recurring || !recurring.enabled) return '';
 
-    const t = translations.recurring;
+  const t = translations.recurring;
 
-    switch (recurring.interval) {
-        case 'daily':
-            return t.daily;
-        case 'weekly':
-            if (recurring.weekdays && recurring.weekdays.length > 0) {
-                return `${t.weekly}: ${recurring.weekdays.map(d => t.weekdays[d]).join(', ')}`;
-            }
-            return t.weekly;
-        case 'monthly':
-            return `${t.monthly}: ${t.dayOfMonth} ${recurring.dayOfMonth}`;
-        case 'custom':
-            return `${t.custom}: ${recurring.customDays} ${t.customDays}`;
-        default:
-            return '';
-    }
+  switch (recurring.interval) {
+    case 'daily':
+      return t.daily;
+    case 'weekly':
+      if (recurring.weekdays && recurring.weekdays.length > 0) {
+        return `${t.weekly}: ${recurring.weekdays.map((d) => t.weekdays[d]).join(', ')}`;
+      }
+      return t.weekly;
+    case 'monthly':
+      return `${t.monthly}: ${t.dayOfMonth} ${recurring.dayOfMonth}`;
+    case 'custom':
+      return `${t.custom}: ${recurring.customDays} ${t.customDays}`;
+    default:
+      return '';
+  }
 }

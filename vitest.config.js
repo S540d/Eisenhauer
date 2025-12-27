@@ -21,8 +21,8 @@ export default defineConfig({
         'auth.js',
         'firebase-config.js',
         'service-worker.js',
-        'script.legacy.js'
-      ]
+        'script.legacy.js',
+      ],
     },
 
     // Test files pattern
@@ -32,6 +32,6 @@ export default defineConfig({
     setupFiles: ['./tests/setup.js'],
 
     // Timeout
-    testTimeout: 10000
-  }
+    testTimeout: 10000,
+  },
 });

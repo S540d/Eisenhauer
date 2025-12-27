@@ -20,98 +20,85 @@ const buildDate = now.toISOString().split('T')[0]; // YYYY-MM-DD
 const buildTime = now.getTime(); // Unix timestamp
 // 1. Update service-worker.js
 function updateServiceWorker() {
- const swPath = path.join(__dirname, 'service-worker.js');
+  const swPath = path.join(__dirname, 'service-worker.js');
 
- if (!fs.existsSync(swPath)) {
- return;
- }
+  if (!fs.existsSync(swPath)) {
+    return;
+  }
 
- let content = fs.readFileSync(swPath, 'utf8');
+  let content = fs.readFileSync(swPath, 'utf8');
 
- // Update BUILD_DATE
- content = content.replace(
- /const BUILD_DATE = '[^']*';/,
- `const BUILD_DATE = '${buildDate}';`
- );
+  // Update BUILD_DATE
+  content = content.replace(/const BUILD_DATE = '[^']*';/, `const BUILD_DATE = '${buildDate}';`);
 
- // Update cache busting comment
- content = content.replace(
- /\/\/ Cache busting - [^\n]*/,
- `// Cache busting - updated ${now.toISOString()}`
- );
+  // Update cache busting comment
+  content = content.replace(
+    /\/\/ Cache busting - [^\n]*/,
+    `// Cache busting - updated ${now.toISOString()}`
+  );
 
- fs.writeFileSync(swPath, content);
+  fs.writeFileSync(swPath, content);
 }
 
 // 2. Update index.html with cache-busting parameters
 function updateIndexHtml() {
- const htmlPath = path.join(__dirname, 'index.html');
+  const htmlPath = path.join(__dirname, 'index.html');
 
- if (!fs.existsSync(htmlPath)) {
- return;
- }
+  if (!fs.existsSync(htmlPath)) {
+    return;
+  }
 
- let content = fs.readFileSync(htmlPath, 'utf8');
+  let content = fs.readFileSync(htmlPath, 'utf8');
 
- // Update all script and CSS references with cache busting
- content = content.replace(
- /src="([^"]+\.js)(\?v=[^"]*)?"/g,
- `src="$1?v=${buildTime}"`
- );
+  // Update all script and CSS references with cache busting
+  content = content.replace(/src="([^"]+\.js)(\?v=[^"]*)?"/g, `src="$1?v=${buildTime}"`);
 
- content = content.replace(
- /href="([^"]+\.css)(\?v=[^"]*)?"/g,
- `href="$1?v=${buildTime}"`
- );
+  content = content.replace(/href="([^"]+\.css)(\?v=[^"]*)?"/g, `href="$1?v=${buildTime}"`);
 
- fs.writeFileSync(htmlPath, content);
+  fs.writeFileSync(htmlPath, content);
 }
 
 // 3. Update manifest.json version
 function updateManifest() {
- const manifestPath = path.join(__dirname, 'manifest.json');
+  const manifestPath = path.join(__dirname, 'manifest.json');
 
- if (!fs.existsSync(manifestPath)) {
- return;
- }
+  if (!fs.existsSync(manifestPath)) {
+    return;
+  }
 
- try {
- const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
- // Read version from package.json
- const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
- manifest.version = packageJson.version;
- manifest.build_date = buildDate;
+    // Read version from package.json
+    const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+    manifest.version = packageJson.version;
+    manifest.build_date = buildDate;
 
- fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
- } catch (error) {
- }
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+  } catch (error) {}
 }
 
 // 4. Create version info file
 function createVersionInfo() {
- const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 
- const versionInfo = {
- version: packageJson.version,
- buildDate: buildDate,
- buildTime: buildTime,
- commit: process.env.GITHUB_SHA || 'local',
- timestamp: now.toISOString()
- };
+  const versionInfo = {
+    version: packageJson.version,
+    buildDate: buildDate,
+    buildTime: buildTime,
+    commit: process.env.GITHUB_SHA || 'local',
+    timestamp: now.toISOString(),
+  };
 
- fs.writeFileSync(
- path.join(__dirname, 'version.json'),
- JSON.stringify(versionInfo, null, 2)
- );
+  fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(versionInfo, null, 2));
 }
 
 // Run all updates
 try {
- updateServiceWorker();
- updateIndexHtml();
- updateManifest();
- createVersionInfo();
+  updateServiceWorker();
+  updateIndexHtml();
+  updateManifest();
+  createVersionInfo();
 } catch (error) {
- process.exit(1);
+  process.exit(1);
 }

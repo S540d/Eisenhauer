@@ -11,7 +11,7 @@ import {
   SyncError,
   ErrorHandler,
   withErrorHandling,
-  errorBoundary
+  errorBoundary,
 } from '../../js/modules/error-handler.js';
 
 describe('Error Classes', () => {
@@ -137,15 +137,15 @@ describe('ErrorHandler', () => {
     it('should return error statistics', () => {
       ErrorHandler.handleError(new TaskMoveError('Move 1'), {
         operation: 'moveTask',
-        silent: true
+        silent: true,
       });
       ErrorHandler.handleError(new TaskMoveError('Move 2'), {
         operation: 'moveTask',
-        silent: true
+        silent: true,
       });
       ErrorHandler.handleError(new StorageError('Storage error'), {
         operation: 'saveTask',
-        silent: true
+        silent: true,
       });
 
       const stats = ErrorHandler.getStats();
