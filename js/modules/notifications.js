@@ -52,6 +52,9 @@ let notificationContainer = null;
 function initNotifications() {
   if (notificationContainer) return;
 
+  // Ensure document.body exists
+  if (!document.body) return;
+
   // Create container
   notificationContainer = document.createElement('div');
   notificationContainer.id = 'notification-container';
@@ -76,7 +79,7 @@ export function showNotification(options) {
   initNotifications();
 
   // Validate options
-  if (!options.message) {
+  if (!options.message || !notificationContainer) {
     return null;
   }
 
@@ -513,7 +516,12 @@ function injectStyles() {
  }
  `;
 
-  document.head.appendChild(style);
+  // Safely append to head or body
+  if (document.head) {
+    document.head.appendChild(style);
+  } else if (document.body) {
+    document.body.insertBefore(style, document.body.firstChild);
+  }
 }
 
 /**

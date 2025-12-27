@@ -47,9 +47,20 @@ global.console = {
   error: vi.fn(),
 };
 
-// Ensure document.body exists
-if (typeof document !== 'undefined' && !document.body) {
-  document.body = document.createElement('body');
+// Ensure document structure exists for Happy DOM
+if (typeof document !== 'undefined') {
+  if (!document.documentElement) {
+    const html = document.createElement('html');
+    document.insertBefore(html, document.firstChild);
+  }
+  if (!document.head) {
+    const head = document.createElement('head');
+    document.documentElement.insertBefore(head, document.documentElement.firstChild);
+  }
+  if (!document.body) {
+    const body = document.createElement('body');
+    document.documentElement.appendChild(body);
+  }
 }
 
 // Reset mocks before each test
