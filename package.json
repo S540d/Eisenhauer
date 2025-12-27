@@ -51,10 +51,14 @@
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "devDependencies": {
     "@playwright/test": "^1.56.1",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
+    "eslint": "^8.0.0",
     "happy-dom": "^20.0.11",
     "husky": "^9.1.7",
+    "prettier": "^3.0.0",
     "vitest": "^4.0.16"
   }
 }

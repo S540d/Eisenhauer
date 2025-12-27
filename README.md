@@ -170,6 +170,178 @@ Die App kann als Progressive Web App auf iOS installiert werden!
 
 📱 **Detaillierte Anleitung:** Siehe [INSTALL.md](INSTALL.md)
 
+## Entwickler Setup
+
+### Branches & Workflow
+
+Dieses Projekt folgt einem **Staging → Production Workflow**:
+
+| Branch | URL | Zweck |
+|--------|-----|-------|
+| `main` | https://s540d.github.io/Eisenhauer/ | Production (stabil) |
+| `staging` | https://s540d.github.io/Eisenhauer/?env=staging | Testing (vor Release) |
+| `rework/*` | lokal | Feature-Entwicklung |
+
+### Lokale Entwicklung
+
+#### Setup
+
+```bash
+# Repository clonen
+git clone https://github.com/S540d/Eisenhauer.git
+cd Eisenhauer
+
+# Dependencies installieren
+npm install
+
+# Development Server starten
+npm start
+# oder mit Python (port 8000)
+python3 -m http.server 8000
+```
+
+#### npm Scripts
+
+```bash
+# Formatierung & Linting
+npm run format          # Code mit Prettier formatieren
+npm run format:check    # Prüfe Code-Formatierung (ohne Änderungen)
+npm run lint            # ESLint Linting
+npm run lint:fix        # ESLint Fehler automatisch beheben
+
+# Build
+npm run build           # Bau für Production (standard)
+npm run build:staging   # Bau für Staging-Testing
+npm run build:production  # Bau für Production (explicit)
+
+# Testing
+npm run test            # Unit Tests mit Vitest
+npm run test:ui         # Unit Tests mit UI
+npm run test:coverage   # Tests mit Coverage-Report
+npm run test:watch      # Tests im Watch-Mode
+npm run test:e2e        # End-to-End Tests (Playwright)
+npm run test:e2e:ui     # E2E Tests mit UI
+npm run test:e2e:headed # E2E Tests sichtbar (nicht headless)
+npm run test:e2e:debug  # E2E Tests im Debug-Mode
+
+# Deployment
+npm run deploy          # Deploy zu GitHub Pages
+npm run validate        # Release Validation Checklist
+```
+
+### Staging/Production Workflow
+
+#### 1️⃣ Feature entwickeln
+
+```bash
+# Feature Branch erstellen (optional)
+git checkout -b feature/my-feature
+
+# Code schreiben, testen, committen
+npm run format:check
+npm run lint
+npm run test
+git add .
+git commit -m "feat: My new feature"
+```
+
+**Pre-Commit Hooks** (automatisch):
+- ✅ Prettier formatiert Code
+- ✅ ESLint prüft Compliance
+- ✅ Konsistenz-Checks
+
+#### 2️⃣ Zu Staging pushen (Testing)
+
+```bash
+# Zu staging Branch wechseln
+git checkout staging
+git merge main (oder feature/my-feature)
+git push origin staging
+
+# GitHub Actions läuft automatisch:
+# - Tests
+# - Build
+# - Deploy zu Staging-URL
+```
+
+**Staging URL:** `https://s540d.github.io/Eisenhauer/?env=staging`
+- ⚠️ Zeigt gelben "STAGING" Banner
+- Daten sind Test-Daten
+- Verwendet Staging Firebase Project
+
+#### 3️⃣ Nach Test zu Production
+
+```bash
+git checkout main
+git merge staging
+git push origin main
+
+# GitHub Actions läuft automatisch:
+# - Tests
+# - Build
+# - Deploy zu Production-URL
+```
+
+**Production URL:** `https://s540d.github.io/Eisenhauer/`
+- ✅ Stabile Version für Benutzer
+- Keine Test-Banner
+- Production Firebase Project
+
+### Environment Detection
+
+Die App erkennt das Environment automatisch via URL Query-Parameter:
+
+```javascript
+// Production (default)
+https://s540d.github.io/Eisenhauer/
+
+// Staging (für Testing)
+https://s540d.github.io/Eisenhauer/?env=staging
+```
+
+**Code-Beispiel:**
+```javascript
+import { isStaging } from './config.js';
+
+if (isStaging()) {
+  console.log('Running in STAGING mode');
+  // Staging-spezifische Logik
+}
+```
+
+### Code Quality Standards
+
+Dieses Projekt folgt technischen Vorgaben aus `technische_vorgaben.md`:
+
+✅ **Formatierung:** Prettier (automatisch bei Pre-Commit)
+✅ **Linting:** ESLint mit strengen Regeln
+✅ **Testing:** Mindestens 60% Coverage für Gesamt-Projekt
+✅ **TypeScript:** Schrittweise Migration (aktuell: Vanilla JS)
+✅ **Git Hooks:** Husky (format + lint automatisch)
+
+### Troubleshooting
+
+**Problem:** Pre-Commit Hooks schlagen fehl
+```bash
+# Prettier manuell ausführen
+npm run format
+
+# ESLint manuell reparieren
+npm run lint:fix
+
+# Husky neu installieren
+npx husky install
+```
+
+**Problem:** Tests schlagen fehl
+```bash
+# Aktualisiere Dependencies
+npm ci
+
+# Starte Tests mit Debug
+npm run test:watch
+```
+
 ## Browser-Kompatibilität
 
 - ✅ Chrome/Edge (empfohlen)
