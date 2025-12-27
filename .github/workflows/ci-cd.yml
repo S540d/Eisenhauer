@@ -74,13 +74,6 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: dist/
-          retention-days: 7
-
   # ============================================================================
   # JOB 3: Deploy to Staging
   # ============================================================================
@@ -95,19 +88,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: build-artifacts
-          path: dist/
+          node-version: '20'
+
+      - name: Prepare build
+        run: npm run build
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
 
       - name: Deploy to GitHub Pages (Staging)
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: ./
           cname: s540d.github.io
-          # Staging indicator will be added via query param in index.html
+          exclude_assets: .github,node_modules,.git,dist,tests,docs,.gitignore,.env,.env.example
 
       - name: 📢 Staging Deployment Report
         run: |
@@ -134,17 +137,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: build-artifacts
-          path: dist/
+          node-version: '20'
+
+      - name: Prepare build
+        run: npm run build
+        env:
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
 
       - name: Deploy to GitHub Pages (Production)
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: ./
+          exclude_assets: .github,node_modules,.git,dist,tests,docs,.gitignore,.env,.env.example
 
       - name: 📢 Production Deployment Report
         run: |
