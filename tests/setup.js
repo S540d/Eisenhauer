@@ -49,14 +49,19 @@ global.console = {
 
 // Ensure document structure exists for Happy DOM
 if (typeof document !== 'undefined') {
+  // Ensure documentElement exists
   if (!document.documentElement) {
     const html = document.createElement('html');
-    document.insertBefore(html, document.firstChild);
+    document.appendChild(html);
   }
+
+  // Ensure head exists
   if (!document.head) {
     const head = document.createElement('head');
     document.documentElement.insertBefore(head, document.documentElement.firstChild);
   }
+
+  // Ensure body exists and is accessible
   if (!document.body) {
     const body = document.createElement('body');
     document.documentElement.appendChild(body);

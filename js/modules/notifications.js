@@ -52,8 +52,17 @@ let notificationContainer = null;
 function initNotifications() {
   if (notificationContainer) return;
 
-  // Ensure document.body exists
-  if (!document.body) return;
+  // Ensure document.body exists, try to create if missing
+  if (!document.body) {
+    // Try to create body if it doesn't exist (test environment)
+    if (document.documentElement) {
+      const body = document.createElement('body');
+      document.documentElement.appendChild(body);
+    } else {
+      // Can't initialize without document structure
+      return;
+    }
+  }
 
   // Create container
   notificationContainer = document.createElement('div');
@@ -75,6 +84,11 @@ function initNotifications() {
  * @returns {string} Notification ID
  */
 export function showNotification(options) {
+  // Check if container was removed from DOM (e.g., in tests with beforeEach clearing DOM)
+  if (notificationContainer && !document.body?.contains(notificationContainer)) {
+    notificationContainer = null;
+  }
+
   // Initialize if not done yet
   initNotifications();
 
