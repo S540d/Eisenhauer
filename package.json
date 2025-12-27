@@ -7,6 +7,8 @@
   "scripts": {
     "start": "python3 -m http.server 8000",
     "build": "node update-cache-version.js && node build-config.js",
+    "build:staging": "VITE_ENV=staging npm run build",
+    "build:production": "VITE_ENV=production npm run build",
     "prebuild": "echo '🔧 Building with cache-busting and Firebase configuration...'",
     "postbuild": "echo '✅ Build complete with cache-busting! Ready to deploy.'",
     "deploy": "npm run build && git add -A && git commit -m 'build: update cache versions' || true && git checkout gh-pages && git merge main --no-edit && git push origin gh-pages && git checkout main",
@@ -22,6 +24,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
+    "lint": "eslint . --ext .js || true",
     "validate": "./scripts/validate-release.sh",
     "prepare": "husky install"
   },

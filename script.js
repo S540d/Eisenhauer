@@ -5,6 +5,9 @@
  * This file coordinates all modules and handles the main application flow
  */
 
+// Import environment config
+import { isStaging } from './config.js';
+
 // Import all modules
 import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js';
 import { APP_VERSION, initVersion } from './js/modules/version.js';
@@ -620,6 +623,14 @@ async function initApp() {...');
  }
  }
  // If savedTheme === 'false', stay in light mode (do nothing)
+
+ // Initialize staging banner
+ if (isStaging()) {
+ const stagingBanner = document.getElementById('stagingBanner');
+ if (stagingBanner) {
+ stagingBanner.style.display = 'block';
+ }
+ }
 
  // Initialize language from localStorage
  const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
