@@ -49,6 +49,9 @@
     "url": "https://github.com/S540d/Eisenhauer/issues"
   },
   "homepage": "https://s540d.github.io/Eisenhauer/",
+  "dependencies": {
+    "firebase": "^10.13.2"
+  },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
