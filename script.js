@@ -8,10 +8,6 @@
 // Import environment config
 import { isStaging } from './config.js';
 
-// Import Firebase services (Modular SDK)
-import { auth, db } from './js/modules/firebase-init.js';
-import { initAuth } from './js/modules/auth.js';
-
 // Import all modules
 import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js';
 import { APP_VERSION, initVersion } from './js/modules/version.js';
@@ -75,6 +71,7 @@ import {
 // Global State
 // ============================================
 let currentUser = null;
+let db = null;
 let isGuestMode = false;
 let keyboardDragManager = null;
 
@@ -89,12 +86,12 @@ let keyboardDragManager = null;
  * This function is mainly used for bulk operations like import.
  */
 async function saveAllTasks() {
-  if (currentUser && !isGuestMode) {
+  if (currentUser && db && !isGuestMode) {
     // For logged-in users, save each task individually to Firestore
     const { saveTaskToFirestore } = await import('./js/modules/storage.js');
     for (const segmentId in tasks) {
       for (const task of tasks[segmentId]) {
-        await saveTaskToFirestore(task, currentUser.uid);
+        await saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
       }
     }
   } else {
@@ -106,8 +103,8 @@ async function saveAllTasks() {
  * Load all tasks (Guest or Firebase)
  */
 async function loadAllTasks() {
-  if (currentUser && !isGuestMode) {
-    const loadedTasks = await loadUserTasks(currentUser.uid);
+  if (currentUser && db && !isGuestMode) {
+    const loadedTasks = await loadUserTasks(currentUser.uid, db);
     setAllTasks(loadedTasks);
   } else {
     const loadedTasks = await loadGuestTasks();
@@ -124,9 +121,9 @@ function handleAddTask(taskText, segment, recurringConfig = null) {
   const task = addTaskToSegment(taskText, segment, recurringConfig);
 
   // Save to storage based on mode
-  if (currentUser && !isGuestMode) {
+  if (currentUser && db && !isGuestMode) {
     // Save to Firestore
-    saveTaskToFirestore(task, currentUser.uid);
+    saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
   } else {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
@@ -142,9 +139,9 @@ function handleDeleteTask(taskId, segment) {
   deleteTask(taskId, segment);
 
   // Delete from storage based on mode
-  if (currentUser && !isGuestMode) {
+  if (currentUser && db && !isGuestMode) {
     // Delete from Firestore
-    deleteTaskFromFirestore(taskId, currentUser.uid);
+    deleteTaskFromFirestore(taskId, currentUser.uid, db);
   } else {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
@@ -165,9 +162,9 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
   }, 0);
 
   // Save to storage based on mode (async, happens after render)
-  if (currentUser && !isGuestMode && movedTask) {
+  if (currentUser && db && !isGuestMode && movedTask) {
     // Update in Firestore
-    updateTaskInFirestore(movedTask, currentUser.uid);
+    updateTaskInFirestore(movedTask, currentUser.uid, db, window.firebase);
   } else {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
@@ -181,13 +178,13 @@ function handleToggleTask(taskId, segment) {
   const result = toggleTask(taskId, segment);
 
   // Save to storage based on mode
-  if (currentUser && !isGuestMode && result) {
+  if (currentUser && db && !isGuestMode && result) {
     // Update the completed/restored task in Firestore
-    updateTaskInFirestore(result.task, currentUser.uid);
+    updateTaskInFirestore(result.task, currentUser.uid, db, window.firebase);
 
     // If a new recurring task was created, save it too
     if (result.newRecurringTask) {
-      saveTaskToFirestore(result.newRecurringTask, currentUser.uid);
+      saveTaskToFirestore(result.newRecurringTask, currentUser.uid, db, window.firebase);
     }
   } else {
     // Save to LocalForage (guest mode)
@@ -214,8 +211,8 @@ function handleEditRecurring(task) {
             const deletedTask = tasks[segment][taskIndex];
             deleteTask(taskId, segment, async (task) => {
               // Delete from Firestore if logged in
-              if (currentUser && !isGuestMode) {
-                await deleteTaskFromFirestore(task, currentUser.uid);
+              if (currentUser && db && !isGuestMode) {
+                await deleteTaskFromFirestore(task, currentUser.uid, db, window.firebase);
               } else {
                 await saveGuestTasks(tasks);
               }
@@ -226,8 +223,8 @@ function handleEditRecurring(task) {
 
             // Save to storage
             const updatedTask = tasks[segment][taskIndex];
-            if (currentUser && !isGuestMode) {
-              updateTaskInFirestore(updatedTask, currentUser.uid);
+            if (currentUser && db && !isGuestMode) {
+              updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
             } else {
               saveGuestTasks(tasks);
             }
@@ -237,8 +234,8 @@ function handleEditRecurring(task) {
 
             // Save to storage
             const updatedTask = tasks[segment][taskIndex];
-            if (currentUser && !isGuestMode) {
-              updateTaskInFirestore(updatedTask, currentUser.uid);
+            if (currentUser && db && !isGuestMode) {
+              updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
             } else {
               saveGuestTasks(tasks);
             }
@@ -585,10 +582,11 @@ function setupEventListeners() {
 
 /**
  * Handle user authentication state changes
- * This is called from auth.js (modular SDK)
+ * This is called from auth.js
  */
-window.onAuthStateChanged = async function (user, guestMode = false) {
+window.onAuthStateChanged = async function (user, firebaseDb, guestMode = false) {
   currentUser = user;
+  db = firebaseDb;
   isGuestMode = guestMode;
   if (user && !isGuestMode) {
     await loadAllTasks();
@@ -659,9 +657,6 @@ async function initApp() {
   // Load version
   await initVersion();
 
-  // Initialize authentication (Modular SDK)
-  initAuth();
-
   // Initialize storage with offline queue support (Phase 4)
   initStorage(updateSyncStatus);
   // Setup persistent storage
@@ -678,7 +673,7 @@ async function initApp() {
   });
 
   // Note: Event listeners and tasks are loaded in onAuthStateChanged callback
-  // which is triggered by auth.js (modular SDK) after showApp() is called
+  // which is triggered by auth.js after showApp() is called
 }
 
 // Start the app when DOM is ready

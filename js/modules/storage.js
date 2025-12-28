@@ -1,27 +1,17 @@
 /**
- * Storage Module (Modular Firebase SDK)
+ * Storage Module (Phase 4: Offline-Support Enhanced)
  * Handles data persistence (Firebase Firestore, LocalForage, Import/Export)
  * Integrated with OfflineQueue for robust offline operations
- *
- * @fileoverview Storage layer with offline queue support
- * @version 2.0.0
  */
 
-import { db } from './firebase-init.js';
 import { OfflineQueue } from './offline-queue.js';
 import { ErrorHandler, NetworkError } from './error-handler.js';
 import { showError, showSuccess, showInfo, showWarning } from './notifications.js';
-import {
-  collection,
-  doc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  writeBatch,
-  serverTimestamp,
-  deleteField,
-} from 'firebase/firestore';
+
+// Note: This module expects auth.js to provide:
+// - currentUser, isGuestMode
+// - db (Firestore), firebase
+// - localforage
 
 // Initialize offline queue
 const offlineQueue = new OfflineQueue('eisenhauer-sync-queue');
@@ -124,9 +114,7 @@ export async function saveTasks(tasks) {
 export async function saveGuestTasks(tasks) {
   try {
     await localforage.setItem('eisenhauerTasks', tasks);
-  } catch (error) {
-    console.error('Error saving guest tasks:', error);
-  }
+  } catch (error) {}
 }
 
 /**
@@ -156,30 +144,29 @@ export async function loadGuestTasks() {
     // Return empty tasks structure if no data
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
   } catch (error) {
-    console.error('Error loading guest tasks:', error);
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
   }
 }
 
 /**
- * Load user tasks from Firestore (Modular SDK)
+ * Load user tasks from Firestore
  * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
  * @returns {Promise<object>} Tasks object
  */
-export async function loadUserTasks(userId) {
+export async function loadUserTasks(userId, db) {
   if (!userId || !db) return { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
   try {
-    const tasksRef = collection(db, 'users', userId, 'tasks');
-    const snapshot = await getDocs(tasksRef);
+    const snapshot = await db.collection('users').doc(userId).collection('tasks').get();
 
     // Initialize empty tasks structure
     const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
     // Load tasks from Firestore
-    snapshot.forEach((docSnap) => {
-      const task = docSnap.data();
-      task.id = docSnap.id; // Use Firestore document ID
+    snapshot.forEach((doc) => {
+      const task = doc.data();
+      task.id = doc.id; // Use Firestore document ID
 
       // Ensure segment exists
       if (tasks[task.segment]) {
@@ -188,25 +175,26 @@ export async function loadUserTasks(userId) {
     });
     return tasks;
   } catch (error) {
-    console.error('Error loading user tasks:', error);
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
   }
 }
 
 /**
- * Save a single task to Firestore with offline queue (Modular SDK)
+ * Save a single task to Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ * @param {object} firebase - Firebase instance
  */
-export async function saveTaskToFirestore(task, userId) {
+export async function saveTaskToFirestore(task, userId, db, firebase) {
   if (!userId || !db) return;
 
   const taskData = {
     text: task.text,
     segment: task.segment,
     checked: task.checked || false,
-    // Preserve existing createdAt if it exists, otherwise use server timestamp
-    createdAt: task.createdAt || serverTimestamp(),
+    // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+    createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp(),
   };
 
   // Add optional fields
@@ -222,8 +210,12 @@ export async function saveTaskToFirestore(task, userId) {
   await offlineQueue.add(
     'saveTask',
     async () => {
-      const taskRef = doc(db, 'users', userId, 'tasks', task.id.toString());
-      await setDoc(taskRef, taskData);
+      await db
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .doc(task.id.toString())
+        .set(taskData);
     },
     {
       taskId: task.id,
@@ -235,11 +227,13 @@ export async function saveTaskToFirestore(task, userId) {
 }
 
 /**
- * Update a task in Firestore with offline queue (Modular SDK)
+ * Update a task in Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ * @param {object} firebase - Firebase instance
  */
-export async function updateTaskInFirestore(task, userId) {
+export async function updateTaskInFirestore(task, userId, db, firebase) {
   if (!userId || !db) return;
 
   const updateData = {
@@ -247,14 +241,11 @@ export async function updateTaskInFirestore(task, userId) {
     segment: task.segment,
     checked: task.checked || false,
     // Preserve existing createdAt if it exists, otherwise use server timestamp
-    createdAt: task.createdAt || serverTimestamp(),
+    createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp(),
   };
 
   if (task.completedAt) {
     updateData.completedAt = task.completedAt;
-  } else {
-    // Remove completedAt if not set
-    updateData.completedAt = deleteField();
   }
 
   if (task.recurring) {
@@ -265,9 +256,13 @@ export async function updateTaskInFirestore(task, userId) {
   await offlineQueue.add(
     'updateTask',
     async () => {
-      // Use setDoc with merge:true to handle both new and existing tasks
-      const taskRef = doc(db, 'users', userId, 'tasks', task.id.toString());
-      await setDoc(taskRef, updateData, { merge: true });
+      // Use set with merge:true to handle both new and existing tasks
+      await db
+        .collection('users')
+        .doc(userId)
+        .collection('tasks')
+        .doc(task.id.toString())
+        .set(updateData, { merge: true });
     },
     {
       taskId: task.id,
@@ -279,19 +274,19 @@ export async function updateTaskInFirestore(task, userId) {
 }
 
 /**
- * Delete a task from Firestore with offline queue (Modular SDK)
+ * Delete a task from Firestore (with offline queue support)
  * @param {number} taskId - Task ID
  * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
  */
-export async function deleteTaskFromFirestore(taskId, userId) {
+export async function deleteTaskFromFirestore(taskId, userId, db) {
   if (!userId || !db) return;
 
   // Add to offline queue with retry logic
   await offlineQueue.add(
     'deleteTask',
     async () => {
-      const taskRef = doc(db, 'users', userId, 'tasks', taskId.toString());
-      await deleteDoc(taskRef);
+      await db.collection('users').doc(userId).collection('tasks').doc(taskId.toString()).delete();
     },
     {
       taskId,
@@ -302,10 +297,12 @@ export async function deleteTaskFromFirestore(taskId, userId) {
 }
 
 /**
- * Migrate local data to Firestore (one-time on first login) - Modular SDK
+ * Migrate local data to Firestore (one-time on first login)
  * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ * @param {object} firebase - Firebase instance
  */
-export async function migrateLocalData(userId) {
+export async function migrateLocalData(userId, db, firebase) {
   try {
     // Try to get data from IndexedDB (new method)
     let tasksData = await localforage.getItem('eisenhauerTasks');
@@ -322,19 +319,23 @@ export async function migrateLocalData(userId) {
       return;
     }
 
-    const batch = writeBatch(db);
+    const batch = db.batch();
     let taskCount = 0;
 
     Object.keys(tasksData).forEach((segmentId) => {
       tasksData[segmentId].forEach((task) => {
-        const docRef = doc(db, 'users', userId, 'tasks', task.id.toString());
+        const docRef = db
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(task.id.toString());
 
         const taskData = {
           text: task.text,
           segment: task.segment,
           checked: task.checked || false,
-          // Preserve existing createdAt if it exists, otherwise use server timestamp
-          createdAt: task.createdAt || serverTimestamp(),
+          // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+          createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp(),
         };
 
         if (task.completedAt) {
@@ -355,9 +356,7 @@ export async function migrateLocalData(userId) {
     // Clear both storage methods after migration
     await localforage.removeItem('eisenhauerTasks');
     localStorage.removeItem('eisenhauerTasks');
-  } catch (error) {
-    console.error('Migration error:', error);
-  }
+  } catch (error) {}
 }
 
 /**
