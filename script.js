@@ -81,7 +81,7 @@ import {
 // Global State
 // ============================================
 let currentUser = null;
-let db = null;
+// Note: db is imported from firebase-init.js, not declared here
 let isGuestMode = false;
 let keyboardDragManager = null;
 
@@ -592,12 +592,11 @@ function setupEventListeners() {
 
 /**
  * Handle user authentication state changes
- * This is called from auth.js
+ * This is called from auth.js with (user, isGuestMode)
  */
-window.onAuthStateChanged = async function (user, firebaseDb, guestMode = false) {
+window.onAuthStateChanged = async function (user, isGuestMode = false) {
   currentUser = user;
-  db = firebaseDb;
-  isGuestMode = guestMode;
+  isGuestMode = isGuestMode;
   if (user && !isGuestMode) {
     await loadAllTasks();
   } else {
