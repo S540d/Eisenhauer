@@ -1,25 +1,4 @@
-/**
- * Authentication Module (Modular SDK)
- * Handles Firebase Auth and Guest Mode
- *
- * @fileoverview Firebase authentication with modular SDK
- * @version 2.0.0
- */
-
-import { auth, db, googleProvider, appleProvider } from './firebase-init.js';
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
-import {
-  collection,
-  doc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  writeBatch,
-  serverTimestamp,
-  deleteField,
-} from 'firebase/firestore';
-
-// State
+// Authentication Logic
 let currentUser = null;
 let isGuestMode = false;
 
@@ -35,51 +14,45 @@ function isSessionStorageAvailable() {
   }
 }
 
-/**
- * Initialize authentication module
- * Sets up Firebase Auth state listener and UI
- */
-export function initAuth() {
-  document.addEventListener('DOMContentLoaded', function () {
-    // Check sessionStorage availability on load
-    if (!isSessionStorageAvailable()) {
-      // Handle if needed
-    }
+// Initialize auth after DOM is ready
+document.addEventListener('DOMContentLoaded', function () {
+  // Check sessionStorage availability on load
+  if (!isSessionStorageAvailable()) {
+  }
 
-    // Auth State Observer (Modular SDK)
-    onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
+  // Auth State Observer
+  auth.onAuthStateChanged(async (user) => {
+    currentUser = user;
 
-      if (user) {
-        // User is signed in
-        isGuestMode = false;
-        await localforage.removeItem('guestMode');
+    if (user) {
+      // User is signed in
+      isGuestMode = false;
+      await localforage.removeItem('guestMode');
+      showApp();
+
+      // Call the callback from script.js (ES6 module)
+      if (typeof window.onAuthStateChanged === 'function') {
+        await window.onAuthStateChanged(user, db, false);
+      }
+    } else {
+      // Check if guest mode was active
+      const wasGuestMode = await localforage.getItem('guestMode');
+      if (wasGuestMode === 'true') {
+        isGuestMode = true;
         showApp();
 
         // Call the callback from script.js (ES6 module)
         if (typeof window.onAuthStateChanged === 'function') {
-          await window.onAuthStateChanged(user, false);
+          await window.onAuthStateChanged(null, db, true);
         }
       } else {
-        // Check if guest mode was active
-        const wasGuestMode = await localforage.getItem('guestMode');
-        if (wasGuestMode === 'true') {
-          isGuestMode = true;
-          showApp();
-
-          // Call the callback from script.js (ES6 module)
-          if (typeof window.onAuthStateChanged === 'function') {
-            await window.onAuthStateChanged(null, true);
-          }
-        } else {
-          // User is signed out and not in guest mode
-          isGuestMode = false;
-          showLogin();
-        }
+        // User is signed out and not in guest mode
+        isGuestMode = false;
+        showLogin();
       }
-    });
+    }
   });
-}
+});
 
 // Google Sign-In
 let isSigningIn = false;
@@ -94,7 +67,7 @@ async function signInWithGoogle() {
   if (googleBtn) googleBtn.disabled = true;
 
   try {
-    const result = await signInWithPopup(auth, googleProvider);
+    const result = await auth.signInWithPopup(googleProvider);
     // Optional: Migrate local data on first login
     await migrateLocalData(result.user.uid);
   } catch (error) {
@@ -130,7 +103,7 @@ async function signInWithGoogle() {
 // Apple Sign-In
 async function signInWithApple() {
   try {
-    const result = await signInWithPopup(auth, appleProvider);
+    const result = await auth.signInWithPopup(appleProvider);
     // Optional: Migrate local data on first login
     await migrateLocalData(result.user.uid);
   } catch (error) {
@@ -163,15 +136,107 @@ async function signInWithApple() {
 // Sign Out
 async function signOut() {
   try {
-    // Clear guest mode flag BEFORE signing out
+    // Clear guest mode flag BEFORE signing out to ensure onAuthStateChanged sees the correct state
     await localforage.removeItem('guestMode');
     isGuestMode = false;
 
-    // Sign out - this will trigger onAuthStateChanged
-    await firebaseSignOut(auth);
+    // Now sign out - this will trigger onAuthStateChanged
+    await auth.signOut();
   } catch (error) {
     alert('Fehler beim Abmelden: ' + error.message);
   }
+}
+
+// Export signOut as global function for ES6 modules
+window.signOut = signOut;
+
+// DEPRECATED: This function is now handled by storage.js module
+// async function loadUserTasks() {
+// if (!currentUser) return;
+//
+// try {
+// const snapshot = await db.collection('users')
+// .doc(currentUser.uid)
+// .collection('tasks')
+// .get();
+//
+// // Clear current tasks
+// tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+//
+// // Load tasks from Firestore
+// snapshot.forEach(doc => {
+// const task = doc.data();
+// task.id = doc.id; // Use Firestore document ID
+// tasks[task.segment].push(task);
+// });
+//
+// renderAllTasks();
+// } catch (error) {
+// // }
+// }
+
+// Save task to Firestore
+async function saveTaskToFirestore(task) {
+  if (!currentUser) return;
+
+  try {
+    const taskData = {
+      text: task.text,
+      segment: task.segment,
+      checked: task.checked,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (task.completedAt) {
+      taskData.completedAt = task.completedAt;
+    }
+
+    await db
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('tasks')
+      .doc(task.id.toString())
+      .set(taskData);
+  } catch (error) {}
+}
+
+// Delete task from Firestore
+async function deleteTaskFromFirestore(taskId) {
+  if (!currentUser) return;
+
+  try {
+    await db
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('tasks')
+      .doc(taskId.toString())
+      .delete();
+  } catch (error) {}
+}
+
+// Update task in Firestore
+async function updateTaskInFirestore(task) {
+  if (!currentUser) return;
+
+  try {
+    const updateData = {
+      segment: task.segment,
+      checked: task.checked,
+    };
+
+    if (task.completedAt) {
+      updateData.completedAt = task.completedAt;
+    } else {
+      updateData.completedAt = firebase.firestore.FieldValue.delete();
+    }
+
+    await db
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('tasks')
+      .doc(task.id.toString())
+      .update(updateData);
+  } catch (error) {}
 }
 
 // Migrate local data to Firestore (one-time on first login)
@@ -190,17 +255,21 @@ async function migrateLocalData(userId) {
 
     if (!tasksData) return;
 
-    const batch = writeBatch(db);
+    const batch = db.batch();
 
     Object.keys(tasksData).forEach((segmentId) => {
       tasksData[segmentId].forEach((task) => {
-        const docRef = doc(db, 'users', userId, 'tasks', task.id.toString());
+        const docRef = db
+          .collection('users')
+          .doc(userId)
+          .collection('tasks')
+          .doc(task.id.toString());
 
         batch.set(docRef, {
           text: task.text,
           segment: task.segment,
           checked: task.checked,
-          createdAt: serverTimestamp(),
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         });
       });
     });
@@ -209,36 +278,49 @@ async function migrateLocalData(userId) {
     // Clear both storage methods after migration
     await localforage.removeItem('eisenhauerTasks');
     localStorage.removeItem('eisenhauerTasks');
-  } catch (error) {
-    console.error('Migration error:', error);
-  }
+  } catch (error) {}
 }
 
 // Guest Mode (IndexedDB via localForage)
+// isGuestMode already declared at top of file
+
 async function continueAsGuest() {
   isGuestMode = true;
   await localforage.setItem('guestMode', 'true');
 
   // Request persistent storage to prevent data loss
   if (navigator.storage && navigator.storage.persist) {
-    await navigator.storage.persist();
+    const isPersisted = await navigator.storage.persist();
   }
 
   showApp();
 
   // Call the callback from script.js (ES6 module)
   if (typeof window.onAuthStateChanged === 'function') {
-    await window.onAuthStateChanged(null, true);
+    await window.onAuthStateChanged(null, db, true);
   }
 }
+
+// DEPRECATED: This function is now handled by storage.js module
+// async function loadGuestTasks() {
+// try {
+// const savedTasks = await localforage.getItem('eisenhauerTasks');
+// if (savedTasks) {
+// tasks = savedTasks;
+// renderAllTasks();
+// } else {
+// tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+// }
+// } catch (error) {
+// // tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+// }
+// }
 
 async function saveGuestTasks() {
   if (isGuestMode) {
     try {
       await localforage.setItem('eisenhauerTasks', tasks);
-    } catch (error) {
-      console.error('Error saving guest tasks:', error);
-    }
+    } catch (error) {}
   }
 }
 
@@ -247,6 +329,9 @@ function showLogin() {
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('appScreen').style.display = 'none';
 }
+
+// Export showLogin as global function for ES6 modules
+window.showLogin = showLogin;
 
 function showApp() {
   document.getElementById('loginScreen').style.display = 'none';
@@ -300,23 +385,3 @@ function showApp() {
     }
   }
 }
-
-// Make functions global for HTML onclick handlers
-window.signInWithGoogle = signInWithGoogle;
-window.signInWithApple = signInWithApple;
-window.continueAsGuest = continueAsGuest;
-window.signOut = signOut;
-window.showLogin = showLogin;
-
-// Export functions
-export {
-  initAuth,
-  signInWithGoogle,
-  signInWithApple,
-  signOut,
-  continueAsGuest,
-  saveGuestTasks,
-  showApp,
-  currentUser,
-  isGuestMode,
-};
