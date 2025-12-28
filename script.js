@@ -1,12 +1,22 @@
 /**
  * Main Application Orchestrator
  * Eisenhauer Matrix - Modular Version
+ * Firebase v9 Modular SDK Integration
  *
  * This file coordinates all modules and handles the main application flow
  */
 
 // Import environment config
 import { isStaging } from './config.js';
+
+// Import Firebase services (Modular SDK V2)
+import { auth, db } from './js/modules/firebase-init.js';
+import { initAuth } from './js/modules/auth.js';
+
+// Initialize authentication IMMEDIATELY (not in DOMContentLoaded)
+// ES6 modules are non-blocking, but we need to establish the auth listener ASAP
+// to handle login state before UI rendering
+initAuth();
 
 // Import all modules
 import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js';

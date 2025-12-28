@@ -1,5 +1,5 @@
-const CACHE_VERSION = '2.2.0';
-const BUILD_DATE = '2025-12-28'; // Cache busting - updated 2025-12-28T00:00:00.000Z (Emergency recovery)
+const CACHE_VERSION = '2.3.0';
+const BUILD_DATE = '2025-12-28'; // Cache busting - Firebase v9 Modular SDK V2 migration
 const CACHE_NAME = `eisenhauer-matrix-v${CACHE_VERSION}-${BUILD_DATE}`;
 const urlsToCache = ['./', './index.html', './style.css', './script.js', './manifest.json'];
 

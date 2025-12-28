@@ -1,17 +1,24 @@
 /**
- * Storage Module (Phase 4: Offline-Support Enhanced)
+ * Storage Module (Phase 4: Offline-Support Enhanced) - Modular SDK V2
  * Handles data persistence (Firebase Firestore, LocalForage, Import/Export)
  * Integrated with OfflineQueue for robust offline operations
  */
 
+import { db } from './firebase-init.js';
 import { OfflineQueue } from './offline-queue.js';
 import { ErrorHandler, NetworkError } from './error-handler.js';
 import { showError, showSuccess, showInfo, showWarning } from './notifications.js';
-
-// Note: This module expects auth.js to provide:
-// - currentUser, isGuestMode
-// - db (Firestore), firebase
-// - localforage
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  writeBatch,
+  serverTimestamp,
+  deleteField,
+} from 'firebase/firestore';
 
 // Initialize offline queue
 const offlineQueue = new OfflineQueue('eisenhauer-sync-queue');
@@ -194,7 +201,7 @@ export async function saveTaskToFirestore(task, userId, db, firebase) {
     segment: task.segment,
     checked: task.checked || false,
     // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
-    createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: task.createdAt || serverTimestamp(),
   };
 
   // Add optional fields
@@ -241,7 +248,7 @@ export async function updateTaskInFirestore(task, userId, db, firebase) {
     segment: task.segment,
     checked: task.checked || false,
     // Preserve existing createdAt if it exists, otherwise use server timestamp
-    createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp(),
+    createdAt: task.createdAt || serverTimestamp(),
   };
 
   if (task.completedAt) {
@@ -335,7 +342,7 @@ export async function migrateLocalData(userId, db, firebase) {
           segment: task.segment,
           checked: task.checked || false,
           // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
-          createdAt: task.createdAt || firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt: task.createdAt || serverTimestamp(),
         };
 
         if (task.completedAt) {
