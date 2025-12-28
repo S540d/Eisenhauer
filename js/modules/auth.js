@@ -40,14 +40,13 @@ function isSessionStorageAvailable() {
  * Sets up Firebase Auth state listener and UI
  */
 export function initAuth() {
-  document.addEventListener('DOMContentLoaded', function () {
-    // Check sessionStorage availability on load
-    if (!isSessionStorageAvailable()) {
-      // Handle if needed
-    }
+  // Check sessionStorage availability
+  if (!isSessionStorageAvailable()) {
+    // Handle if needed
+  }
 
-    // Auth State Observer (Modular SDK)
-    onAuthStateChanged(auth, async (user) => {
+  // Auth State Observer (Modular SDK)
+  onAuthStateChanged(auth, async (user) => {
       currentUser = user;
 
       if (user) {
@@ -78,7 +77,6 @@ export function initAuth() {
         }
       }
     });
-  });
 }
 
 // Google Sign-In
