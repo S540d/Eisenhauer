@@ -47,36 +47,36 @@ export function initAuth() {
 
   // Auth State Observer (Modular SDK)
   onAuthStateChanged(auth, async (user) => {
-      currentUser = user;
+    currentUser = user;
 
-      if (user) {
-        // User is signed in
-        isGuestMode = false;
-        await localforage.removeItem('guestMode');
+    if (user) {
+      // User is signed in
+      isGuestMode = false;
+      await localforage.removeItem('guestMode');
+      showApp();
+
+      // Call the callback from script.js (ES6 module)
+      if (typeof window.onAuthStateChanged === 'function') {
+        await window.onAuthStateChanged(user, false);
+      }
+    } else {
+      // Check if guest mode was active
+      const wasGuestMode = await localforage.getItem('guestMode');
+      if (wasGuestMode === 'true') {
+        isGuestMode = true;
         showApp();
 
         // Call the callback from script.js (ES6 module)
         if (typeof window.onAuthStateChanged === 'function') {
-          await window.onAuthStateChanged(user, false);
+          await window.onAuthStateChanged(null, true);
         }
       } else {
-        // Check if guest mode was active
-        const wasGuestMode = await localforage.getItem('guestMode');
-        if (wasGuestMode === 'true') {
-          isGuestMode = true;
-          showApp();
-
-          // Call the callback from script.js (ES6 module)
-          if (typeof window.onAuthStateChanged === 'function') {
-            await window.onAuthStateChanged(null, true);
-          }
-        } else {
-          // User is signed out and not in guest mode
-          isGuestMode = false;
-          showLogin();
-        }
+        // User is signed out and not in guest mode
+        isGuestMode = false;
+        showLogin();
       }
-    });
+    }
+  });
 }
 
 // Google Sign-In
