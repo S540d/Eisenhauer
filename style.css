@@ -1840,17 +1840,24 @@ body.dark-mode .segment.keyboard-target::before {
 }
 
 /* Settings Modal Styles */
+#settingsModal .modal-content,
+#aboutModal .modal-content {
+  padding: 0;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
 .settings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
+  padding: 12px;
   border-bottom: 1px solid var(--grid-color);
 }
 
 .settings-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1873,16 +1880,16 @@ body.dark-mode .segment.keyboard-target::before {
 }
 
 .settings-section {
-  padding: 12px 16px;
+  padding: 8px 12px;
 }
 
 .settings-section-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
 }
 
 .settings-info {
@@ -1898,16 +1905,16 @@ body.dark-mode .segment.keyboard-target::before {
 
 .theme-btn {
   flex: 1;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background-color: var(--grid-color);
   color: var(--text-color);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-height: 36px;
+  min-height: 32px;
 }
 
 .theme-btn:hover {
@@ -1929,16 +1936,17 @@ body.dark-mode .segment.keyboard-target::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background-color: var(--grid-color);
   color: var(--text-color);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s ease;
   text-decoration: none;
+  min-height: 32px;
 }
 
 .settings-btn:hover {
@@ -1951,16 +1959,16 @@ body.dark-mode .segment.keyboard-target::before {
 
 .lang-btn {
   flex: 1;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   background-color: var(--grid-color);
   color: var(--text-color);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  min-height: 36px;
+  min-height: 32px;
 }
 
 .lang-btn:hover {
@@ -1975,8 +1983,8 @@ body.dark-mode .segment.keyboard-target::before {
 .settings-row {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  padding-vertical: 12px;
+  gap: 8px;
+  padding: 0;
 }
 
 .settings-btn-flex {
@@ -1985,7 +1993,7 @@ body.dark-mode .segment.keyboard-target::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 8px;
+  padding: 8px 6px;
 }
 
 body.dark-mode .theme-btn {
