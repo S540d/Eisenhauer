@@ -177,10 +177,13 @@ export function updateLanguageUI(renderAllTasksCallback) {
   // Update interval select options
   const recurringInterval = document.getElementById('recurringInterval');
   if (recurringInterval) {
-    recurringInterval.querySelector('option[value="daily"]').textContent = lang.recurring.daily;
-    recurringInterval.querySelector('option[value="weekly"]').textContent = lang.recurring.weekly;
-    recurringInterval.querySelector('option[value="monthly"]').textContent = lang.recurring.monthly;
-    recurringInterval.querySelector('option[value="custom"]').textContent = lang.recurring.custom;
+    const dailyOption = recurringInterval.querySelector('option[value="daily"]');
+    const weeklyOption = recurringInterval.querySelector('option[value="weekly"]');
+    const monthlyOption = recurringInterval.querySelector('option[value="monthly"]');
+
+    if (dailyOption) dailyOption.textContent = lang.recurring.daily;
+    if (weeklyOption) weeklyOption.textContent = lang.recurring.weekly;
+    if (monthlyOption) monthlyOption.textContent = lang.recurring.monthly;
   }
 
   // Update weekday labels
