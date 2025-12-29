@@ -303,11 +303,25 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
 
 /**
  * Migrate local data to Firestore (one-time on first login)
+ * SAFETY: Only migrates if user has no existing Firestore tasks (prevents data loss)
  * @param {string} userId - User ID
  * @param {object} db - Firestore database instance
  */
 export async function migrateLocalData(userId, db) {
   try {
+    // CRITICAL: Check if user already has Firestore tasks
+    // This prevents overwriting existing data from other devices/sessions
+    const tasksRef = collection(db, 'users', userId, 'tasks');
+    const snapshot = await getDocs(tasksRef);
+
+    // If user already has tasks in Firestore, skip migration (already logged in before)
+    if (!snapshot.empty) {
+      console.log(
+        `[Migration] User ${userId} already has ${snapshot.size} Firestore tasks. Skipping migration.`
+      );
+      return;
+    }
+
     // Try to get data from IndexedDB (new method)
     let tasksData = await localforage.getItem('eisenhauerTasks');
 
@@ -319,10 +333,13 @@ export async function migrateLocalData(userId, db) {
       }
     }
 
+    // If no local tasks, nothing to migrate
     if (!tasksData) {
+      console.log(`[Migration] No local tasks to migrate for user ${userId}`);
       return;
     }
 
+    // Safe migration: Add new tasks, don't overwrite existing
     const batch = writeBatch(db);
     let taskCount = 0;
 
@@ -352,11 +369,14 @@ export async function migrateLocalData(userId, db) {
     });
 
     await batch.commit();
+    console.log(`[Migration] Successfully migrated ${taskCount} tasks for user ${userId}`);
 
     // Clear both storage methods after migration
     await localforage.removeItem('eisenhauerTasks');
     localStorage.removeItem('eisenhauerTasks');
-  } catch (error) {}
+  } catch (error) {
+    console.error(`[Migration] Error migrating data for user ${userId}:`, error);
+  }
 }
 
 /**
