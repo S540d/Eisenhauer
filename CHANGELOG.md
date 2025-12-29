@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.1] - 2025-12-29 (UI Improvements & Localization) 🚀 RELEASED
+
+### 🎨 UI Improvements
+- **Settings Menu Consistency**
+  - Changed "About" button to link format (matches "Send Feedback" and "Support Me")
+  - Increased padding for settings links for better touch targets (12px/8px)
+  - Improved visual consistency across all settings buttons
+
+### 🌐 Localization
+- **Data Management Section**
+  - Added English translation: "DATA MANAGEMENT" (was German-only "DATEN")
+  - Export button: "📥 Export" (EN) / "📥 Export" (DE)
+  - Import button: "📤 Import Guest Data" (EN) / "📤 Import Gast-Daten" (DE)
+  - Fully localized settings menu
+
+### 🐛 Bug Fixes
+- **GitHub Pages Deployment**
+  - Fixed "Module name 'localforage' does not resolve to a valid URL" error
+  - Vite build output now correctly deployed to gh-pages
+  - PWA works correctly on https://s540d.github.io/Eisenhauer/
+
+### 📱 Android App
+- **Version Sync**
+  - Updated to v1.7.1 (versionCode: 6)
+  - Synced with PWA version
+  - Ready for Play Store release
+
+---
+
 ## [1.7.0] - 2025-12-29 (Data Protection & User Control) 🚀 RELEASED
 
 ### 🔒 Data Protection & Loss Prevention
