@@ -461,6 +461,17 @@ header h1,
   border-color: #d1d5db;
 }
 
+.segment-icon {
+  font-size: 1.2rem;
+  color: var(--text-primary);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
 .segment-header h2 {
   font-size: 1rem;
   color: var(--text-primary);
