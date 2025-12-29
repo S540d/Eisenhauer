@@ -196,6 +196,12 @@ export async function loadUserTasks(userId, db) {
 export async function saveTaskToFirestore(task, userId, db, firebase) {
   if (!userId || !db) return;
 
+  // Validate task data
+  if (!task || typeof task.text !== 'string' || !task.segment) {
+    console.error('Invalid task data', task);
+    return;
+  }
+
   const taskData = {
     text: task.text,
     segment: task.segment,
@@ -213,21 +219,31 @@ export async function saveTaskToFirestore(task, userId, db, firebase) {
     taskData.recurring = task.recurring;
   }
 
-  // Add to offline queue with retry logic
-  await offlineQueue.add(
-    'saveTask',
-    async () => {
-      // Use setDoc with Modular SDK
-      const taskRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
-      await setDoc(taskRef, taskData);
-    },
-    {
-      taskId: task.id,
-      userId,
-      taskData,
-    },
-    3 // maxRetries
-  );
+  // Add to offline queue with retry logic and error handling
+  try {
+    await offlineQueue.add(
+      'saveTask',
+      async () => {
+        // Use setDoc with Modular SDK
+        const taskRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
+        await setDoc(taskRef, taskData);
+      },
+      {
+        taskId: task.id,
+        userId,
+        taskData,
+      },
+      3 // maxRetries
+    );
+  } catch (error) {
+    // Graceful degradation: Continue with local storage only
+    console.warn('Firebase save failed, continuing with local storage:', error);
+    ErrorHandler.handleStorageError(error, {
+      operation: 'saveTaskToFirestore',
+      data: { taskId: task.id },
+      silent: false,
+    });
+  }
 }
 
 /**
