@@ -775,20 +775,25 @@ header h1,
 }
 
 .cancel-btn {
-  padding: 10px 24px;
-  background: #e5e7eb;
+  padding: 6px 12px;
+  background: var(--grid-color);
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: #374151;
-  transition: background 0.2s;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-color);
+  transition: opacity 0.2s ease;
   flex-shrink: 0;
+  min-height: 32px;
+}
+
+.cancel-btn:hover {
+  opacity: 0.8;
 }
 
 .cancel-btn:active {
-  background: #d1d5db;
+  opacity: 0.6;
 }
 
 /* Recurring Task Configuration */
@@ -1272,18 +1277,25 @@ body.dark-mode .search-highlight {
    ============================================================================ */
 .quick-add-modal {
   max-width: 500px;
+  padding: 12px !important;
+}
+
+.quick-add-modal h3 {
+  font-size: 16px;
+  margin: 0 0 8px 0;
+  padding: 0;
 }
 
 .quick-add-category {
   color: var(--text-secondary);
-  font-size: 0.85rem;
-  margin: -5px 0 10px 0;
+  font-size: 0.8rem;
+  margin: 0 0 12px 0;
   font-weight: 500;
 }
 
 .quick-add-input-wrapper {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .quick-add-input-wrapper input {
@@ -1322,9 +1334,9 @@ body.dark-mode .search-highlight {
 
 .recurring-config-quick {
   background: var(--task-bg);
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 6px;
+  margin-bottom: 12px;
 }
 
 .recurring-enable {
@@ -1410,31 +1422,33 @@ body.dark-mode .search-highlight {
 
 .modal-buttons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
+  margin-top: 12px;
+  padding: 12px;
+  border-top: 1px solid var(--grid-color);
 }
 
 .submit-btn {
-  background: var(--text-primary);
-  color: var(--card-bg);
+  background: var(--grid-color);
+  color: var(--text-color);
   border: none;
-  padding: 12px 28px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  flex: 1;
-  min-width: 100px;
+  transition: opacity 0.2s ease;
+  min-height: 32px;
+  min-width: auto;
 }
 
 .submit-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  opacity: 0.8;
 }
 
 .submit-btn:active {
-  transform: translateY(0);
+  opacity: 0.6;
 }
 
 .submit-btn:disabled {
@@ -1830,7 +1844,8 @@ body.dark-mode .segment.keyboard-target::before {
 
 /* Settings Modal Styles */
 #settingsModal .modal-content,
-#aboutModal .modal-content {
+#aboutModal .modal-content,
+#quickAddModal .modal-content {
   padding: 0;
   overflow-y: auto;
   max-height: 80vh;
@@ -2066,4 +2081,3 @@ body.dark-mode .lang-btn.active {
 .settings-signout-btn:active {
   opacity: 0.6;
 }
-
