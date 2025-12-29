@@ -716,6 +716,9 @@ async function initApp() {
     setLanguage(savedLanguage);
   }
 
+  // Update UI with correct language (including Quick Add Modal)
+  updateLanguageUI();
+
   // Load version
   await initVersion();
 

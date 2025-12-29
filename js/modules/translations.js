@@ -10,6 +10,11 @@ export const translations = {
       add: 'Hinzufügen',
       cancel: 'Abbrechen',
     },
+    quickAddModal: {
+      title: 'Neue Aufgabe',
+      inputPlaceholder: 'Was möchtest du tun?',
+      monthDayLabel: 'Tag (1-31)',
+    },
     segments: {
       1: { title: 'Sofort!', subtitle: 'wichtig & dringend' },
       2: { title: 'Planen!', subtitle: 'wichtig' },
@@ -44,6 +49,11 @@ export const translations = {
     buttons: {
       add: 'Add',
       cancel: 'Cancel',
+    },
+    quickAddModal: {
+      title: 'New Task',
+      inputPlaceholder: 'What do you want to do?',
+      monthDayLabel: 'Day (1-31)',
     },
     segments: {
       1: { title: 'Do!', subtitle: '' },
@@ -210,7 +220,70 @@ export function updateLanguageUI(renderAllTasksCallback) {
     taskInput.placeholder = lang.taskInputPlaceholder;
   }
 
-  // Update drag hint text
+  // Update Quick Add Modal texts
+  const quickAddTitle = document.getElementById('quickAddTitle');
+  if (quickAddTitle) {
+    quickAddTitle.textContent = lang.quickAddModal.title;
+  }
+
+  const quickAddInput = document.getElementById('quickAddInput');
+  if (quickAddInput) {
+    quickAddInput.placeholder = lang.quickAddModal.inputPlaceholder;
+  }
+
+  const quickAddSubmitBtn = document.getElementById('quickAddSubmitBtn');
+  if (quickAddSubmitBtn) {
+    quickAddSubmitBtn.textContent = lang.buttons.add;
+  }
+
+  const quickAddCancelBtn = document.getElementById('quickAddCancelBtn');
+  if (quickAddCancelBtn) {
+    quickAddCancelBtn.textContent = lang.buttons.cancel;
+  }
+
+  // Update Quick Add Recurring texts
+  const quickRecurringEnableText = document.getElementById('quickRecurringEnableText');
+  if (quickRecurringEnableText) {
+    quickRecurringEnableText.textContent = lang.recurring.enableLabel;
+  }
+
+  const quickRecurringDaily = document.getElementById('quickRecurringDaily');
+  if (quickRecurringDaily) {
+    quickRecurringDaily.textContent = lang.recurring.daily;
+  }
+
+  const quickRecurringWeekly = document.getElementById('quickRecurringWeekly');
+  if (quickRecurringWeekly) {
+    quickRecurringWeekly.textContent = lang.recurring.weekly;
+  }
+
+  const quickRecurringMonthly = document.getElementById('quickRecurringMonthly');
+  if (quickRecurringMonthly) {
+    quickRecurringMonthly.textContent = lang.recurring.monthly;
+  }
+
+  // Update Quick Add weekday labels (abbreviated)
+  const quickWeekdayMap = {
+    quickMon: 'monday',
+    quickTue: 'tuesday',
+    quickWed: 'wednesday',
+    quickThu: 'thursday',
+    quickFri: 'friday',
+    quickSat: 'saturday',
+    quickSun: 'sunday',
+  };
+
+  Object.entries(quickWeekdayMap).forEach(([id, key]) => {
+    const elem = document.getElementById(id);
+    if (elem) {
+      elem.textContent =
+        currentLanguage === 'de'
+          ? lang.recurring.weekdays[key].substring(0, 2)
+          : lang.recurring.weekdays[key].substring(0, 3);
+    }
+  });
+
+  // Update Quick Add drag hint text
   const dragHint = document.getElementById('dragHint');
   if (dragHint) {
     const hintText =
