@@ -226,7 +226,6 @@ export function openModal(onAddTask, currentTask) {
   const recurringInterval = document.getElementById('recurringInterval');
   const weeklyOptions = document.getElementById('weeklyOptions');
   const monthlyOptions = document.getElementById('monthlyOptions');
-  const customOptions = document.getElementById('customOptions');
   const segmentBtns = document.querySelectorAll('.segment-btn');
 
   if (!modal) {
@@ -242,7 +241,6 @@ export function openModal(onAddTask, currentTask) {
   if (recurringInterval) recurringInterval.value = 'daily';
   if (weeklyOptions) weeklyOptions.style.display = 'none';
   if (monthlyOptions) monthlyOptions.style.display = 'none';
-  if (customOptions) customOptions.style.display = 'none';
 
   // Reset weekday checkboxes
   if (weeklyOptions) {
@@ -334,12 +332,6 @@ export function getRecurringConfig() {
         config.dayOfMonth = parseInt(dayOfMonth.value);
       }
       break;
-    case 'custom':
-      const customDays = document.getElementById('customDays');
-      if (customDays) {
-        config.customDays = parseInt(customDays.value);
-      }
-      break;
   }
 
   return config;
@@ -352,7 +344,13 @@ export function getRecurringConfig() {
  * @param {string} buildDate - Build date
  * @param {boolean} isGuestMode - Whether user is in guest mode
  */
-export function openSettingsModal(currentUser, version, buildDate, isGuestMode = false) {
+export function openSettingsModal(
+  currentUser,
+  version,
+  buildDate,
+  isGuestMode = false,
+  currentLanguage = 'en'
+) {
   const settingsModal = document.getElementById('settingsModal');
 
   if (!settingsModal) {
@@ -376,13 +374,12 @@ export function openSettingsModal(currentUser, version, buildDate, isGuestMode =
     }
   });
 
-  // Update language toggle button active state
+  // Update language toggle button active state - use currentLanguage parameter
   const langButtons = document.querySelectorAll('.lang-btn');
-  const savedLanguage = localStorage.getItem('language') || 'en';
 
   langButtons.forEach((btn) => {
     btn.classList.remove('active');
-    if (btn.dataset.lang === savedLanguage) {
+    if (btn.dataset.lang === currentLanguage) {
       btn.classList.add('active');
     }
   });
@@ -608,12 +605,10 @@ export function updateLanguage(translations, currentLanguage) {
     const dailyOption = recurringInterval.querySelector('option[value="daily"]');
     const weeklyOption = recurringInterval.querySelector('option[value="weekly"]');
     const monthlyOption = recurringInterval.querySelector('option[value="monthly"]');
-    const customOption = recurringInterval.querySelector('option[value="custom"]');
 
     if (dailyOption) dailyOption.textContent = lang.recurring.daily;
     if (weeklyOption) weeklyOption.textContent = lang.recurring.weekly;
     if (monthlyOption) monthlyOption.textContent = lang.recurring.monthly;
-    if (customOption) customOption.textContent = lang.recurring.custom;
   }
 
   // Update weekday labels

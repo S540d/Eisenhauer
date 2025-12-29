@@ -398,7 +398,8 @@ function setupEventListeners() {
         currentUser,
         APP_VERSION,
         new Date().toISOString().split('T')[0],
-        isGuestMode
+        isGuestMode,
+        currentLanguage
       );
     });
   }

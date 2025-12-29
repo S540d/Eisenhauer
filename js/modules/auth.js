@@ -31,7 +31,8 @@ function showApp() {
   if (loginScreen) loginScreen.style.display = 'none';
   if (appScreen) appScreen.style.display = 'flex';
 
-  // Update user info
+  // Update user info - show avatar and email only for Firebase authenticated users
+  // Logout buttons are shown in Settings Modal instead
   if (currentUser) {
     const userInfo = document.getElementById('userInfo');
     if (userInfo) {
@@ -47,14 +48,8 @@ function showApp() {
       email.className = 'user-email';
       email.textContent = currentUser.email || 'User';
 
-      const logoutBtn = document.createElement('button');
-      logoutBtn.className = 'logout-btn';
-      logoutBtn.textContent = 'Abmelden';
-      logoutBtn.onclick = signOut;
-
       userInfo.appendChild(avatar);
       userInfo.appendChild(email);
-      userInfo.appendChild(logoutBtn);
     }
   } else if (isGuestMode) {
     const userInfo = document.getElementById('userInfo');
@@ -65,17 +60,7 @@ function showApp() {
       guestLabel.className = 'user-email';
       guestLabel.textContent = 'Gastmodus (Lokal gespeichert)';
 
-      const logoutBtn = document.createElement('button');
-      logoutBtn.className = 'logout-btn';
-      logoutBtn.textContent = 'Beenden';
-      logoutBtn.onclick = async () => {
-        isGuestMode = false;
-        await localforage.removeItem('guestMode');
-        showLogin();
-      };
-
       userInfo.appendChild(guestLabel);
-      userInfo.appendChild(logoutBtn);
     }
   }
 }

@@ -260,15 +260,6 @@
                 />
               </div>
             </div>
-            <div class="recurring-option">
-              <label>
-                <input type="radio" name="quickRecurringType" value="custom" />
-                <span id="quickRecurringCustom">Custom</span>
-              </label>
-              <div id="quickCustomDaysContainer" style="display: none">
-                <input type="number" id="quickCustomDays" min="1" value="1" placeholder="Days" />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -312,7 +303,6 @@
                 <option value="daily">Daily</option>
                 <option value="weekly">Weekly</option>
                 <option value="monthly">Monthly</option>
-                <option value="custom">Custom</option>
               </select>
             </label>
 
@@ -349,14 +339,6 @@
               <label>
                 <span id="dayOfMonthLabel">Day of month:</span>
                 <input type="number" id="dayOfMonth" min="1" max="31" value="1" />
-              </label>
-            </div>
-
-            <!-- Custom: Number of days -->
-            <div id="customOptions" class="interval-options" style="display: none">
-              <label>
-                <span id="customDaysLabel">Days:</span>
-                <input type="number" id="customDays" min="1" value="1" />
               </label>
             </div>
           </div>
@@ -551,15 +533,6 @@
                   value="1"
                   placeholder="Day (1-31)"
                 />
-              </div>
-            </div>
-            <div class="recurring-option">
-              <label>
-                <input type="radio" name="editRecurringType" value="custom" />
-                <span id="editRecurringCustom">Custom</span>
-              </label>
-              <div id="editCustomDaysContainer" style="display: none">
-                <input type="number" id="editCustomDays" min="1" value="1" placeholder="Days" />
               </div>
             </div>
           </div>
