@@ -55,10 +55,6 @@ function isSessionStorageAvailable() {
 async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    // Migrate local data on first login
-    if (typeof window.migrateLocalData === 'function') {
-      await window.migrateLocalData(result.user.uid, db);
-    }
   } catch (error) {
     if (
       error.code === 'auth/cancelled-popup-request' ||
@@ -86,10 +82,6 @@ async function signInWithGoogle() {
 async function signInWithApple() {
   try {
     const result = await signInWithPopup(auth, appleProvider);
-    // Migrate local data on first login
-    if (typeof window.migrateLocalData === 'function') {
-      await window.migrateLocalData(result.user.uid, db);
-    }
   } catch (error) {
     if (
       error.code === 'auth/cancelled-popup-request' ||

@@ -57,7 +57,7 @@ import {
   importData,
   requestPersistentStorage,
   getSyncStatus,
-  migrateLocalData,
+  importGuestTasksToFirestore,
 } from './js/modules/storage.js';
 import {
   renderAllTasks,
@@ -72,7 +72,7 @@ import {
   updateSyncStatus,
   setupDropZones,
 } from './js/modules/ui.js';
-import { showWarning } from './js/modules/notifications.js';
+import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import {
   KeyboardDragManager,
   announceDragStart,
@@ -98,8 +98,8 @@ let keyboardDragManager = null;
 // ============================================
 // Expose Storage Functions to Window
 // ============================================
-// Make migrateLocalData available to auth.js
-window.migrateLocalData = migrateLocalData;
+// Make import function available to UI
+window.importGuestTasksToFirestore = importGuestTasksToFirestore;
 
 // ============================================
 // Core Functions
@@ -539,6 +539,52 @@ function setupEventListeners() {
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', () => {
       exportData(tasks, APP_VERSION);
+    });
+  }
+
+  // Import guest tasks button
+  const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
+  if (importGuestTasksBtn) {
+    importGuestTasksBtn.addEventListener('click', async () => {
+      // Check if user is logged in
+      if (!currentUser) {
+        showWarning('Du musst angemeldet sein, um Gast-Daten zu importieren');
+        return;
+      }
+
+      // Count guest tasks first
+      const guestTasks = await loadGuestTasks();
+      let guestTaskCount = 0;
+      Object.keys(guestTasks).forEach((segmentId) => {
+        guestTaskCount += guestTasks[segmentId].length;
+      });
+
+      if (guestTaskCount === 0) {
+        showWarning('Keine Gast-Tasks zum Importieren gefunden');
+        return;
+      }
+
+      // Show confirmation dialog
+      const confirmed = confirm(
+        `Du hast ${guestTaskCount} Gast-Tasks.\n\nMöchtest du diese in deinen Account importieren?\n\nDie Gast-Daten werden nach dem Import gelöscht.`
+      );
+
+      if (!confirmed) return;
+
+      // Perform import
+      const result = await window.importGuestTasksToFirestore(currentUser.uid, db);
+
+      if (result.success) {
+        showSuccess(
+          `${result.taskCount} Gast-Tasks erfolgreich importiert! Seite wird neu geladen...`
+        );
+        // Reload tasks and close modal
+        setTimeout(() => {
+          location.reload();
+        }, 1500);
+      } else {
+        showError(`Import fehlgeschlagen: ${result.error}`);
+      }
     });
   }
 

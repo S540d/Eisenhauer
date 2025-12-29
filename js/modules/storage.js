@@ -302,30 +302,18 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
 }
 
 /**
- * Migrate local data to Firestore (one-time on first login)
- * SAFETY: Only migrates if user has no existing Firestore tasks (prevents data loss)
+ * Import guest tasks to user account (explicit user action)
+ * User triggers this manually from Settings Modal
  * @param {string} userId - User ID
  * @param {object} db - Firestore database instance
+ * @returns {object} { success, taskCount, error }
  */
-export async function migrateLocalData(userId, db) {
+export async function importGuestTasksToFirestore(userId, db) {
   try {
-    // CRITICAL: Check if user already has Firestore tasks
-    // This prevents overwriting existing data from other devices/sessions
-    const tasksRef = collection(db, 'users', userId, 'tasks');
-    const snapshot = await getDocs(tasksRef);
-
-    // If user already has tasks in Firestore, skip migration (already logged in before)
-    if (!snapshot.empty) {
-      console.log(
-        `[Migration] User ${userId} already has ${snapshot.size} Firestore tasks. Skipping migration.`
-      );
-      return;
-    }
-
     // Try to get data from IndexedDB (new method)
     let tasksData = await localforage.getItem('eisenhauerTasks');
 
-    // Fallback to old localStorage for migration
+    // Fallback to old localStorage
     if (!tasksData) {
       const localTasks = localStorage.getItem('eisenhauerTasks');
       if (localTasks) {
@@ -333,15 +321,32 @@ export async function migrateLocalData(userId, db) {
       }
     }
 
-    // If no local tasks, nothing to migrate
+    // If no guest tasks, nothing to import
     if (!tasksData) {
-      console.log(`[Migration] No local tasks to migrate for user ${userId}`);
-      return;
+      return {
+        success: false,
+        taskCount: 0,
+        error: 'Keine Gast-Tasks zum Importieren gefunden',
+      };
     }
 
-    // Safe migration: Add new tasks, don't overwrite existing
+    // Count tasks
+    let totalTasks = 0;
+    Object.keys(tasksData).forEach((segmentId) => {
+      totalTasks += tasksData[segmentId].length;
+    });
+
+    if (totalTasks === 0) {
+      return {
+        success: false,
+        taskCount: 0,
+        error: 'Keine Gast-Tasks zum Importieren gefunden',
+      };
+    }
+
+    // Import tasks to Firestore
     const batch = writeBatch(db);
-    let taskCount = 0;
+    let importedCount = 0;
 
     Object.keys(tasksData).forEach((segmentId) => {
       tasksData[segmentId].forEach((task) => {
@@ -351,7 +356,6 @@ export async function migrateLocalData(userId, db) {
           text: task.text,
           segment: task.segment,
           checked: task.checked || false,
-          // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
           createdAt: task.createdAt || serverTimestamp(),
         };
 
@@ -364,18 +368,28 @@ export async function migrateLocalData(userId, db) {
         }
 
         batch.set(docRef, taskData);
-        taskCount++;
+        importedCount++;
       });
     });
 
     await batch.commit();
-    console.log(`[Migration] Successfully migrated ${taskCount} tasks for user ${userId}`);
 
-    // Clear both storage methods after migration
+    // Delete guest tasks after successful import
     await localforage.removeItem('eisenhauerTasks');
     localStorage.removeItem('eisenhauerTasks');
+
+    return {
+      success: true,
+      taskCount: importedCount,
+      error: null,
+    };
   } catch (error) {
-    console.error(`[Migration] Error migrating data for user ${userId}:`, error);
+    console.error(`[Import] Error importing guest tasks for user ${userId}:`, error);
+    return {
+      success: false,
+      taskCount: 0,
+      error: error.message || 'Fehler beim Importieren der Gast-Tasks',
+    };
   }
 }
 
