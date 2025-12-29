@@ -1,7 +1,7 @@
 {
-  "version": "1.7.1",
+  "version": "1.7.2",
   "buildDate": "2025-12-29",
-  "buildTime": 1767023007000,
-  "commit": "c6ddc3d",
-  "timestamp": "2025-12-29T16:43:27.000Z"
+  "buildTime": 1767032400000,
+  "commit": "auth-fix",
+  "timestamp": "2025-12-29T18:00:00.000Z"
 }
