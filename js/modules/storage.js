@@ -7,6 +7,7 @@
 import localforage from 'localforage';
 import { isGuestMode } from './auth.js';
 import { OfflineQueue } from './offline-queue.js';
+import { ErrorHandler } from './error-handler.js';
 import { showError, showSuccess, showInfo, showWarning } from './notifications.js';
 import {
   collection,
