@@ -656,8 +656,16 @@
         // Reload page when new service worker takes over
         // ONLY if it's not the first load to avoid reload loops
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!refreshing && navigator.serviceWorker.controller) {
+          if (refreshing) return;
+
+          // Only reload if we already had a controller (i.e., this is an update, not first install)
+          // and if we haven't reloaded in this session yet
+          const hasController = !!navigator.serviceWorker.controller;
+          const sessionReloaded = sessionStorage.getItem('sw-reloaded');
+
+          if (hasController && !sessionReloaded) {
             refreshing = true;
+            sessionStorage.setItem('sw-reloaded', 'true');
             console.log('[Service Worker] Controller changed, reloading page...');
             window.location.reload();
           }
