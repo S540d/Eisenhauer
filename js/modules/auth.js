@@ -9,13 +9,13 @@
  * @version 2.0.0
  */
 
-import { auth, db, googleProvider, appleProvider } from './firebase-init.js';
+import { auth, googleProvider, appleProvider } from './firebase-init.js';
 import {
   onAuthStateChanged,
   signInWithPopup,
   signOut as firebaseSignOut,
   setPersistence,
-  browserLocalPersistence,
+  indexedDBLocalPersistence,
 } from 'firebase/auth';
 import localforage from 'localforage';
 
@@ -60,8 +60,8 @@ function isSessionStorageAvailable() {
 // Sign-in functions
 async function signInWithGoogle() {
   try {
-    // Ensure persistence is set to LOCAL before sign-in (fix for mobile)
-    await setPersistence(auth, browserLocalPersistence);
+    // Ensure persistence is set to IndexedDB before sign-in (fix for mobile)
+    await setPersistence(auth, indexedDBLocalPersistence);
     const result = await signInWithPopup(auth, googleProvider);
   } catch (error) {
     if (
@@ -89,8 +89,8 @@ async function signInWithGoogle() {
 
 async function signInWithApple() {
   try {
-    // Ensure persistence is set to LOCAL before sign-in (fix for mobile)
-    await setPersistence(auth, browserLocalPersistence);
+    // Ensure persistence is set to IndexedDB before sign-in (fix for mobile)
+    await setPersistence(auth, indexedDBLocalPersistence);
     const result = await signInWithPopup(auth, appleProvider);
   } catch (error) {
     if (

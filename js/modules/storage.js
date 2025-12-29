@@ -5,20 +5,17 @@
  */
 
 import localforage from 'localforage';
-import { db } from './firebase-init.js';
+import { isGuestMode } from './auth.js';
 import { OfflineQueue } from './offline-queue.js';
-import { ErrorHandler, NetworkError } from './error-handler.js';
 import { showError, showSuccess, showInfo, showWarning } from './notifications.js';
 import {
   collection,
   doc,
   getDocs,
   setDoc,
-  updateDoc,
   deleteDoc,
   writeBatch,
   serverTimestamp,
-  deleteField,
 } from 'firebase/firestore';
 
 // Initialize offline queue
