@@ -686,6 +686,7 @@ header h1,
   max-width: 400px;
   width: 90%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  color: var(--text-color);
 }
 
 .modal-content h3 {
@@ -693,6 +694,12 @@ header h1,
   text-align: center;
   color: var(--text-primary);
   font-size: 1.3rem;
+}
+
+.modal-content p,
+.modal-content ul,
+.modal-content li {
+  color: var(--text-color);
 }
 
 /* Edit Recurring Modal - Compact Layout */
@@ -1960,12 +1967,18 @@ body.dark-mode .segment.keyboard-target::before {
 }
 
 a.settings-btn {
-  color: #667eea;
-  background-color: transparent;
+  color: #667eea !important;
+  background-color: transparent !important;
 }
 
 a.settings-btn:visited {
   color: #667eea;
+}
+
+a.settings-btn.settings-btn-flex {
+  color: #667eea !important;
+  background-color: transparent !important;
+  border-radius: 0;
 }
 
 button.settings-btn.settings-btn-flex {
