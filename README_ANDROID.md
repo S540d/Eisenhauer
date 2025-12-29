@@ -1,7 +1,24 @@
 # 🚀 Eisenhauer Matrix - Android TWA Ready!
 
-**Status:** ✅ **Production Ready for Google Play Store**
-**Date:** 2025-11-12
+**Status:** ✅ **Production Ready for Google Play Store (v1.7.3 with Auth Fix)**
+**Date:** 2025-12-29
+**Fix:** ✅ **Login-Logout Loop behoben** (launchMode: singleTask → singleTop)
+
+---
+
+## 🐛 Latest Fix (v1.7.3)
+
+### Problem behoben:
+Die TWA hatte eine Login-Logout-Schleife, bei der Benutzer sofort nach dem Login (innerhalb von 1-2 Sekunden) wieder abgemeldet wurden.
+
+### Lösung:
+- **AndroidManifest.xml:** `launchMode="singleTask"` → `launchMode="singleTop"`
+- **Warum:** `singleTask` hat die OAuth-Redirect-Flows gestört und die Authentication-Session zerstört
+- **Jetzt:** `singleTop` erlaubt korrektes Handling von Redirects ohne Task-Zerstörung
+- **Version:** 1.7.2 (versionCode 7) → 1.7.3 (versionCode 8)
+
+### Nächster Schritt:
+Baue eine neue AAB mit dem Fix (siehe unten) und lade sie im Play Store hoch.
 
 ---
 
@@ -141,6 +158,62 @@ Based on [project-templates/GOOGLE_PLAY_STORE_ROADMAP.md](https://github.com/S54
 
 ---
 
-**Generated:** 2025-11-12 21:15 CET
-**Build System:** Gradle 8.10.2 + Java 21
+## 🔨 Build Corrected AAB (v1.7.3):
+
+Nach dem Login-Logout-Fix muss eine neue AAB gebaut werden:
+
+```bash
+cd Android
+
+# Clean previous builds
+./gradlew clean
+
+# Build new Release AAB with auth fix
+./gradlew bundleRelease
+
+# Output location:
+# app/build/outputs/bundle/release/app-release.aab
+```
+
+**AAB Details:**
+- Version: 1.7.3 (versionCode: 8)
+- Fix: Login-Logout Loop behoben
+- Größe: ~1.9 MB
+- Status: Bereit für Play Store Upload
+
+**Im Play Store hochladen:**
+1. Play Console öffnen
+2. Release → Production → Neues Release erstellen
+3. AAB hochladen: `app/build/outputs/bundle/release/app-release.aab`
+4. Release Notes hinzufügen (siehe unten)
+5. Review → Rollout starten
+
+**Release Notes (Deutsch):**
+```
+Version 1.7.3 - Wichtiger Bugfix
+
+Behoben:
+- Login-Logout-Schleife nach Anmeldung behoben
+- Benutzer bleiben jetzt erfolgreich angemeldet
+- Verbesserte OAuth-Authentifizierung in der Android-App
+
+Aktualisierung wird allen Benutzern empfohlen!
+```
+
+**Release Notes (English):**
+```
+Version 1.7.3 - Critical Bug Fix
+
+Fixed:
+- Login-Logout loop after sign-in resolved
+- Users now stay logged in successfully
+- Improved OAuth authentication in Android app
+
+Update recommended for all users!
+```
+
+---
+
+**Generated:** 2025-12-29
+**Build System:** Gradle 8.13 + Java 21
 **TWA Framework:** Android Browser Helper 2.5.0
