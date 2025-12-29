@@ -1947,11 +1947,11 @@ body.dark-mode .segment.keyboard-target::before {
 }
 
 a.settings-btn {
-  color: var(--text-color);
+  color: #667eea;
 }
 
 a.settings-btn:visited {
-  color: var(--text-color);
+  color: #667eea;
 }
 
 .lang-btn {
@@ -2039,13 +2039,13 @@ body.dark-mode .lang-btn.active {
   line-height: 1.4;
 }
 
-/* Settings Action Buttons - Unified Gray Style */
+/* Settings Action Buttons - Primary Style (like active language toggle) */
 .settings-export-btn,
 .settings-signout-btn {
   width: 100%;
   padding: 6px 12px;
-  background-color: var(--grid-color);
-  color: var(--text-color);
+  background-color: #667eea;
+  color: white;
   border: none;
   border-radius: 4px;
   font-size: 12px;
@@ -2066,4 +2066,3 @@ body.dark-mode .lang-btn.active {
 .settings-signout-btn:active {
   opacity: 0.6;
 }
-
