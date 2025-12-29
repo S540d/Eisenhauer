@@ -452,17 +452,6 @@ header h1,
   border-color: #d1d5db;
 }
 
-.segment-icon {
-  font-size: 1.2rem;
-  color: var(--text-primary);
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-}
-
 .segment-header h2 {
   font-size: 1rem;
   color: var(--text-primary);
@@ -1936,12 +1925,12 @@ body.dark-mode .segment.keyboard-target::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border: none;
   border-radius: 4px;
   background-color: var(--grid-color);
   color: var(--text-color);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s ease;
@@ -1955,6 +1944,14 @@ body.dark-mode .segment.keyboard-target::before {
 
 .settings-btn:active {
   opacity: 0.6;
+}
+
+a.settings-btn {
+  color: var(--text-color);
+}
+
+a.settings-btn:visited {
+  color: var(--text-color);
 }
 
 .lang-btn {
@@ -2046,39 +2043,27 @@ body.dark-mode .lang-btn.active {
 .settings-export-btn,
 .settings-signout-btn {
   width: 100%;
-  padding: 10px 16px;
-  background-color: #6b7280;
-  color: white;
+  padding: 6px 12px;
+  background-color: var(--grid-color);
+  color: var(--text-color);
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 44px;
+  transition: opacity 0.2s ease;
+  min-height: 32px;
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .settings-export-btn:hover,
 .settings-signout-btn:hover {
-  background-color: #4b5563;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+  opacity: 0.8;
 }
 
 .settings-export-btn:active,
 .settings-signout-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 4px rgba(107, 114, 128, 0.2);
+  opacity: 0.6;
 }
 
-body.dark-mode .settings-export-btn,
-body.dark-mode .settings-signout-btn {
-  background-color: #6b7280;
-}
-
-body.dark-mode .settings-export-btn:hover,
-body.dark-mode .settings-signout-btn:hover {
-  background-color: #9ca3af;
-}
