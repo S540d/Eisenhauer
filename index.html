@@ -574,6 +574,45 @@
       </div>
     </div>
 
+    <!-- Global Function Wrappers (Synchronous) -->
+    <!-- These are loaded BEFORE the ES6 module to ensure onclick handlers have functions to call -->
+    <script>
+      window.signInWithGoogle = function () {
+        if (typeof window._signInWithGoogle === 'function') {
+          return window._signInWithGoogle();
+        } else {
+          console.warn('App is still loading. Please wait a moment and try again.');
+          alert('App is still loading. Please wait a moment and try again.');
+        }
+      };
+
+      window.signInWithApple = function () {
+        if (typeof window._signInWithApple === 'function') {
+          return window._signInWithApple();
+        } else {
+          console.warn('App is still loading. Please wait a moment and try again.');
+          alert('App is still loading. Please wait a moment and try again.');
+        }
+      };
+
+      window.continueAsGuest = function () {
+        if (typeof window._continueAsGuest === 'function') {
+          return window._continueAsGuest();
+        } else {
+          console.warn('App is still loading. Please wait a moment and try again.');
+          alert('App is still loading. Please wait a moment and try again.');
+        }
+      };
+
+      window.signOut = function () {
+        if (typeof window._signOut === 'function') {
+          return window._signOut();
+        } else {
+          console.warn('App is still loading. Please wait a moment and try again.');
+        }
+      };
+    </script>
+
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
     <script type="module" src="script.js"></script>

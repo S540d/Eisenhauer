@@ -194,15 +194,14 @@ export function initAuth() {
 }
 
 // ============================================
-// FIX V2 CRITICAL: REGISTER GLOBAL FUNCTIONS AT MODULE LOAD TIME
+// REGISTER GLOBAL FUNCTIONS AT MODULE LOAD TIME
 // ============================================
-// These must be available IMMEDIATELY when the module loads,
-// BEFORE any onclick handlers or other code tries to use them.
-// Do NOT wrap in DOMContentLoaded, setTimeout, or any async operation.
-window.signInWithGoogle = signInWithGoogle;
-window.signInWithApple = signInWithApple;
-window.continueAsGuest = continueAsGuest;
-window.signOut = signOut;
+// Register actual implementations with _ prefix (for wrapper functions)
+// Wrapper functions in index.html ensure onclick handlers work even if module loads slowly
+window._signInWithGoogle = signInWithGoogle;
+window._signInWithApple = signInWithApple;
+window._continueAsGuest = continueAsGuest;
+window._signOut = signOut;
 window.showLogin = showLogin;
 window.showApp = showApp;
 
