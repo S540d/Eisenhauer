@@ -7,6 +7,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2025-12-29 (Data Protection & User Control) 🚀 RELEASED
+
+### 🔒 Data Protection & Loss Prevention
+
+#### Explicit Guest Data Import (⭐ BREAKING CHANGE)
+- **Removed automatic data migration** on login for safety
+  - No more silent data operations
+  - User has full control over when to import guest data
+  - Prevents accidental data overwrites
+
+- **New Import Button in Settings > DATEN section**
+  - Side-by-side "📥 Export" and "📤 Import Gast-Daten" buttons
+  - Confirmation dialog shows task count before import
+  - User explicitly approves before migration
+  - Success notification with task count
+  - Auto-reload after successful import
+  - Error handling for all scenarios
+
+#### Safe Multi-Device Sync
+- **Data Loss Prevention**
+  - Login from new device no longer overwrites existing account data
+  - Check for existing Firestore tasks before any migration
+  - Safe merge strategy: only import if no existing data found
+- **Improved Auth Flow**
+  - Fixed critical issue where account tasks disappeared on re-login
+  - Wrapper functions ensure auth callbacks execute safely
+  - ES6 module loading race condition fixed
+
+### 🔄 Cache Busting & Version Management
+
+#### Force-Fresh Updates
+- **Post-build cache-busting system**
+  - Automatic MD5 hash generation on each build
+  - Injected into HTML meta tags and script query parameters
+  - Service Worker detects hash changes and clears old caches
+  - Users always get latest version without manual cache clearing
+
+- **Service Worker Integration**
+  - Detects build version changes on page load
+  - Automatic cache invalidation on version mismatch
+  - Prevents serving stale assets from outdated SW cache
+  - Transparent update mechanism
+
+### 🛠️ Technical Improvements
+
+#### ES6 Module Safety
+- **Fixed auth function registration timing**
+  - Wrapper functions in index.html ensure functions available before onclick
+  - Prevents "function not found" errors during module load
+  - Guarantees authentication works on slow network connections
+
+#### Guest Mode Enhancements
+- **Immediate feedback on sign-out**
+  - Guest users see login screen instantly (no async wait)
+  - Settings modal closes automatically on sign-out
+  - Better UX for guest mode transitions
+
+### 🐛 Bug Fixes
+
+- Fixed: Missing user account tasks after login
+- Fixed: Guest Sign-out button not visible in Settings
+- Fixed: About button wrong color (now matches primary blue)
+- Fixed: About modal text color visibility
+- Fixed: Translation null reference for non-existent recurring options
+- Fixed: Quick Add Modal language synchronization
+
+### 📝 Commits
+- `19b1aa2` - refactor: Replace automatic guest data migration with explicit import
+- `b23b89f` - fix: Prevent data loss during account task migration
+- `a6ac96d` - fix: Restore missing user account tasks after login
+- `368ec56` - feat: Implement robust cache-busting mechanism for force-fresh updates
+- `86f0019` - fix: Add wrapper functions to ensure auth functions are available before ES6 module loads
+
+### ⚠️ Migration Notes
+- **For Guest Users**: Guest data no longer auto-imports on account login
+  - Use "Import Gast-Daten" button in Settings > DATEN when ready
+  - Gives full control over data merging
+- **For Account Users**: No changes to existing workflow
+  - Existing data protected by new safety checks
+  - Multi-device sync continues to work as before
+
+### Status
+- ✅ **Released to Main** - Live on https://s540d.github.io/Eisenhauer/
+- 🎯 **Production Ready** - All critical fixes implemented
+- 🔒 **Data Safety Verified** - No data loss on any scenario
+
+---
+
 ## [1.6.2] - 2025-12-29 (UI/UX Polish & Language Sync) ✅ RELEASED
 
 ### 🎨 Settings Menu Styling

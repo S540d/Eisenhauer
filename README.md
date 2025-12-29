@@ -2,7 +2,7 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.6.2 ✅
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.7.0 ✅
 
 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 🔧 **[Installation](INSTALL.md)**
 
@@ -36,6 +36,20 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 - ✅ **Benutzer-Accounts** (Google/Apple Sign-In)
 - ✅ **Auth Persistence** - Dauerhaft angemeldet bleiben (⭐ NEU: kein wiederholtes Login mehr!)
 - ✅ **Gastmodus** - Ohne Anmeldung testen mit lokalem Speicher
+- ✅ **Expliziter Daten-Import** (⭐ NEU v1.7.0)
+  - Benutzer entscheidet bewusst, wann Gast-Daten zu Account importiert werden
+  - Bestätigungsdialog zeigt Import-Anzahl vor Durchführung
+  - Gast-Daten werden nach erfolgreichem Import gelöscht
+  - **Kein automatisches Mergen** - volle Benutzer-Kontrolle
+- ✅ **Datenverlust-Schutz** (⭐ NEU v1.7.0)
+  - Keine automatische Überschreibung bestehender Account-Daten
+  - Sichere Migration zwischen Geräten/Sessions
+  - Explizite Bestätigung vor Datenoperationen
+- ✅ **Cache-Busting-System** (⭐ NEU v1.7.0)
+  - Automatische Erkennung neuer App-Versionen
+  - Force-Fresh-Updates auch bei Browser-Caching
+  - Verhindert veraltete Versionen nach Updates
+  - Transparent für Benutzer
 - ✅ **Geräte-übergreifende Sync** (bei Cloud-Login)
 - ✅ **Offline-First Architecture** mit OfflineQueue
   - Änderungen werden lokal gespeichert wenn offline
