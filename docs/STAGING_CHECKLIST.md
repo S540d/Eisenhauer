@@ -1,8 +1,10 @@
 # Staging Testing Checklist - Firebase v9 V2
 
-**Branch:** feature/firebase-v9-v2
-**Deploying to:** staging
+**Branch:** staging (merged from feature/firebase-v9-v2)
+**Version:** v1.6.2-RC
+**Deploying to:** staging environment
 **Duration:** 24-48 hours minimum before main merge
+**Updated:** 2025-12-29
 
 ## Pre-Deployment Requirements
 
@@ -269,6 +271,74 @@ Android Chrome:
 
 ---
 
+### 9. UI/UX & Language Features (v1.6.2-RC)
+**Goal:** Verify new Settings menu styling and language synchronization
+
+#### Settings Menu Visual Test (5 min)
+```
+Settings Button Click:
+□ Settings menu opens
+□ "Sign Out" button is blue (#667eea) with white text
+□ "Export as JSON" button is blue (#667eea) with white text
+□ "Feedback", "Support", "About" links are visible and blue
+□ All buttons have consistent 32px minimum height
+□ Buttons have consistent padding and font sizes
+
+Dark Mode Test:
+□ Switch to Dark Mode
+□ All blue buttons still visible with good contrast
+□ Links are still readable (#667eea color)
+□ Button hover effect (opacity) works
+□ No contrast issues
+```
+
+**Expected Result:**
+- ✅ Sign-out/Export buttons styled with primary blue
+- ✅ All button heights and spacing consistent
+- ✅ Dark mode contrast acceptable
+- ✅ No visual regressions
+
+#### Language Synchronization Test (10 min)
+```
+Quick Add Modal - German Mode:
+□ Open Language selector in Settings
+□ Select "Deutsch"
+□ Click "+" button to create task
+□ Modal title is "Neue Aufgabe" (not "New Task")
+□ Input placeholder is "Was möchtest du tun?"
+□ "Hinzufügen" button (not "Add")
+□ "Abbrechen" button (not "Cancel")
+□ Recurring option shows "Als wiederkehrende Aufgabe"
+□ Weekdays show "Mo", "Di", "Mi"... (German abbreviations)
+
+Quick Add Modal - English Mode:
+□ Open Language selector in Settings
+□ Select "English"
+□ Click "+" button to create task
+□ Modal title is "New Task" (not "Neue Aufgabe")
+□ Input placeholder is "What do you want to do?"
+□ "Add" button (not "Hinzufügen")
+□ "Cancel" button (not "Abbrechen")
+□ Recurring option shows "Make recurring"
+□ Weekdays show "Mon", "Tue", "Wed"... (English abbreviations)
+
+Switching Languages Dynamically:
+□ Create modal in English
+□ Close modal, change language to German
+□ Open modal again - all text is German
+□ Switch back to English - all text is English
+□ No page reload needed
+```
+
+**Expected Result:**
+- ✅ Quick Add Modal displays in correct language
+- ✅ Buttons and labels translated correctly
+- ✅ Weekday abbreviations correct for each language
+- ✅ Language changes apply immediately without reload
+- ✅ Consistency with rest of app UI
+
+---
+
 ## Decision Criteria
 
 ### ✅ Proceed to Main If:
@@ -279,6 +349,9 @@ Android Chrome:
 - Service Worker properly updated ✅
 - Guest Mode fully functional ✅
 - Task operations work smoothly ✅
+- **[NEW] Settings menu buttons styled correctly** ✅
+- **[NEW] Quick Add Modal language synchronization works** ✅
+- **[NEW] No visual regressions in dark mode** ✅
 
 ### ❌ Rollback If:
 - Blank white screen on load
