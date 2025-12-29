@@ -305,9 +305,8 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
  * Migrate local data to Firestore (one-time on first login)
  * @param {string} userId - User ID
  * @param {object} db - Firestore database instance
- * @param {object} firebase - Firebase instance
  */
-export async function migrateLocalData(userId, db, firebase) {
+export async function migrateLocalData(userId, db) {
   try {
     // Try to get data from IndexedDB (new method)
     let tasksData = await localforage.getItem('eisenhauerTasks');

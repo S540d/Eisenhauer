@@ -2054,7 +2054,8 @@ body.dark-mode .lang-btn.active {
 
 /* Settings Action Buttons - Primary Style (like active language toggle) */
 .settings-export-btn,
-.settings-signout-btn {
+.settings-signout-btn,
+#aboutBtn {
   width: 100%;
   padding: 6px 12px;
   background-color: #667eea;
@@ -2071,11 +2072,13 @@ body.dark-mode .lang-btn.active {
 }
 
 .settings-export-btn:hover,
-.settings-signout-btn:hover {
+.settings-signout-btn:hover,
+#aboutBtn:hover {
   opacity: 0.8;
 }
 
 .settings-export-btn:active,
-.settings-signout-btn:active {
+.settings-signout-btn:active,
+#aboutBtn:active {
   opacity: 0.6;
 }

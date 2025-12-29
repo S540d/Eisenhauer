@@ -55,9 +55,9 @@ function isSessionStorageAvailable() {
 async function signInWithGoogle() {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    // Optional: Migrate local data on first login
+    // Migrate local data on first login
     if (typeof window.migrateLocalData === 'function') {
-      await window.migrateLocalData(result.user.uid);
+      await window.migrateLocalData(result.user.uid, db);
     }
   } catch (error) {
     if (
@@ -86,9 +86,9 @@ async function signInWithGoogle() {
 async function signInWithApple() {
   try {
     const result = await signInWithPopup(auth, appleProvider);
-    // Optional: Migrate local data on first login
+    // Migrate local data on first login
     if (typeof window.migrateLocalData === 'function') {
-      await window.migrateLocalData(result.user.uid);
+      await window.migrateLocalData(result.user.uid, db);
     }
   } catch (error) {
     if (
@@ -117,12 +117,24 @@ async function signInWithApple() {
 // Sign out
 async function signOut() {
   try {
+    const wasGuestMode = isGuestMode;
+
     // Clear guest mode flag BEFORE signing out
     await localforage.removeItem('guestMode');
     isGuestMode = false;
 
-    // Sign out (triggers onAuthStateChanged)
-    await firebaseSignOut(auth);
+    // For guest mode: show login screen immediately (no Firebase to sign out from)
+    if (wasGuestMode) {
+      showLogin();
+      // Close settings modal after sign-out
+      const settingsModal = document.getElementById('settingsModal');
+      if (settingsModal) {
+        settingsModal.style.display = 'none';
+      }
+    } else {
+      // For Firebase users: sign out (triggers onAuthStateChanged)
+      await firebaseSignOut(auth);
+    }
   } catch (error) {
     alert('Fehler beim Abmelden: ' + error.message);
   }

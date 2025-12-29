@@ -57,6 +57,7 @@ import {
   importData,
   requestPersistentStorage,
   getSyncStatus,
+  migrateLocalData,
 } from './js/modules/storage.js';
 import {
   renderAllTasks,
@@ -93,6 +94,12 @@ let currentUser = null;
 // Note: db is imported from firebase-init.js, not declared here
 let isGuestMode = false;
 let keyboardDragManager = null;
+
+// ============================================
+// Expose Storage Functions to Window
+// ============================================
+// Make migrateLocalData available to auth.js
+window.migrateLocalData = migrateLocalData;
 
 // ============================================
 // Core Functions
