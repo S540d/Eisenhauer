@@ -8,6 +8,7 @@ import { COLORS, SEGMENTS } from './config.js';
 import { getTasks, getRecurringDescription } from './tasks.js';
 import { DragManager } from './drag-manager.js';
 import { announceDragStart, announceDragEnd } from './accessibility.js';
+import { translations } from './translations.js';
 
 /**
  * Create a task DOM element
@@ -768,8 +769,26 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     segmentNames[segmentId]?.[currentLanguage] || segmentNames[segmentId]?.['en'] || 'Unknown';
   quickAddCategory.textContent = categoryName;
 
-  // Update title
+  // Update title and labels based on current language
+  const lang = translations[currentLanguage];
   quickAddTitle.textContent = currentLanguage === 'de' ? 'Neue Aufgabe' : 'New Task';
+
+  // Update input placeholder
+  quickAddInput.placeholder = lang.taskInputPlaceholder;
+
+  // Update recurring label
+  const quickRecurringEnableText = document.getElementById('quickRecurringEnableText');
+  if (quickRecurringEnableText) {
+    quickRecurringEnableText.textContent = lang.recurring.enableLabel;
+  }
+
+  // Update recurring interval labels
+  const quickRecurringDaily = document.getElementById('quickRecurringDaily');
+  const quickRecurringWeekly = document.getElementById('quickRecurringWeekly');
+  const quickRecurringMonthly = document.getElementById('quickRecurringMonthly');
+  if (quickRecurringDaily) quickRecurringDaily.textContent = lang.recurring.daily;
+  if (quickRecurringWeekly) quickRecurringWeekly.textContent = lang.recurring.weekly;
+  if (quickRecurringMonthly) quickRecurringMonthly.textContent = lang.recurring.monthly;
 
   // Show modal
   quickAddModal.style.display = 'flex';
@@ -819,10 +838,12 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   // Remove old listeners and add new ones
   const newSubmitBtn = quickAddSubmitBtn.cloneNode(true);
   quickAddSubmitBtn.parentNode.replaceChild(newSubmitBtn, quickAddSubmitBtn);
+  newSubmitBtn.textContent = lang.buttons.add;
   newSubmitBtn.addEventListener('click', handleSubmit);
 
   const newCancelBtn = quickAddCancelBtn.cloneNode(true);
   quickAddCancelBtn.parentNode.replaceChild(newCancelBtn, quickAddCancelBtn);
+  newCancelBtn.textContent = lang.buttons.cancel;
   newCancelBtn.addEventListener('click', () => {
     quickAddModal.style.display = 'none';
   });

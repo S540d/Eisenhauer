@@ -6,6 +6,10 @@
 export const translations = {
   de: {
     taskInputPlaceholder: 'Neue Aufgabe',
+    buttons: {
+      add: 'Hinzufügen',
+      cancel: 'Abbrechen',
+    },
     segments: {
       1: { title: 'Sofort!', subtitle: 'wichtig & dringend' },
       2: { title: 'Planen!', subtitle: 'wichtig' },
@@ -37,6 +41,10 @@ export const translations = {
   },
   en: {
     taskInputPlaceholder: 'New task',
+    buttons: {
+      add: 'Add',
+      cancel: 'Cancel',
+    },
     segments: {
       1: { title: 'Do!', subtitle: '' },
       2: { title: 'Schedule!', subtitle: '' },

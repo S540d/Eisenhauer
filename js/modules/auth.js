@@ -31,28 +31,11 @@ function showApp() {
   if (loginScreen) loginScreen.style.display = 'none';
   if (appScreen) appScreen.style.display = 'flex';
 
-  // Update user info - show avatar only for Firebase authenticated users
-  // User email and logout are shown in Settings Modal instead
-  if (currentUser) {
-    const userInfo = document.getElementById('userInfo');
-    if (userInfo) {
-      userInfo.textContent = '';
-
-      // Create elements safely (prevents XSS)
-      const avatar = document.createElement('img');
-      avatar.src = currentUser.photoURL || 'icons/icon-72x72.png';
-      avatar.alt = 'User';
-      avatar.className = 'user-avatar';
-
-      userInfo.appendChild(avatar);
-    }
-  } else if (isGuestMode) {
-    const userInfo = document.getElementById('userInfo');
-    if (userInfo) {
-      userInfo.textContent = '';
-      // For guest mode, don't show anything in header
-      // User can see they're in guest mode in Settings
-    }
+  // Clear user info - no avatar or email shown in header
+  // All user information is shown in Settings Modal instead
+  const userInfo = document.getElementById('userInfo');
+  if (userInfo) {
+    userInfo.textContent = '';
   }
 }
 
