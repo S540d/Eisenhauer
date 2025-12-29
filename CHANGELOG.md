@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.3] - 2025-12-29 (TWA Authentication Fix) 🚀 RELEASED
+
+### 🐛 Bug Fixes
+- **Android TWA Login-Logout Loop**
+  - Fixed critical issue where TWA app logged users out immediately after login (1-2 seconds)
+  - Changed `launchMode` from `singleTask` to `singleTop` in AndroidManifest.xml
+  - `singleTask` was causing OAuth redirect flows to destroy the authentication session
+  - `singleTop` allows proper handling of redirects without destroying the existing task
+  - Users can now stay logged in successfully in the Android app
+
+### 📱 Android App
+- **Version Update**
+  - Updated to v1.7.3 (versionCode: 8)
+  - Synced with PWA version
+  - Corrected AAB ready for Play Store release
+
+---
+
 ## [1.7.1] - 2025-12-29 (UI Improvements & Localization) 🚀 RELEASED
 
 ### 🎨 UI Improvements
