@@ -647,9 +647,9 @@ function setupEventListeners() {
  * Handle user authentication state changes
  * This is called from auth.js with (user, isGuestMode)
  */
-window.onAuthStateChanged = async function (user, isGuestMode = false) {
+window.onAuthStateChanged = async function (user, guestMode = false) {
   currentUser = user;
-  isGuestMode = isGuestMode;
+  isGuestMode = guestMode;
   if (user && !isGuestMode) {
     await loadAllTasks();
   } else {
