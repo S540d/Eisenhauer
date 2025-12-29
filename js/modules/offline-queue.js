@@ -24,11 +24,15 @@ export class OfflineQueue {
     this.queue = [];
     this.isProcessing = false;
 
-    // Create IndexedDB store
-    this.store = localforage.createInstance({
-      name: 'eisenhauer',
-      storeName: `queue_${queueName}`,
-    });
+    // Create IndexedDB store (guard against service worker context)
+    if (typeof localforage !== 'undefined' && localforage.createInstance) {
+      this.store = localforage.createInstance({
+        name: 'eisenhauer',
+        storeName: `queue_${queueName}`,
+      });
+    } else {
+      this.store = null;
+    }
 
     // Load existing queue
     this._loadQueue();
@@ -40,9 +44,11 @@ export class OfflineQueue {
    */
   async _loadQueue() {
     try {
-      const stored = await this.store.getItem('queue');
-      if (stored && Array.isArray(stored)) {
-        this.queue = stored;
+      if (this.store) {
+        const stored = await this.store.getItem('queue');
+        if (stored && Array.isArray(stored)) {
+          this.queue = stored;
+        }
       }
     } catch (error) {}
   }
@@ -53,7 +59,9 @@ export class OfflineQueue {
    */
   async _saveQueue() {
     try {
-      await this.store.setItem('queue', this.queue);
+      if (this.store) {
+        await this.store.setItem('queue', this.queue);
+      }
     } catch (error) {}
   }
 
