@@ -1923,21 +1923,27 @@ body.dark-mode .segment.keyboard-target::before {
   margin: 0;
 }
 
-.settings-link {
-  display: block;
-  padding: 12px 0;
-  color: #667eea;
-  text-decoration: none;
+.settings-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: var(--grid-color);
+  color: var(--text-color);
   font-size: 14px;
   font-weight: 500;
+  cursor: pointer;
   transition: opacity 0.2s ease;
+  text-decoration: none;
 }
 
-.settings-link:hover {
+.settings-btn:hover {
   opacity: 0.8;
 }
 
-.settings-link:active {
+.settings-btn:active {
   opacity: 0.6;
 }
 
@@ -1971,7 +1977,7 @@ body.dark-mode .segment.keyboard-target::before {
   padding-vertical: 12px;
 }
 
-.settings-link-flex {
+.settings-btn-flex {
   flex: 1;
   text-align: center;
   display: flex;
@@ -1982,6 +1988,23 @@ body.dark-mode .segment.keyboard-target::before {
 
 body.dark-mode .theme-btn {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* About Modal Styles */
+.about-modal {
+  max-width: 512px;
+}
+
+.about-content {
+  padding: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.about-item {
+  margin: 0;
+  line-height: 1.5;
 }
 
 body.dark-mode .theme-btn.active {

@@ -434,6 +434,32 @@ export function openSettingsModal(
     if (accountSeparator) accountSeparator.style.display = 'none';
   }
 
+  // Setup About button event listener
+  const aboutBtn = document.getElementById('aboutBtn');
+  if (aboutBtn) {
+    // Remove old listener by cloning (prevent duplicate listeners)
+    const newAboutBtn = aboutBtn.cloneNode(true);
+    aboutBtn.parentNode.replaceChild(newAboutBtn, aboutBtn);
+
+    // Add new listener
+    newAboutBtn.addEventListener('click', () => {
+      openAboutModal(version);
+    });
+  }
+
+  // Setup close settings button event listener
+  const settingsCancelBtn = document.getElementById('settingsCancelBtn');
+  if (settingsCancelBtn) {
+    // Remove old listener by cloning
+    const newSettingsCancelBtn = settingsCancelBtn.cloneNode(true);
+    settingsCancelBtn.parentNode.replaceChild(newSettingsCancelBtn, settingsCancelBtn);
+
+    // Add new listener
+    newSettingsCancelBtn.addEventListener('click', () => {
+      closeSettingsModal();
+    });
+  }
+
   settingsModal.classList.remove('hidden');
   settingsModal.classList.add('active');
   settingsModal.style.display = 'flex';
@@ -448,6 +474,55 @@ export function closeSettingsModal() {
     settingsModal.classList.remove('active');
     settingsModal.classList.add('hidden');
     settingsModal.style.display = 'none';
+  }
+}
+
+/**
+ * Open About modal
+ * @param {string} version - App version
+ */
+export function openAboutModal(version) {
+  const aboutModal = document.getElementById('aboutModal');
+  if (!aboutModal) return;
+
+  // Update version text
+  const aboutVersion = document.getElementById('aboutVersion');
+  if (aboutVersion) {
+    aboutVersion.textContent = `Version: ${version}`;
+  }
+
+  // Update license text
+  const aboutLicense = document.getElementById('aboutLicense');
+  if (aboutLicense) {
+    aboutLicense.innerHTML = `<strong>License:</strong> MIT<br>No commercial use without permission`;
+  }
+
+  aboutModal.classList.add('active');
+  aboutModal.style.display = 'flex';
+
+  // Setup close button event listener
+  const aboutCancelBtn = document.getElementById('aboutCancelBtn');
+  if (aboutCancelBtn) {
+    // Remove old listener by cloning
+    const newAboutCancelBtn = aboutCancelBtn.cloneNode(true);
+    aboutCancelBtn.parentNode.replaceChild(newAboutCancelBtn, aboutCancelBtn);
+
+    // Add new listener
+    newAboutCancelBtn.addEventListener('click', () => {
+      closeAboutModal();
+    });
+  }
+}
+
+/**
+ * Close About modal
+ */
+export function closeAboutModal() {
+  const aboutModal = document.getElementById('aboutModal');
+  if (aboutModal) {
+    aboutModal.classList.remove('active');
+    aboutModal.classList.add('hidden');
+    aboutModal.style.display = 'none';
   }
 }
 
