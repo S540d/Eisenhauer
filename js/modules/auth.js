@@ -10,7 +10,13 @@
  */
 
 import { auth, db, googleProvider, appleProvider } from './firebase-init.js';
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import {
+  onAuthStateChanged,
+  signInWithPopup,
+  signOut as firebaseSignOut,
+  setPersistence,
+  browserLocalPersistence,
+} from 'firebase/auth';
 import localforage from 'localforage';
 
 // State
@@ -54,6 +60,8 @@ function isSessionStorageAvailable() {
 // Sign-in functions
 async function signInWithGoogle() {
   try {
+    // Ensure persistence is set to LOCAL before sign-in (fix for mobile)
+    await setPersistence(auth, browserLocalPersistence);
     const result = await signInWithPopup(auth, googleProvider);
   } catch (error) {
     if (
@@ -81,6 +89,8 @@ async function signInWithGoogle() {
 
 async function signInWithApple() {
   try {
+    // Ensure persistence is set to LOCAL before sign-in (fix for mobile)
+    await setPersistence(auth, browserLocalPersistence);
     const result = await signInWithPopup(auth, appleProvider);
   } catch (error) {
     if (

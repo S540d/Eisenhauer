@@ -7,7 +7,13 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  OAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
+} from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 // Firebase configuration from environment
@@ -41,6 +47,13 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Set auth persistence to LOCAL (fix for mobile devices)
+// This ensures the auth state persists across browser sessions using IndexedDB/localStorage
+// instead of sessionStorage which causes issues on mobile browsers (especially iOS Safari)
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Failed to set auth persistence:', error);
+});
 
 // Configure authentication providers
 const googleProvider = new GoogleAuthProvider();
