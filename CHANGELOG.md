@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.5] - 2025-12-29 (Service Worker & Auth Race Condition Fix) 🚀 RELEASED
+
+### 🐛 Bug Fixes
+- **Service Worker Reload Loop**
+  - Added extra safety checks to the `controllerchange` event listener in `index.html`
+  - Prevents infinite reload loops on Android TWA by using `sessionStorage` and checking for an existing controller
+- **Auth Initialization Race Condition**
+  - Moved `initAuth()` to the end of the `initApp()` sequence in `script.js`
+  - Ensures all UI modules and callbacks are fully registered before authentication state is processed
+- **Mobile Authentication Flow**
+  - Switched to `signInWithRedirect` for mobile devices and TWA mode in `auth.js`
+  - Improved reliability of the login flow on Android where popups are often problematic
+  - Added explicit `getRedirectResult` handling
+
+### 📱 Android App
+- **Version Update**
+  - Updated to v1.7.5 (versionCode: 10)
+  - Rebuilt AAB for Play Store upload
+
+---
+
 ## [1.7.4] - 2025-12-29 (Robustness & Persistence Fix) 🚀 RELEASED
 
 ### 🚀 Features & Robustness
