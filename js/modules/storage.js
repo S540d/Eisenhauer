@@ -166,15 +166,17 @@ export async function loadUserTasks(userId, db) {
   if (!userId || !db) return { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
   try {
-    const snapshot = await db.collection('users').doc(userId).collection('tasks').get();
+    // Load tasks from Firestore using Modular SDK
+    const tasksRef = collection(db, 'users', userId, 'tasks');
+    const snapshot = await getDocs(tasksRef);
 
     // Initialize empty tasks structure
     const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
     // Load tasks from Firestore
-    snapshot.forEach((doc) => {
-      const task = doc.data();
-      task.id = doc.id; // Use Firestore document ID
+    snapshot.forEach((docSnap) => {
+      const task = docSnap.data();
+      task.id = docSnap.id; // Use Firestore document ID
 
       // Ensure segment exists
       if (tasks[task.segment]) {
@@ -218,12 +220,9 @@ export async function saveTaskToFirestore(task, userId, db, firebase) {
   await offlineQueue.add(
     'saveTask',
     async () => {
-      await db
-        .collection('users')
-        .doc(userId)
-        .collection('tasks')
-        .doc(task.id.toString())
-        .set(taskData);
+      // Use setDoc with Modular SDK
+      const taskRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
+      await setDoc(taskRef, taskData);
     },
     {
       taskId: task.id,
@@ -264,13 +263,9 @@ export async function updateTaskInFirestore(task, userId, db, firebase) {
   await offlineQueue.add(
     'updateTask',
     async () => {
-      // Use set with merge:true to handle both new and existing tasks
-      await db
-        .collection('users')
-        .doc(userId)
-        .collection('tasks')
-        .doc(task.id.toString())
-        .set(updateData, { merge: true });
+      // Use setDoc with merge:true to handle both new and existing tasks (Modular SDK)
+      const taskRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
+      await setDoc(taskRef, updateData, { merge: true });
     },
     {
       taskId: task.id,
@@ -294,7 +289,9 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
   await offlineQueue.add(
     'deleteTask',
     async () => {
-      await db.collection('users').doc(userId).collection('tasks').doc(taskId.toString()).delete();
+      // Use deleteDoc with Modular SDK
+      const taskRef = doc(collection(db, 'users', userId, 'tasks'), taskId.toString());
+      await deleteDoc(taskRef);
     },
     {
       taskId,
@@ -327,16 +324,12 @@ export async function migrateLocalData(userId, db, firebase) {
       return;
     }
 
-    const batch = db.batch();
+    const batch = writeBatch(db);
     let taskCount = 0;
 
     Object.keys(tasksData).forEach((segmentId) => {
       tasksData[segmentId].forEach((task) => {
-        const docRef = db
-          .collection('users')
-          .doc(userId)
-          .collection('tasks')
-          .doc(task.id.toString());
+        const docRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
 
         const taskData = {
           text: task.text,
