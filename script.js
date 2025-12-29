@@ -71,6 +71,7 @@ import {
   updateSyncStatus,
   setupDropZones,
 } from './js/modules/ui.js';
+import { showWarning } from './js/modules/notifications.js';
 import {
   KeyboardDragManager,
   announceDragStart,
@@ -151,12 +152,65 @@ function handleAddTask(taskText, segment, recurringConfig = null) {
 }
 
 /**
- * Delete task handler
+ * Delete task handler with confirmation for recurring tasks
  */
 function handleDeleteTask(taskId, segment) {
-  deleteTask(taskId, segment);
+  // Find the task to check if it's recurring
+  const task = tasks[segment].find((t) => t.id === taskId);
+  if (!task) return;
 
-  // Delete from storage based on mode
+  // If it's a recurring task, show options for deletion scope
+  if (task.recurring && task.recurring.enabled) {
+    showWarning('Wiederholende Aufgabe löschen', {
+      duration: 0, // Don't auto-dismiss
+      actions: [
+        {
+          label: 'Nur diese',
+          onClick: () => {
+            // Delete only this instance
+            deleteTask(taskId, segment);
+            syncDelete(taskId, segment);
+            renderTasksWithCallbacks();
+          },
+        },
+        {
+          label: 'Alle zukünftigen',
+          onClick: () => {
+            // Delete this and all future instances of the same recurring task
+            deleteAllRecurringInstances(task.text, task.segment, task.recurring);
+            syncDelete(taskId, segment);
+            renderTasksWithCallbacks();
+          },
+        },
+      ],
+    });
+  } else {
+    // Non-recurring task - delete immediately
+    deleteTask(taskId, segment);
+    syncDelete(taskId, segment);
+    renderTasksWithCallbacks();
+  }
+}
+
+/**
+ * Helper function to delete all recurring task instances
+ */
+function deleteAllRecurringInstances(taskText, segmentId, recurringConfig) {
+  // Find and delete all instances of this recurring task in the segment
+  tasks[segmentId] = tasks[segmentId].filter(
+    (t) =>
+      !(
+        t.text === taskText &&
+        t.recurring &&
+        JSON.stringify(t.recurring) === JSON.stringify(recurringConfig)
+      )
+  );
+}
+
+/**
+ * Helper function to sync task deletion to storage
+ */
+function syncDelete(taskId, segment) {
   if (currentUser && db && !isGuestMode) {
     // Delete from Firestore
     deleteTaskFromFirestore(taskId, currentUser.uid, db);
@@ -164,8 +218,6 @@ function handleDeleteTask(taskId, segment) {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
   }
-
-  renderTasksWithCallbacks();
 }
 
 /**
