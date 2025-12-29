@@ -144,6 +144,20 @@ function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt
  * @returns {object} The created task
  */
 export function addTaskToSegment(taskText, segmentId, recurringConfig = null, saveCallback = null) {
+  // Input validation
+  if (typeof taskText !== 'string') {
+    throw new TypeError('Task text must be a string');
+  }
+  if (taskText.trim().length === 0) {
+    throw new Error('Task text cannot be empty');
+  }
+  if (taskText.length > 140) {
+    throw new Error('Task text must not exceed 140 characters');
+  }
+  if (!Number.isInteger(segmentId) || segmentId < 1 || segmentId > 5) {
+    throw new RangeError('Segment ID must be an integer between 1 and 5');
+  }
+
   const task = createTaskObject(taskText, segmentId, recurringConfig);
   tasks[segmentId].push(task);
 
@@ -185,6 +199,17 @@ export function deleteTask(taskId, segmentId, deleteCallback = null) {
  * @returns {object|null} The moved task or null if not found
  */
 export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
+  // Input validation
+  if (!Number.isInteger(fromSegment) || fromSegment < 1 || fromSegment > 5) {
+    throw new RangeError('Source segment ID must be an integer between 1 and 5');
+  }
+  if (!Number.isInteger(toSegment) || toSegment < 1 || toSegment > 5) {
+    throw new RangeError('Target segment ID must be an integer between 1 and 5');
+  }
+  if (taskId == null) {
+    throw new Error('Task ID cannot be null or undefined');
+  }
+
   const taskIndex = tasks[fromSegment].findIndex((t) => t.id === taskId);
   if (taskIndex === -1) return null;
 
