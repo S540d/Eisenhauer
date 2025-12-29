@@ -33,8 +33,8 @@ export default defineConfig({
 
   // Shared settings for all projects
   use: {
-    // Base URL for page.goto('/')
-    baseURL: 'http://localhost:8000',
+    // Base URL for page.goto('/') - matches Vite base path in vite.config.js
+    baseURL: 'http://localhost:8000/Eisenhauer/',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',
@@ -75,10 +75,12 @@ export default defineConfig({
   ],
 
   // Run local dev server before starting the tests
-  webServer: {
-    command: 'npm start',
-    url: 'http://localhost:8000',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  webServer: process.env.SKIP_WEB_SERVER
+    ? undefined
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:8000',
+        reuseExistingServer: !process.env.CI,
+        timeout: 120 * 1000,
+      },
 });

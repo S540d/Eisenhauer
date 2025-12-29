@@ -5,14 +5,14 @@
   "main": "index.html",
   "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 8000",
-    "build": "node update-cache-version.js && node build-config.js",
-    "build:staging": "VITE_ENV=staging npm run build",
-    "build:production": "VITE_ENV=production npm run build",
-    "prebuild": "echo '🔧 Building with cache-busting and Firebase configuration...'",
-    "postbuild": "echo '✅ Build complete with cache-busting! Ready to deploy.'",
-    "deploy": "npm run build && git add -A && git commit -m 'build: update cache versions' || true && git checkout gh-pages && git merge main --no-edit && git push origin gh-pages && git checkout main",
-    "deploy:force": "npm run build && git add -A && git commit -m 'build: force cache update' || true && git checkout gh-pages && git reset --hard main && git push origin gh-pages --force && git checkout main",
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "build:staging": "VITE_ENV=staging vite build",
+    "build:production": "VITE_ENV=production vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && git add -A && git commit -m 'build: Vite production bundle' || true && git checkout gh-pages && git merge main --no-edit && git push origin gh-pages && git checkout main",
+    "deploy:force": "npm run build && git add -A && git commit -m 'build: force Vite rebuild' || true && git checkout gh-pages && git reset --hard main && git push origin gh-pages --force && git checkout main",
     "cache:update": "node update-cache-version.js",
     "version:update": "node update-version.js",
     "format": "prettier --write .",
@@ -50,7 +50,9 @@
   },
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "dependencies": {
-    "firebase": "^10.13.2"
+    "chart.js": "^4.5.1",
+    "firebase": "^10.13.2",
+    "localforage": "^1.10.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
@@ -62,6 +64,8 @@
     "happy-dom": "^20.0.11",
     "husky": "^9.1.7",
     "prettier": "^3.0.0",
+    "vite": "^5.4.21",
+    "vite-plugin-pwa": "^0.17.5",
     "vitest": "^4.0.16"
   }
 }

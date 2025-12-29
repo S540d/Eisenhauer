@@ -92,10 +92,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Prepare build
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Vite
         run: npm run build
         env:
+          VITE_ENV: staging
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
@@ -104,18 +109,8 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
 
-      - name: Prepare publish directory
-        run: |
-          mkdir -p dist
-          cp index.html dist/
-          cp -r css dist/ || true
-          cp -r js dist/ || true
-          cp -r img dist/ || true
-          cp -r fonts dist/ || true
-          cp manifest.json dist/ || true
-          cp service-worker.js dist/ || true
-          cp firebase-config.js dist/ || true
-          touch dist/.nojekyll
+      - name: Add .nojekyll file
+        run: touch dist/.nojekyll
 
       - name: Deploy to GitHub Pages (Staging)
         uses: peaceiris/actions-gh-pages@v3
@@ -153,10 +148,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Prepare build
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Vite
         run: npm run build
         env:
+          VITE_ENV: production
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
@@ -165,18 +165,8 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
 
-      - name: Prepare publish directory
-        run: |
-          mkdir -p dist
-          cp index.html dist/
-          cp -r css dist/ || true
-          cp -r js dist/ || true
-          cp -r img dist/ || true
-          cp -r fonts dist/ || true
-          cp manifest.json dist/ || true
-          cp service-worker.js dist/ || true
-          cp firebase-config.js dist/ || true
-          touch dist/.nojekyll
+      - name: Add .nojekyll file
+        run: touch dist/.nojekyll
 
       - name: Deploy to GitHub Pages (Production)
         uses: peaceiris/actions-gh-pages@v3

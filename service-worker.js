@@ -1,7 +1,16 @@
+// Vite PWA Plugin - Inject precache manifest
+// This will be populated by vite-plugin-pwa during build
+const VITE_MANIFEST = self.__WB_MANIFEST || [];
+
 const CACHE_VERSION = '2.3.0';
 const BUILD_DATE = '2025-12-28'; // Cache busting - Firebase v9 Modular SDK V2 migration
 const CACHE_NAME = `eisenhauer-matrix-v${CACHE_VERSION}-${BUILD_DATE}`;
-const urlsToCache = ['./', './index.html', './style.css', './script.js', './manifest.json'];
+
+// Combine Vite manifest with explicit URLs
+const baseUrlsToCache = ['./', './index.html', './style.css', './script.js', './manifest.json'];
+const urlsToCache = [
+  ...new Set([...baseUrlsToCache, ...VITE_MANIFEST.map((file) => file.url || file)]),
+];
 
 // Files that should always be fetched from network first
 // Expanded to ensure latest version is always loaded
