@@ -1,14 +1,34 @@
 # Android TWA Status - Eisenhauer Matrix
 
 **Projekt:** Eisenhauer Matrix - Android TWA für Google Play Store
-**Erstellt:** 2025-11-12
-**Status:** ✅ Play Store Eintrag erstellt, Store Listing in Arbeit
+**Letzte Aktualisierung:** 2025-12-29
+**Status:** ✅ AAB gebaut und bereit für Play Store Upload
 
 ---
 
-## ✅ Was wurde erstellt?
+## ✅ Aktueller Status
 
-### 1. Vollständiges Android TWA-Projekt
+### Build Information
+- **Version:** 1.7.1 (versionCode: 6)
+- **AAB Datei:** `Android/app/build/outputs/bundle/release/app-release.aab`
+- **Größe:** 1.9 MB
+- **Signierung:** ✅ Signiert mit Release-Keystore
+- **Status:** ✅ **Bereit für Play Store Upload**
+
+### Technische Spezifikationen
+- **Package Name:** `com.sven4321.eisenhauer`
+- **App Name:** Eisenhauer Matrix
+- **compileSdk:** 35 (Android 15)
+- **Target SDK:** 35 (Android 15)
+- **Minimum SDK:** 21 (Android 5.0 Lollipop)
+- **PWA URL:** https://s540d.github.io/Eisenhauer/
+- **Gradle:** 8.13
+- **Java:** OpenJDK 21
+
+---
+
+## ✅ Vollständiges Android TWA-Projekt
+
 Unter `Android/` wurde ein komplettes Android Studio Projekt erstellt:
 
 ```
@@ -21,7 +41,7 @@ Android/
 │   │   │   ├── values/
 │   │   │   │   ├── strings.xml            ✅ App-Strings
 │   │   │   │   └── colors.xml             ✅ Theme-Farben (#667eea)
-│   │   │   ├── mipmap-*/                  ⚠️ Icons fehlen noch
+│   │   │   ├── mipmap-*/                  ✅ Icons (von PWA kopiert)
 │   │   │   └── xml/
 │   │   │       └── file_paths.xml         ✅ FileProvider Config
 │   │   └── AndroidManifest.xml            ✅ App Manifest + TWA Config
@@ -29,32 +49,26 @@ Android/
 │   └── proguard-rules.pro                 ✅ ProGuard Rules
 ├── gradle/
 │   └── wrapper/
-│       └── gradle-wrapper.properties      ✅ Gradle 8.2
+│       └── gradle-wrapper.properties      ✅ Gradle 8.13
 ├── build.gradle                           ✅ Project-level Build
 ├── settings.gradle                        ✅ Project Settings
-├── gradle.properties                      ✅ Build Properties (Secrets Template)
+├── gradle.properties                      ✅ Build Properties (Signing konfiguriert)
 ├── gradlew / gradlew.bat                  ✅ Gradle Wrapper Scripts
+├── keystore/                              ✅ Release Keystore (nicht in Git)
 ├── .gitignore                             ✅ Ignore Keystores/Builds
-├── README.md                              ✅ Umfassende Anleitung (10k+ Wörter)
+├── README.md                              ✅ Umfassende Anleitung
 └── PLAYSTORE_CHECKLIST.md                 ✅ 6-Wochen-Roadmap
 ```
 
-### 2. Digital Asset Links konfiguriert
-- ✅ `.well-known/assetlinks.json` erstellt (Template mit Platzhalter)
-- ⚠️ SHA-256 Fingerprint muss noch eingetragen werden (nach Keystore-Generierung)
+### Digital Asset Links
+- ✅ `.well-known/assetlinks.json` deployed auf GitHub Pages
+- ✅ SHA-256 Fingerprint eingetragen
+- ✅ Live erreichbar: https://s540d.github.io/Eisenhauer/.well-known/assetlinks.json
 
-### 3. Dokumentation
+### Dokumentation
 - ✅ **Android/README.md:** Komplette Setup- & Build-Anleitung
 - ✅ **Android/PLAYSTORE_CHECKLIST.md:** 6-Wochen-Timeline bis Launch
 - ✅ **ANDROID_STATUS.md:** Diese Datei (Status-Übersicht)
-
-### 4. Technische Spezifikationen
-- **Package Name:** `com.sven4321.eisenhauer`
-- **App Name:** Eisenhauer Matrix
-- **Target SDK:** 34 (Android 14)
-- **Minimum SDK:** 21 (Android 5.0 Lollipop)
-- **PWA URL:** https://s540d.github.io/Eisenhauer/
-- **Version:** 1.6.0 (synchronized mit PWA)
 
 ---
 
