@@ -10,6 +10,11 @@ export const translations = {
       add: 'Hinzufügen',
       cancel: 'Abbrechen',
     },
+    settings: {
+      dataManagement: 'DATEN',
+      exportBtn: '📥 Export',
+      importGuestBtn: '📤 Import Gast-Daten',
+    },
     quickAddModal: {
       title: 'Neue Aufgabe',
       inputPlaceholder: 'Was möchtest du tun?',
@@ -49,6 +54,11 @@ export const translations = {
     buttons: {
       add: 'Add',
       cancel: 'Cancel',
+    },
+    settings: {
+      dataManagement: 'DATA MANAGEMENT',
+      exportBtn: '📥 Export',
+      importGuestBtn: '📤 Import Guest Data',
     },
     quickAddModal: {
       title: 'New Task',
@@ -303,6 +313,22 @@ export function updateLanguageUI(renderAllTasksCallback) {
     if (hintButton) {
       hintButton.textContent = btnText;
     }
+  }
+
+  // Update Settings Data Management section
+  const dataManagementTitle = document.getElementById('dataManagementTitle');
+  if (dataManagementTitle) {
+    dataManagementTitle.textContent = lang.settings.dataManagement;
+  }
+
+  const exportJsonBtn = document.getElementById('exportJsonBtn');
+  if (exportJsonBtn) {
+    exportJsonBtn.textContent = lang.settings.exportBtn;
+  }
+
+  const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
+  if (importGuestTasksBtn) {
+    importGuestTasksBtn.textContent = lang.settings.importGuestBtn;
   }
 
   // Re-render all tasks to update recurring indicators

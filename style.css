@@ -1961,10 +1961,17 @@ body.dark-mode .segment.keyboard-target::before {
 
 a.settings-btn {
   color: #667eea;
+  background-color: transparent;
 }
 
 a.settings-btn:visited {
   color: #667eea;
+}
+
+button.settings-btn.settings-btn-flex {
+  color: #667eea;
+  background-color: transparent;
+  border-radius: 0;
 }
 
 .lang-btn {
@@ -2003,7 +2010,7 @@ a.settings-btn:visited {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 6px;
+  padding: 12px 8px;
 }
 
 body.dark-mode .theme-btn {

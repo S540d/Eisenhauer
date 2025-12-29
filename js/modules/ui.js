@@ -442,7 +442,8 @@ export function openSettingsModal(
     aboutBtn.parentNode.replaceChild(newAboutBtn, aboutBtn);
 
     // Add new listener
-    newAboutBtn.addEventListener('click', () => {
+    newAboutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       openAboutModal(version);
     });
   }
