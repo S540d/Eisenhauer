@@ -2,7 +2,7 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.6.1
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.6.1 (v1.6.2-RC in Staging)
 
 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 🔧 **[Installation](INSTALL.md)**
 
@@ -53,6 +53,23 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 - ✅ **Kompaktes Layout** mit scrollbaren Task-Listen
 - ✅ **Progressive Web App (PWA)** - Als App installierbar
 - ✅ **iOS-optimiert** mit speziellen Meta-Tags
+- ✅ **Settings Menu Styling** - Durchdachte UI mit konsistenter Button-Gestaltung (⭐ NEU: v1.6.2-RC)
+  - Primäre Aktionen in Blau (#667eea)
+  - Einheitliche Abstände und Größen
+  - Verbessertes Dark Mode Contrast für Links
+- ✅ **Quick Add Modal** - Kompaktes Aufgaben-Dialog mit verbessertem Design (⭐ NEU: v1.6.2-RC)
+  - Optimierte Layout-Abstraktion
+  - Dynamische Sprach-Unterstützung (Deutsch/Englisch)
+  - Konsistent mit Settings-Menu Styling
+
+### 🌍 Sprachunterstützung
+- ✅ **Deutsch** - Vollständige Lokalisierung
+- ✅ **Englisch** - Complete English translation
+- ✅ **Dynamische Sprach-Synchronisation** (⭐ NEU: v1.6.2-RC)
+  - Settings-Menü-Sprache wird auf alle UI-Elemente angewendet
+  - "Neue Aufgabe" Modal wird in richtiger Sprache angezeigt
+  - Wochentags-Abkürzungen (Mo/Di/Mi... oder Mon/Tue/Wed...)
+- ✅ **Language Toggle** in Einstellungen (Deutsch/English)
 
 ### ♿ Accessibility (Barrierefreiheit)
 - ✅ **WCAG 2.1 Level AA Fully Compliant** (⭐ NEU: 100% konform!)
