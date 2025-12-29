@@ -3,6 +3,7 @@
  * Handles all UI rendering, modals, and user interactions
  */
 
+import localforage from 'localforage';
 import { COLORS, SEGMENTS } from './config.js';
 import { getTasks, getRecurringDescription } from './tasks.js';
 import { DragManager } from './drag-manager.js';

@@ -7,7 +7,7 @@
  * Fixes: offlineQueue.on is not a function error
  */
 
-const localforage = window.localforage;
+import localforage from 'localforage';
 
 /**
  * Offline Queue Manager

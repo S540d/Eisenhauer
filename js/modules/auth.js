@@ -11,6 +11,7 @@
 
 import { auth, db, googleProvider, appleProvider } from './firebase-init.js';
 import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from 'firebase/auth';
+import localforage from 'localforage';
 
 // State
 let currentUser = null;

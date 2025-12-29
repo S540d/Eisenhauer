@@ -4,6 +4,7 @@
  * Integrated with OfflineQueue for robust offline operations
  */
 
+import localforage from 'localforage';
 import { db } from './firebase-init.js';
 import { OfflineQueue } from './offline-queue.js';
 import { ErrorHandler, NetworkError } from './error-handler.js';
