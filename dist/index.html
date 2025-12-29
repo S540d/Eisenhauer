@@ -1,3 +1,4 @@
+<!-- Cache-Busting Info: v1.7.0 (dac32cd4) built at 1767010958813 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -7,6 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Eisenhauer Matrix</title>
+    <meta name="build-hash" content="dac32cd4" /><meta name="build-time" content="1767010958813" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/Eisenhauer/assets/manifest-DuiiaqFh.json" />
@@ -33,7 +35,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-CvvsRLUu.js"></script>
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-CvvsRLUu.js?v=dac32cd4"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-CFrnFZbk.js">
     <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-D2ipc5MV.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
@@ -579,7 +581,7 @@
     <!-- Global Function Wrappers (Synchronous) -->
     <!-- These are loaded BEFORE the ES6 module to ensure onclick handlers have functions to call -->
     <script>
-      window.signInWithGoogle = function() {
+      window.signInWithGoogle = function () {
         if (typeof window._signInWithGoogle === 'function') {
           return window._signInWithGoogle();
         } else {
@@ -588,7 +590,7 @@
         }
       };
 
-      window.signInWithApple = function() {
+      window.signInWithApple = function () {
         if (typeof window._signInWithApple === 'function') {
           return window._signInWithApple();
         } else {
@@ -597,7 +599,7 @@
         }
       };
 
-      window.continueAsGuest = function() {
+      window.continueAsGuest = function () {
         if (typeof window._continueAsGuest === 'function') {
           return window._continueAsGuest();
         } else {
@@ -606,7 +608,7 @@
         }
       };
 
-      window.signOut = function() {
+      window.signOut = function () {
         if (typeof window._signOut === 'function') {
           return window._signOut();
         } else {
@@ -618,38 +620,71 @@
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
 
-    <!-- Register Service Worker -->
+    <!-- Register Service Worker with Cache Busting -->
     <script>
       if ('serviceWorker' in navigator) {
         let refreshing = false;
+
+        // Get build hash from meta tag (added by post-build.js)
+        const buildHashElement = document.querySelector('meta[name="build-hash"]');
+        const currentBuildHash = buildHashElement ? buildHashElement.content : 'unknown';
+
+        // Store current build hash in localStorage
+        const cachedBuildHash = localStorage.getItem('sw-build-hash');
+        const buildHashChanged = cachedBuildHash && cachedBuildHash !== currentBuildHash;
+
+        if (buildHashChanged) {
+          console.log(
+            `[Service Worker] Build hash changed (${cachedBuildHash} → ${currentBuildHash}). Clearing cache...`
+          );
+          // Clear all caches to force fresh content
+          if ('caches' in window) {
+            caches.keys().then((names) => {
+              names.forEach((name) => {
+                caches.delete(name);
+              });
+            });
+          }
+        }
+
+        localStorage.setItem('sw-build-hash', currentBuildHash);
 
         // Reload page when new service worker takes over
         navigator.serviceWorker.addEventListener('controllerchange', () => {
           if (!refreshing) {
             refreshing = true;
+            console.log('[Service Worker] Controller changed, reloading page...');
             window.location.reload();
           }
         });
 
         window.addEventListener('load', () => {
+          // Register with cache busting query parameter
+          const swUrl = `./service-worker.js?v=${currentBuildHash}`;
+
           navigator.serviceWorker
-            .register('./service-worker.js')
+            .register(swUrl)
             .then((registration) => {
+              console.log('[Service Worker] Registered:', swUrl);
+
               // Force immediate update check on page load
               registration.update();
 
               // Check for updates every 10 seconds (aggressive)
-              setInterval(() => {
+              const updateInterval = setInterval(() => {
                 registration.update();
               }, 10000);
 
               // Listen for updates
               registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
+                console.log('[Service Worker] New version found, waiting for activation...');
                 // The controllerchange event will handle the reload
               });
             })
-            .catch((error) => {});
+            .catch((error) => {
+              console.error('[Service Worker] Registration failed:', error);
+            });
         });
       }
     </script>

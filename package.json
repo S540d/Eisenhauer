@@ -7,9 +7,9 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "build": "vite build",
-    "build:staging": "VITE_ENV=staging vite build",
-    "build:production": "VITE_ENV=production vite build",
+    "build": "vite build && node post-build.js",
+    "build:staging": "VITE_ENV=staging vite build && node post-build.js",
+    "build:production": "VITE_ENV=production vite build && node post-build.js",
     "preview": "vite preview",
     "deploy": "npm run build && git add -A && git commit -m 'build: Vite production bundle' || true && git checkout gh-pages && git merge main --no-edit && git push origin gh-pages && git checkout main",
     "deploy:force": "npm run build && git add -A && git commit -m 'build: force Vite rebuild' || true && git checkout gh-pages && git reset --hard main && git push origin gh-pages --force && git checkout main",
