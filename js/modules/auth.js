@@ -13,6 +13,8 @@ import { auth, googleProvider, appleProvider } from './firebase-init.js';
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   setPersistence,
   indexedDBLocalPersistence,
@@ -62,7 +64,17 @@ async function signInWithGoogle() {
   try {
     // Ensure persistence is set to IndexedDB before sign-in (fix for mobile)
     await setPersistence(auth, indexedDBLocalPersistence);
-    const result = await signInWithPopup(auth, googleProvider);
+
+    // Use redirect for mobile/TWA, popup for desktop
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      window.matchMedia('(display-mode: standalone)').matches;
+
+    if (isMobile) {
+      await signInWithRedirect(auth, googleProvider);
+    } else {
+      await signInWithPopup(auth, googleProvider);
+    }
   } catch (error) {
     if (
       error.code === 'auth/cancelled-popup-request' ||
@@ -91,7 +103,17 @@ async function signInWithApple() {
   try {
     // Ensure persistence is set to IndexedDB before sign-in (fix for mobile)
     await setPersistence(auth, indexedDBLocalPersistence);
-    const result = await signInWithPopup(auth, appleProvider);
+
+    // Use redirect for mobile/TWA, popup for desktop
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+      window.matchMedia('(display-mode: standalone)').matches;
+
+    if (isMobile) {
+      await signInWithRedirect(auth, appleProvider);
+    } else {
+      await signInWithPopup(auth, appleProvider);
+    }
   } catch (error) {
     if (
       error.code === 'auth/cancelled-popup-request' ||
@@ -172,6 +194,11 @@ export function initAuth() {
     // OK to continue without sessionStorage
   }
 
+  // Handle redirect result (for mobile/TWA)
+  getRedirectResult(auth).catch((error) => {
+    console.error('Error getting redirect result:', error);
+  });
+
   // FIX: Direct call to onAuthStateChanged WITHOUT DOMContentLoaded wrapper
   // This ensures the listener is registered immediately when the module loads
   onAuthStateChanged(auth, async (user) => {
@@ -189,17 +216,23 @@ export function initAuth() {
       }
     } else {
       // Check if guest mode was active
-      const wasGuestMode = await localforage.getItem('guestMode');
-      if (wasGuestMode === 'true') {
-        isGuestMode = true;
-        showApp();
+      try {
+        const wasGuestMode = await localforage.getItem('guestMode');
+        if (wasGuestMode === 'true') {
+          isGuestMode = true;
+          showApp();
 
-        // Call the callback from script.js (ES6 module)
-        if (typeof window.onAuthStateChanged === 'function') {
-          await window.onAuthStateChanged(null, true);
+          // Call the callback from script.js (ES6 module)
+          if (typeof window.onAuthStateChanged === 'function') {
+            await window.onAuthStateChanged(null, true);
+          }
+        } else {
+          // User is signed out and not in guest mode
+          isGuestMode = false;
+          showLogin();
         }
-      } else {
-        // User is signed out and not in guest mode
+      } catch (error) {
+        console.error('Error checking guest mode:', error);
         isGuestMode = false;
         showLogin();
       }

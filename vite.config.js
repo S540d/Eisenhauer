@@ -6,7 +6,7 @@ export default defineConfig({
 
   build: {
     outDir: 'dist',
-    sourcemap: false,
+    sourcemap: true, // Enable source maps for production debugging
 
     rollupOptions: {
       output: {

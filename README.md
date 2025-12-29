@@ -2,7 +2,7 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.7.0 ✅
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.7.4 ✅
 
 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 🔧 **[Installation](INSTALL.md)**
 
@@ -34,7 +34,7 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 ### Cloud & Sync
 - ✅ **Cloud-Synchronisation** mit Firebase
 - ✅ **Benutzer-Accounts** (Google/Apple Sign-In)
-- ✅ **Auth Persistence** - Dauerhaft angemeldet bleiben (⭐ NEU: kein wiederholtes Login mehr!)
+- ✅ **Auth Persistence** - Dauerhaft angemeldet bleiben (⭐ NEU: IndexedDB Persistence für Android TWA)
 - ✅ **Gastmodus** - Ohne Anmeldung testen mit lokalem Speicher
 - ✅ **Expliziter Daten-Import** (⭐ NEU v1.7.0)
   - Benutzer entscheidet bewusst, wann Gast-Daten zu Account importiert werden

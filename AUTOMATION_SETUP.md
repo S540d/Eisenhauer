@@ -9,7 +9,7 @@ Dieser Guide erklärt die automatisierte Quality Assurance für dieses Projekt.
 ### 1. **GitHub Actions CI/CD** (`.github/workflows/ci-cd.yml`)
 
 Läuft automatisch bei jedem:
-- Push zu `main` oder `develop`
+- Push zu `main` oder `staging`
 - Pull Request
 
 **5 Jobs:**

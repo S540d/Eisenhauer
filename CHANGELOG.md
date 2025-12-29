@@ -7,23 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.7.3] - 2025-12-29 (TWA Authentication Fix) 🚀 RELEASED
+## [1.7.4] - 2025-12-29 (Robustness & Persistence Fix) 🚀 RELEASED
+
+### 🚀 Features & Robustness
+- **Firebase Auth Persistence Fix**
+  - Switched from `browserLocalPersistence` to `indexedDBLocalPersistence`
+  - This ensures authentication tokens are stored in IndexedDB, which is much more reliable on Android TWA than localStorage
+  - Prevents "Auto-Logout" when Android kills background processes
+- **Technical Analysis & Documentation**
+  - Added comprehensive technical analysis of the Android login loop issue
+  - Documented robustness improvements for future development
 
 ### 🐛 Bug Fixes
-- **Android TWA Login-Logout Loop**
-  - Fixed critical issue where TWA app logged users out immediately after login (1-2 seconds)
-  - Changed `launchMode` from `singleTask` to `singleTop` in AndroidManifest.xml
-  - `singleTask` was causing OAuth redirect flows to destroy the authentication session
-  - `singleTop` allows proper handling of redirects without destroying the existing task
-  - Users can now stay logged in successfully in the Android app
+- **Storage Module Imports**
+  - Fixed `no-undef` error for `isGuestMode` in `js/modules/storage.js`
+  - Fixed missing `ErrorHandler` import in `js/modules/storage.js`
+- **Android TWA Login-Logout Loop (Part 2)**
+  - Combined `launchMode="singleTop"` with IndexedDB persistence for maximum reliability
 
 ### 📱 Android App
 - **Version Update**
-  - Updated to v1.7.3 (versionCode: 8)
-  - Synced with PWA version
-  - Corrected AAB ready for Play Store release
+  - Updated to v1.7.4 (versionCode: 9)
+  - Built with Java 23 for Gradle 8.13 compatibility
 
 ---
+
+## [1.7.3] - 2025-12-29 (TWA Authentication Fix) 🚀 RELEASED
 
 ## [1.7.1] - 2025-12-29 (UI Improvements & Localization) 🚀 RELEASED
 

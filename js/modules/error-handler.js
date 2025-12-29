@@ -104,7 +104,7 @@ export class ErrorHandler {
    */
   static handleDragError(error, context = {}) {
     // Add to history
-    this.#addToHistory(error, context);
+    this._addToHistory(error, context);
 
     // Execute rollback if available
     if (context.rollback) {
@@ -115,11 +115,11 @@ export class ErrorHandler {
 
     // Show user notification (unless silent)
     if (!context.silent) {
-      this.#showErrorNotification(error, context);
+      this._showErrorNotification(error, context);
     }
 
     // Send to error tracking service (if configured)
-    this.#trackError(error, context);
+    this._trackError(error, context);
   }
 
   /**
@@ -128,17 +128,17 @@ export class ErrorHandler {
    * @param {ErrorContext} context - Error context
    */
   static handleStorageError(error, context = {}) {
-    this.#addToHistory(error, context);
+    this._addToHistory(error, context);
 
     if (!context.silent) {
-      const message = this.#getStorageErrorMessage(error);
-      this.#showErrorNotification(error, {
+      const message = this._getStorageErrorMessage(error);
+      this._showErrorNotification(error, {
         ...context,
         userMessage: message,
       });
     }
 
-    this.#trackError(error, context);
+    this._trackError(error, context);
   }
 
   /**
@@ -147,19 +147,19 @@ export class ErrorHandler {
    * @param {ErrorContext} context - Error context
    */
   static handleNetworkError(error, context = {}) {
-    this.#addToHistory(error, context);
+    this._addToHistory(error, context);
 
     if (!context.silent) {
       const message =
         'Netzwerkfehler. Änderungen werden synchronisiert sobald die Verbindung wiederhergestellt ist.';
-      this.#showErrorNotification(error, {
+      this._showErrorNotification(error, {
         ...context,
         userMessage: message,
         type: 'warning',
       });
     }
 
-    this.#trackError(error, context);
+    this._trackError(error, context);
   }
 
   /**
@@ -168,16 +168,16 @@ export class ErrorHandler {
    * @param {ErrorContext} context - Error context
    */
   static handleSyncError(error, context = {}) {
-    this.#addToHistory(error, context);
+    this._addToHistory(error, context);
 
     if (!context.silent) {
-      this.#showErrorNotification(error, {
+      this._showErrorNotification(error, {
         ...context,
         userMessage: 'Synchronisation fehlgeschlagen. Bitte versuchen Sie es später erneut.',
       });
     }
 
-    this.#trackError(error, context);
+    this._trackError(error, context);
   }
 
   /**
@@ -197,13 +197,13 @@ export class ErrorHandler {
       this.handleSyncError(error, context);
     } else {
       // Generic error
-      this.#addToHistory(error, context);
+      this._addToHistory(error, context);
 
       if (!context.silent) {
-        this.#showErrorNotification(error, context);
+        this._showErrorNotification(error, context);
       }
 
-      this.#trackError(error, context);
+      this._trackError(error, context);
     }
   }
 
@@ -256,7 +256,7 @@ export class ErrorHandler {
    * @param {Error} error - The error
    * @param {ErrorContext} context - Error context
    */
-  static #addToHistory(error, context) {
+  static _addToHistory(error, context) {
     this.errorHistory.push({
       error: {
         name: error.name,
@@ -281,11 +281,11 @@ export class ErrorHandler {
    * @param {Error} error - The error
    * @param {ErrorContext} context - Error context
    */
-  static #showErrorNotification(error, context) {
+  static _showErrorNotification(error, context) {
     // Import notifications module dynamically to avoid circular dependency
     import('./notifications.js')
       .then(({ showNotification }) => {
-        const message = context.userMessage || this.#getUserFriendlyMessage(error);
+        const message = context.userMessage || this._getUserFriendlyMessage(error);
         const type = context.type || 'error';
 
         const actions = [];
@@ -332,7 +332,7 @@ export class ErrorHandler {
    * @param {Error} error - The error
    * @returns {string}
    */
-  static #getUserFriendlyMessage(error) {
+  static _getUserFriendlyMessage(error) {
     const messages = {
       TaskMoveError: 'Aufgabe konnte nicht verschoben werden.',
       StorageError: 'Fehler beim Speichern der Daten.',
@@ -350,7 +350,7 @@ export class ErrorHandler {
    * @param {Error} error - The error
    * @returns {string}
    */
-  static #getStorageErrorMessage(error) {
+  static _getStorageErrorMessage(error) {
     if (error.message.includes('quota')) {
       return 'Speicherplatz voll. Bitte löschen Sie einige erledigte Aufgaben.';
     }
@@ -368,7 +368,7 @@ export class ErrorHandler {
    * @param {Error} error - The error
    * @param {ErrorContext} context - Error context
    */
-  static #trackError(error, context) {
+  static _trackError(error, context) {
     // Check if error tracking is enabled
     if (window.errorTracker && typeof window.errorTracker.captureException === 'function') {
       try {
