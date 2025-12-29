@@ -1477,6 +1477,77 @@ body.dark-mode .search-highlight {
   .modal-buttons button {
     width: 100%;
   }
+
+  /* Compact Settings Modal on Small Screens */
+  .settings-header {
+    padding: 12px;
+  }
+
+  .settings-header h3 {
+    font-size: 16px;
+  }
+
+  .close-btn {
+    font-size: 20px;
+    padding: 2px 4px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .settings-section {
+    padding: 8px 12px;
+  }
+
+  .settings-section-title {
+    font-size: 11px;
+    margin: 0 0 8px 0;
+  }
+
+  .settings-info {
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .theme-toggle-container {
+    gap: 6px;
+  }
+
+  .theme-btn,
+  .lang-btn {
+    padding: 6px 10px;
+    min-height: 32px;
+    font-size: 11px;
+  }
+
+  .settings-separator {
+    margin: 0;
+  }
+
+  .settings-link {
+    padding: 8px 0;
+    font-size: 13px;
+  }
+
+  .settings-link-flex {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+
+  .settings-user-info {
+    margin-bottom: 12px;
+  }
+
+  .settings-user-email {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+  }
+
+  .settings-export-btn,
+  .settings-signout-btn {
+    padding: 8px 12px;
+    min-height: 40px;
+    font-size: 12px;
+  }
 }
 
 /* ============================================================================
