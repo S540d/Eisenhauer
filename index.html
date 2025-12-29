@@ -654,8 +654,9 @@
         localStorage.setItem('sw-build-hash', currentBuildHash);
 
         // Reload page when new service worker takes over
+        // ONLY if it's not the first load to avoid reload loops
         navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!refreshing) {
+          if (!refreshing && navigator.serviceWorker.controller) {
             refreshing = true;
             console.log('[Service Worker] Controller changed, reloading page...');
             window.location.reload();
@@ -671,19 +672,20 @@
             .then((registration) => {
               console.log('[Service Worker] Registered:', swUrl);
 
-              // Force immediate update check on page load
-              registration.update();
+              // Check for updates on page load (less aggressive)
+              if (registration.active) {
+                registration.update();
+              }
 
-              // Check for updates every 10 seconds (aggressive)
+              // Check for updates every 60 seconds (less aggressive than 10s)
               const updateInterval = setInterval(() => {
                 registration.update();
-              }, 10000);
+              }, 60000);
 
               // Listen for updates
               registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
                 console.log('[Service Worker] New version found, waiting for activation...');
-                // The controllerchange event will handle the reload
               });
             })
             .catch((error) => {

@@ -1,21 +1,21 @@
 # 🚀 Eisenhauer Matrix - Android TWA Ready!
 
-**Status:** ✅ **Production Ready for Google Play Store (v1.7.3 with Auth Fix)**
+**Status:** ✅ **Production Ready for Google Play Store (v1.7.5 with SW-Loop Fix)**
 **Date:** 2025-12-29
-**Fix:** ✅ **Login-Logout Loop behoben** (launchMode: singleTask → singleTop)
+**Fix:** ✅ **Service Worker Reload Loop & Auth Initialization behoben**
 
 ---
 
-## 🐛 Latest Fix (v1.7.3)
+## 🐛 Latest Fix (v1.7.5)
 
 ### Problem behoben:
-Die TWA hatte eine Login-Logout-Schleife, bei der Benutzer sofort nach dem Login (innerhalb von 1-2 Sekunden) wieder abgemeldet wurden.
+Die TWA hatte eine Login-Logout-Schleife (eigentlich eine Reload-Schleife), die durch den Service Worker und eine Race-Condition bei der Auth-Initialisierung verursacht wurde.
 
 ### Lösung:
-- **AndroidManifest.xml:** `launchMode="singleTask"` → `launchMode="singleTop"`
-- **Warum:** `singleTask` hat die OAuth-Redirect-Flows gestört und die Authentication-Session zerstört
-- **Jetzt:** `singleTop` erlaubt korrektes Handling von Redirects ohne Task-Zerstörung
-- **Version:** 1.7.2 (versionCode 7) → 1.7.3 (versionCode 8)
+- **index.html:** `controllerchange` Reload-Schutz hinzugefügt (nur reload wenn bereits ein Controller existierte).
+- **script.js:** `initAuth()` ans Ende von `initApp()` verschoben (verhindert Race-Condition).
+- **auth.js:** `signInWithRedirect` für mobile Geräte/TWA aktiviert.
+- **Version:** 1.7.5 (versionCode 10)
 
 ### Nächster Schritt:
 Baue eine neue AAB mit dem Fix (siehe unten) und lade sie im Play Store hoch.
@@ -27,15 +27,8 @@ Baue eine neue AAB mit dem Fix (siehe unten) und lade sie im Play Store hoch.
 ### For Play Store Upload:
 ```
 Android/app/build/outputs/bundle/release/app-release.aab
-Size: 1.4 MB
+Size: ~1.9 MB
 Status: Signed & Ready ✅
-```
-
-### For Local Testing:
-```
-Android/app/build/outputs/apk/debug/app-debug.apk
-Size: 3.0 MB
-Status: Ready for installation ✅
 ```
 
 ---
@@ -46,7 +39,7 @@ Status: Ready for installation ✅
 2. **Keystore Generated** → Automatically created with secure passwords
 3. **Digital Asset Links** → Live at https://s540d.github.io/Eisenhauer/.well-known/assetlinks.json
 4. **Icons Configured** → Copied from PWA `icons/` directory
-5. **Build System** → Gradle 8.10.2 + Java 21 working
+5. **Build System** → Gradle 8.13 + Java 23 working
 6. **Security** → All secrets protected by `.gitignore`
 7. **Privacy Policy** → https://s540d.github.io/Eisenhauer/privacy-policy.html
 

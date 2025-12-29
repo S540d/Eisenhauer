@@ -2,10 +2,18 @@
 
 Diese Checklist muss vor jedem Release durchlaufen werden.
 
+## 🚀 Staging Workflow (Good Practice)
+
+- [ ] Alle Änderungen sind auf dem `staging` Branch
+- [ ] Lokale Tests auf `staging` erfolgreich (`npm run dev`)
+- [ ] Staging-Build erfolgreich (`npm run build`)
+- [ ] Staging-Deployment verifiziert (falls vorhanden)
+- [ ] Merge von `staging` in `main` vorbereitet
+
 ## Pre-Release Testing
 
 ### Web Platform
-- [ ] Build erfolgreich: `npm run build:web`
+- [ ] Build erfolgreich: `npm run build`
 - [ ] App startet ohne Fehler
 - [ ] Alle Features funktionieren im Browser
 - [ ] Getestet in Chrome
@@ -13,16 +21,19 @@ Diese Checklist muss vor jedem Release durchlaufen werden.
 - [ ] Mobile Browser Simulation (Chrome DevTools)
 - [ ] Dark Mode funktioniert
 - [ ] Settings werden korrekt gespeichert
+- [ ] **Authentication:** Login/Logout funktioniert (Google/Apple)
+- [ ] **Persistence:** Daten bleiben nach Reload erhalten
 
 ### Android Platform
-- [ ] Build erfolgreich: `./gradlew bundleRelease`
-- [ ] APK installiert auf physischem Gerät
+- [ ] Build erfolgreich: `./gradlew bundleRelease` (in `Android/` Ordner)
+- [ ] AAB/APK installiert auf physischem Gerät oder Emulator
 - [ ] App startet ohne Crash
+- [ ] **Authentication Fix verifiziert:** Kein Auto-Logout nach App-Neustart
 - [ ] Alle Features funktionieren
 - [ ] Dark Mode funktioniert
 - [ ] Settings werden korrekt gespeichert
 - [ ] Keine Permissions Errors
-- [ ] Deep Links funktionieren (falls vorhanden)
+- [ ] Deep Links funktionieren (Asset Links verifiziert)
 
 ### iOS Platform (falls relevant)
 - [ ] Build erfolgreich

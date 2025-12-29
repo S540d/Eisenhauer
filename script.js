@@ -21,11 +21,6 @@ window.Chart = Chart;
 import { auth, db } from './js/modules/firebase-init.js';
 import { initAuth } from './js/modules/auth.js';
 
-// Initialize authentication IMMEDIATELY (not in DOMContentLoaded)
-// ES6 modules are non-blocking, but we need to establish the auth listener ASAP
-// to handle login state before UI rendering
-initAuth();
-
 // Import all modules
 import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js';
 import { APP_VERSION, initVersion } from './js/modules/version.js';
@@ -792,6 +787,7 @@ async function initApp() {
 
   // Note: Event listeners and tasks are loaded in onAuthStateChanged callback
   // which is triggered by auth.js after showApp() is called
+  initAuth();
 }
 
 // Start the app when DOM is ready
