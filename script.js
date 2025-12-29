@@ -459,14 +459,6 @@ function setupEventListeners() {
 
   // Language toggle buttons in settings modal
   const langButtons = document.querySelectorAll('.lang-btn');
-  const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE) || 'en';
-
-  // Set initial active button
-  langButtons.forEach((btn) => {
-    if (btn.dataset.lang === savedLanguage) {
-      btn.classList.add('active');
-    }
-  });
 
   langButtons.forEach((btn) => {
     btn.addEventListener('click', () => {

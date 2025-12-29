@@ -31,8 +31,8 @@ function showApp() {
   if (loginScreen) loginScreen.style.display = 'none';
   if (appScreen) appScreen.style.display = 'flex';
 
-  // Update user info - show avatar and email only for Firebase authenticated users
-  // Logout buttons are shown in Settings Modal instead
+  // Update user info - show avatar only for Firebase authenticated users
+  // User email and logout are shown in Settings Modal instead
   if (currentUser) {
     const userInfo = document.getElementById('userInfo');
     if (userInfo) {
@@ -44,23 +44,14 @@ function showApp() {
       avatar.alt = 'User';
       avatar.className = 'user-avatar';
 
-      const email = document.createElement('span');
-      email.className = 'user-email';
-      email.textContent = currentUser.email || 'User';
-
       userInfo.appendChild(avatar);
-      userInfo.appendChild(email);
     }
   } else if (isGuestMode) {
     const userInfo = document.getElementById('userInfo');
     if (userInfo) {
       userInfo.textContent = '';
-
-      const guestLabel = document.createElement('span');
-      guestLabel.className = 'user-email';
-      guestLabel.textContent = 'Gastmodus (Lokal gespeichert)';
-
-      userInfo.appendChild(guestLabel);
+      // For guest mode, don't show anything in header
+      // User can see they're in guest mode in Settings
     }
   }
 }

@@ -387,6 +387,7 @@ export function openSettingsModal(
   // Show/hide account section based on authentication state
   const accountSection = document.getElementById('accountSection');
   const accountSeparator = document.getElementById('accountSeparator');
+  const userEmailDisplay = document.getElementById('userEmailDisplay');
   const signOutBtn = document.getElementById('signOutBtn');
 
   // Show sign out button for both Firebase login and guest mode
@@ -394,6 +395,21 @@ export function openSettingsModal(
     // User is authenticated (Firebase) or in guest mode (local) - show sign out button
     if (accountSection) accountSection.style.display = 'block';
     if (accountSeparator) accountSeparator.style.display = 'block';
+
+    // Display user email/status
+    if (userEmailDisplay) {
+      userEmailDisplay.textContent = '';
+      const emailLabel = document.createElement('p');
+      emailLabel.className = 'settings-user-email';
+
+      if (currentUser) {
+        emailLabel.textContent = currentUser.email || 'User';
+      } else if (isGuestMode) {
+        emailLabel.textContent = 'Gastmodus (Lokal gespeichert)';
+      }
+
+      userEmailDisplay.appendChild(emailLabel);
+    }
 
     // Setup sign out button event listener
     if (signOutBtn) {

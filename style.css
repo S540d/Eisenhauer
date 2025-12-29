@@ -1922,6 +1922,19 @@ body.dark-mode .lang-btn.active {
   background-color: #667eea;
 }
 
+/* Settings User Info */
+.settings-user-info {
+  margin-bottom: 16px;
+}
+
+.settings-user-email {
+  margin: 0 0 12px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
 /* Settings Action Buttons - Unified Gray Style */
 .settings-export-btn,
 .settings-signout-btn {
