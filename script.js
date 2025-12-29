@@ -31,7 +31,7 @@ import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js'
 import { APP_VERSION, initVersion } from './js/modules/version.js';
 import {
   translations,
-  currentLanguage,
+  getCurrentLanguage,
   setLanguage,
   getTranslation,
   updateLanguageUI,
@@ -318,7 +318,7 @@ function handleEditRecurring(task) {
       }
     },
     translations,
-    currentLanguage
+    getCurrentLanguage()
   );
 }
 
@@ -334,7 +334,7 @@ function renderTasksWithCallbacks() {
     onEditRecurring: handleEditRecurring,
   };
 
-  renderAllTasks(tasks, translations, currentLanguage, callbacks);
+  renderAllTasks(tasks, translations, getCurrentLanguage(), callbacks);
 
   // Setup drop zones for desktop drag & drop
   setupDropZones(handleMoveTask);
@@ -383,7 +383,7 @@ function setupEventListeners() {
           handleAddTask(text, selectedSegment || segment, recurring);
         },
         translations,
-        currentLanguage
+        getCurrentLanguage()
       );
     });
   });
@@ -399,7 +399,7 @@ function setupEventListeners() {
         APP_VERSION,
         new Date().toISOString().split('T')[0],
         isGuestMode,
-        currentLanguage
+        getCurrentLanguage()
       );
     });
   }
@@ -477,7 +477,7 @@ function setupEventListeners() {
   // Language toggle
   const languageToggle = document.getElementById('languageToggle');
   if (languageToggle) {
-    languageToggle.value = currentLanguage;
+    languageToggle.value = getCurrentLanguage();
     languageToggle.addEventListener('change', (e) => {
       setLanguage(e.target.value);
       updateLanguageUI(() => renderTasksWithCallbacks());

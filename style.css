@@ -200,15 +200,6 @@ header h1,
   flex-shrink: 0;
 }
 
-.settings-btn:hover {
-  background: var(--task-bg);
-  transform: rotate(45deg);
-}
-
-.settings-btn:active {
-  transform: rotate(45deg) scale(0.95);
-}
-
 .offline-indicator {
   background: rgba(255, 152, 0, 0.9);
   color: white;
