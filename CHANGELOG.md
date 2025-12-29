@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased] - 2025-12-29 (UI/UX Polish & Language Sync)
+
+### 🎨 Settings Menu Styling (v1.6.2-RC)
+
+#### Visual Consistency
+- **Button Standardization**
+  - Sign-out & Export buttons now use primary blue (#667eea) with white text
+  - Matches active language toggle appearance
+  - Full-width buttons with consistent 32px minimum height
+  - Unified padding: 6px 12px, font-size: 12px, border-radius: 4px
+
+- **Link Color Improvements**
+  - Feedback/Support/About links now use #667eea for better dark-mode visibility
+  - Enhanced contrast in both light and dark themes
+  - Consistent with Export and Language label styling
+
+#### Quick Add Modal Redesign
+- **Button Styling**
+  - Add button: Primary blue (#667eea) with white text
+  - Cancel button: Secondary gray style with grid color background
+  - Both buttons match Settings menu design language
+
+- **Layout Optimization**
+  - Made modal more compact with reduced margins
+  - Title margin: 8px bottom
+  - Input padding: 8px 10px (reduced from 12px)
+  - Recurring config padding: 8px
+  - Border radius unified to 4px
+
+### 🌍 Language Synchronization (v1.6.2-RC)
+
+#### Dynamic Language Support
+- **Quick Add Modal Translations**
+  - Added German: "Neue Aufgabe" with German UI strings
+  - Added English: "New Task" with English UI strings
+  - Input placeholders dynamically translated
+
+- **Language Update Pipeline**
+  - New `quickAddModal` section in translations.js
+  - Extended `updateLanguageUI()` to cover Quick Add Modal elements
+  - Includes recurring option labels and weekday abbreviations
+  - Called on app initialization to apply language immediately
+
+#### Supported Translations
+- 🇩🇪 Deutsch: Neue Aufgabe, Hinzufügen, Abbrechen
+- 🇬🇧 English: New Task, Add, Cancel
+- All recurring options (Täglich/Daily, Wöchentlich/Weekly, etc.)
+- Weekday abbreviations (Mo/Di/Mi... or Mon/Tue/Wed...)
+
+### Status
+- 🔄 **In Staging** - Ready for testing on feature/firebase-v9-v2 branch
+- ⏳ **Not yet in Main** - Awaiting final validation
+
+---
+
 ## [1.6.1] - 2025-12-22 (Testing Phase)
 
 ### 🔧 Pre-Testing Cleanup & Fixes
