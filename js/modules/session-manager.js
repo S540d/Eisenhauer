@@ -357,5 +357,14 @@ export class SessionManager {
   }
 }
 
-// Export singleton instance
+/**
+ * Singleton instance for application-wide session management
+ *
+ * Usage:
+ * - Import and use directly: import { sessionManager } from './session-manager.js'
+ * - For testing: Import SessionManager class and create new instances
+ *
+ * The singleton pattern ensures consistent session state across the application
+ * while still allowing unit tests to create isolated instances.
+ */
 export const sessionManager = new SessionManager();

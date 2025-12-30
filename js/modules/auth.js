@@ -202,14 +202,14 @@ async function continueAsGuest() {
  * Solution: Initialize immediately without event listener wrapper
  * Enhanced with Session Recovery Mechanism
  */
-export function initAuth() {
+export async function initAuth() {
   // Check sessionStorage availability (non-critical)
   if (!isSessionStorageAvailable()) {
     // OK to continue without sessionStorage
   }
 
-  // Initialize session manager with recovery callbacks
-  sessionManager.initialize({
+  // Initialize session manager with recovery callbacks (await to prevent race conditions)
+  await sessionManager.initialize({
     onRecovery: () => {
       showInfo('Sitzung wiederhergestellt', 3000);
       console.log('[Auth] Session recovered successfully');
