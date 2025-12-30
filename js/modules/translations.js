@@ -12,8 +12,8 @@ export const translations = {
     },
     settings: {
       dataManagement: 'DATEN',
-      exportBtn: '📥 Export',
-      importGuestBtn: '📤 Import Gast-Daten',
+      exportBtn: 'Export',
+      importGuestBtn: 'Import Gast-Daten',
     },
     quickAddModal: {
       title: 'Neue Aufgabe',
@@ -57,8 +57,8 @@ export const translations = {
     },
     settings: {
       dataManagement: 'DATA MANAGEMENT',
-      exportBtn: '📥 Export',
-      importGuestBtn: '📤 Import Guest Data',
+      exportBtn: 'Export',
+      importGuestBtn: 'Import Guest Data',
     },
     quickAddModal: {
       title: 'New Task',
