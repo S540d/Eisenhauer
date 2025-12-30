@@ -1852,6 +1852,7 @@ body.dark-mode .segment.keyboard-target::before {
 #settingsModal .modal-content,
 #aboutModal .modal-content {
   padding: 0;
+  padding-bottom: 20px;
   overflow-y: auto;
   max-height: 80vh;
 }
@@ -2067,7 +2068,7 @@ body.dark-mode .lang-btn.active {
 .settings-user-email {
   margin: 0 0 12px 0;
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   word-break: break-all;
   line-height: 1.4;
 }
