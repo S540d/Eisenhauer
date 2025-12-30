@@ -68,12 +68,18 @@ async function signInWithGoogle() {
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
       window.matchMedia('(display-mode: standalone)').matches;
 
-    if (isMobile) {
+    // Check if redirect previously failed
+    const redirectFailed = localStorage.getItem('auth_redirect_failed') === 'true';
+
+    if (isMobile && !redirectFailed) {
       // Set flag to detect redirect return
       localStorage.setItem('auth_is_redirecting', 'true');
       await signInWithRedirect(auth, googleProvider);
     } else {
+      // Use popup if not mobile OR if redirect previously failed
       await signInWithPopup(auth, googleProvider);
+      // If popup succeeds, we can optionally clear the failure flag,
+      // but keeping it might be safer for this device.
     }
   } catch (error) {
     localStorage.removeItem('auth_is_redirecting');
@@ -107,11 +113,15 @@ async function signInWithApple() {
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
       window.matchMedia('(display-mode: standalone)').matches;
 
-    if (isMobile) {
+    // Check if redirect previously failed
+    const redirectFailed = localStorage.getItem('auth_redirect_failed') === 'true';
+
+    if (isMobile && !redirectFailed) {
       // Set flag to detect redirect return
       localStorage.setItem('auth_is_redirecting', 'true');
       await signInWithRedirect(auth, appleProvider);
     } else {
+      // Use popup if not mobile OR if redirect previously failed
       await signInWithPopup(auth, appleProvider);
     }
   } catch (error) {
@@ -253,7 +263,11 @@ export async function initAuth() {
         if (isRedirecting) {
           console.warn('Expected redirect result but got none.');
           localStorage.removeItem('auth_is_redirecting');
-          alert('Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+          // Mark redirect as failed so next time we try popup
+          localStorage.setItem('auth_redirect_failed', 'true');
+          alert(
+            'Anmeldung über Weiterleitung fehlgeschlagen. Der nächste Versuch wird über ein Popup erfolgen.'
+          );
         }
       } catch (e) {
         // Ignore error, proceed to check guest mode
