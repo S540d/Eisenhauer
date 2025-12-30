@@ -1,12 +1,43 @@
-# Fix: TWA Login-Logout Loop (v1.7.3)
+# Fix: TWA Login-Logout Loop (v1.7.3 & v1.7.6)
 
-**Datum:** 2025-12-29
+**Datum:** 2025-12-30
 **Status:** ✅ Behoben
-**Version:** 1.7.3 (versionCode: 8)
+**Version:** 1.7.6
 
 ---
 
-## Problem
+## Update v1.7.6: Self-Healing Auth Strategy
+
+Trotz des Fixes in v1.7.3 (LaunchMode) trat auf einigen Geräten weiterhin ein Problem auf, bei dem `signInWithRedirect` fehlschlug oder in einer Schleife endete ("Anmeldung fehlgeschlagen").
+
+### Problem
+- `signInWithRedirect` ist auf manchen mobilen Browsern/Webviews unzuverlässig.
+- Wenn der Redirect fehlschlägt, kehrt der User zur App zurück, aber `getRedirectResult` liefert `null`.
+- Die App denkt, der User ist nicht eingeloggt -> zeigt Login-Screen -> User klickt erneut -> Endlosschleife.
+
+### Lösung: Fallback-Strategie
+Wir haben eine "Self-Healing"-Logik in `js/modules/auth.js` implementiert:
+
+1. **Erster Versuch (Standard):**
+   - App versucht `signInWithRedirect`.
+   - Setzt Flag `auth_is_redirecting = true` im LocalStorage.
+
+2. **Fehlererkennung:**
+   - Beim Neuladen prüft die App: War `auth_is_redirecting` gesetzt, aber kein User eingeloggt?
+   - Wenn ja -> Redirect ist fehlgeschlagen.
+   - Aktion: Setze Flag `auth_redirect_failed = true` und zeige Fehlermeldung.
+
+3. **Zweiter Versuch (Fallback):**
+   - Beim nächsten Klick auf "Anmelden" prüft die App `auth_redirect_failed`.
+   - Wenn `true` -> Nutze `signInWithPopup` statt Redirect.
+   - Dies umgeht das Redirect-Problem zuverlässig.
+
+---
+
+## Historie: v1.7.3 Fix (LaunchMode)
+*(Ursprünglicher Fix vom 29.12.2025)*
+
+### Problem
 
 Die Android TWA (Trusted Web Activity) hatte eine kritische Login-Logout-Schleife:
 - Benutzer meldeten sich an (Google/Apple Sign-In)

@@ -232,11 +232,14 @@ export async function initAuth() {
 
   // FIX: Direct call to onAuthStateChanged WITHOUT DOMContentLoaded wrapper
   // This ensures the listener is registered immediately when the module loads
+  let hasLoggedInOnce = false;
+
   onAuthStateChanged(auth, async (user) => {
     currentUser = user;
 
     if (user) {
       // User is signed in
+      hasLoggedInOnce = true;
       isGuestMode = false;
       localStorage.removeItem('auth_is_redirecting'); // Clear flag on success
       await localforage.removeItem('guestMode');
@@ -260,7 +263,8 @@ export async function initAuth() {
         }
 
         // If we expected a redirect but got nothing
-        if (isRedirecting) {
+        // AND we haven't successfully logged in during this session (prevents alert on logout)
+        if (isRedirecting && !hasLoggedInOnce) {
           console.warn('Expected redirect result but got none.');
           localStorage.removeItem('auth_is_redirecting');
           // Mark redirect as failed so next time we try popup
