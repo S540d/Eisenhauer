@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.6] - 2025-12-29 (Mobile Auth Persistence Fix)
+
+### 🐛 Bug Fixes
+- **Mobile Login Loop (Android TWA & iOS PWA)**
+  - Fixed critical issue where users were redirected to login screen after successful authentication
+  - Implemented `indexedDBLocalPersistence` initialization in `auth.js` to ensure auth state is correctly restored after OAuth redirects
+  - This addresses the regression from PR #98 and ensures compatibility with Android `singleTop` launchMode (PR #99)
+
 ## [1.7.5] - 2025-12-29 (Service Worker & Auth Race Condition Fix) 🚀 RELEASED
 
 ### 🐛 Bug Fixes

@@ -188,10 +188,19 @@ async function continueAsGuest() {
  * ES6 modules load asynchronously, DOMContentLoaded might fire before the module loads
  * Solution: Initialize immediately without event listener wrapper
  */
-export function initAuth() {
+export async function initAuth() {
   // Check sessionStorage availability (non-critical)
   if (!isSessionStorageAvailable()) {
     // OK to continue without sessionStorage
+  }
+
+  // FIX: Ensure persistence is set to IndexedDB immediately on initialization
+  // This is critical for Android TWA and iOS PWA where localStorage is unreliable
+  // or cleared by the OS. This ensures we look in the right place for the session.
+  try {
+    await setPersistence(auth, indexedDBLocalPersistence);
+  } catch (error) {
+    console.error('Error setting persistence at init:', error);
   }
 
   // Handle redirect result (for mobile/TWA)
