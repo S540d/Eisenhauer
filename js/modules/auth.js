@@ -204,8 +204,10 @@ export async function initAuth() {
   }
 
   // Handle redirect result (for mobile/TWA)
-  getRedirectResult(auth).catch((error) => {
+  // Store the promise so we can wait for it if needed
+  const redirectPromise = getRedirectResult(auth).catch((error) => {
     console.error('Error getting redirect result:', error);
+    return null;
   });
 
   // FIX: Direct call to onAuthStateChanged WITHOUT DOMContentLoaded wrapper
@@ -224,6 +226,20 @@ export async function initAuth() {
         await window.onAuthStateChanged(user, false);
       }
     } else {
+      // If user is null, it might be because we are still processing the redirect result.
+      // Wait for it to complete before deciding we are truly signed out.
+      try {
+        const result = await redirectPromise;
+        if (result && result.user) {
+          // If we got a user from redirect, onAuthStateChanged will fire again (or we can handle it here)
+          // But usually onAuthStateChanged fires automatically.
+          // Just return and let the next firing handle it.
+          return;
+        }
+      } catch (e) {
+        // Ignore error, proceed to check guest mode
+      }
+
       // Check if guest mode was active
       try {
         const wasGuestMode = await localforage.getItem('guestMode');

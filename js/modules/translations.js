@@ -29,7 +29,7 @@ export const translations = {
     },
     recurring: {
       title: 'Wiederkehrende Aufgabe',
-      enableLabel: '🔁 Als wiederkehrende Aufgabe',
+      enableLabel: 'Als wiederkehrende Aufgabe',
       intervalLabel: 'Intervall:',
       daily: 'Täglich',
       weekly: 'Wöchentlich',
@@ -46,7 +46,7 @@ export const translations = {
         sunday: 'Sonntag',
       },
       dayOfMonth: 'Tag des Monats:',
-      indicator: '🔁',
+      indicator: '',
     },
   },
   en: {
@@ -74,7 +74,7 @@ export const translations = {
     },
     recurring: {
       title: 'Recurring Task',
-      enableLabel: '🔁 Make recurring',
+      enableLabel: 'Make recurring',
       intervalLabel: 'Interval:',
       daily: 'Daily',
       weekly: 'Weekly',
@@ -91,7 +91,7 @@ export const translations = {
         sunday: 'Sunday',
       },
       dayOfMonth: 'Day of month:',
-      indicator: '🔁',
+      indicator: '',
     },
   },
 };
