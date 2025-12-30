@@ -18,6 +18,7 @@ import {
   signOut as firebaseSignOut,
   setPersistence,
   indexedDBLocalPersistence,
+  browserLocalPersistence,
 } from 'firebase/auth';
 import localforage from 'localforage';
 
@@ -62,20 +63,20 @@ function isSessionStorageAvailable() {
 // Sign-in functions
 async function signInWithGoogle() {
   try {
-    // Ensure persistence is set to IndexedDB before sign-in (fix for mobile)
-    await setPersistence(auth, indexedDBLocalPersistence);
-
     // Use redirect for mobile/TWA, popup for desktop
     const isMobile =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
       window.matchMedia('(display-mode: standalone)').matches;
 
     if (isMobile) {
+      // Set flag to detect redirect return
+      localStorage.setItem('auth_is_redirecting', 'true');
       await signInWithRedirect(auth, googleProvider);
     } else {
       await signInWithPopup(auth, googleProvider);
     }
   } catch (error) {
+    localStorage.removeItem('auth_is_redirecting');
     if (
       error.code === 'auth/cancelled-popup-request' ||
       error.code === 'auth/popup-closed-by-user'
@@ -101,20 +102,20 @@ async function signInWithGoogle() {
 
 async function signInWithApple() {
   try {
-    // Ensure persistence is set to IndexedDB before sign-in (fix for mobile)
-    await setPersistence(auth, indexedDBLocalPersistence);
-
     // Use redirect for mobile/TWA, popup for desktop
     const isMobile =
       /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
       window.matchMedia('(display-mode: standalone)').matches;
 
     if (isMobile) {
+      // Set flag to detect redirect return
+      localStorage.setItem('auth_is_redirecting', 'true');
       await signInWithRedirect(auth, appleProvider);
     } else {
       await signInWithPopup(auth, appleProvider);
     }
   } catch (error) {
+    localStorage.removeItem('auth_is_redirecting');
     if (
       error.code === 'auth/cancelled-popup-request' ||
       error.code === 'auth/popup-closed-by-user'
@@ -201,7 +202,16 @@ export async function initAuth() {
     await setPersistence(auth, indexedDBLocalPersistence);
   } catch (error) {
     console.error('Error setting persistence at init:', error);
+    // Fallback to browserLocalPersistence if IndexedDB fails
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+    } catch (e) {
+      console.error('Error setting fallback persistence:', e);
+    }
   }
+
+  // Check if we are expecting a redirect return
+  const isRedirecting = localStorage.getItem('auth_is_redirecting');
 
   // Handle redirect result (for mobile/TWA)
   // Store the promise so we can wait for it if needed
@@ -218,6 +228,7 @@ export async function initAuth() {
     if (user) {
       // User is signed in
       isGuestMode = false;
+      localStorage.removeItem('auth_is_redirecting'); // Clear flag on success
       await localforage.removeItem('guestMode');
       showApp();
 
@@ -234,7 +245,15 @@ export async function initAuth() {
           // If we got a user from redirect, onAuthStateChanged will fire again (or we can handle it here)
           // But usually onAuthStateChanged fires automatically.
           // Just return and let the next firing handle it.
+          localStorage.removeItem('auth_is_redirecting'); // Clear flag on success
           return;
+        }
+
+        // If we expected a redirect but got nothing
+        if (isRedirecting) {
+          console.warn('Expected redirect result but got none.');
+          localStorage.removeItem('auth_is_redirecting');
+          alert('Anmeldung fehlgeschlagen. Bitte versuchen Sie es erneut.');
         }
       } catch (e) {
         // Ignore error, proceed to check guest mode
