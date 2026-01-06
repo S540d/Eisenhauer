@@ -375,6 +375,34 @@ export function openSettingsModal(
     }
   });
 
+  // Setup theme button event listeners (re-register on each modal open to ensure consistency)
+  themeButtons.forEach((btn) => {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    newBtn.addEventListener('click', () => {
+      const theme = newBtn.dataset.theme;
+
+      // Update active state
+      document.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
+      newBtn.classList.add('active');
+
+      // Update theme
+      if (theme === 'dark') {
+        localStorage.setItem('darkMode', 'true');
+        document.body.classList.add('dark-mode');
+      } else if (theme === 'system') {
+        localStorage.removeItem('darkMode');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+      }
+    });
+  });
+
   // Update language toggle button active state - use currentLanguage parameter
   const langButtons = document.querySelectorAll('.lang-btn');
 
