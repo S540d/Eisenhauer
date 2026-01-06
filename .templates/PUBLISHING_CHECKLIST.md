@@ -18,7 +18,7 @@
 - **App-Name**: NICHT im Header anzeigen, sondern nur in den Settings-Modal oben als erste Zeile
 - **Settings-Modal**: Kompakte Darstellung mit moderaten Abständen zwischen Elementen (nicht zu eng, aber auch nicht zu weit) 
 - Es soll - sofern irgendwo ein Icon verwendet wird, jenes sein, das im jeweiligen Projekt unter "icon.png" abgelegt ist
-- Emojis sparsam verwenden, nicht in Zusammenhang mit Wörtern
+- außer der Teetasse vor dem Footer mit "support me" soll nirgendswo ein Emoji auftauchen. Erst recht nicht in Zusammenhang mit einem Wort
 - **Settings-Icon**: Ausschließlich SVG-basierte drei Punkte verwenden (siehe Implementierung in Eisenhauer/index.html)
 
 
