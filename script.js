@@ -412,52 +412,8 @@ function setupEventListeners() {
     cancelBtn.addEventListener('click', closeModal);
   }
 
-  // Settings modal close
-  const settingsCancelBtn = document.getElementById('settingsCancelBtn');
-  if (settingsCancelBtn) {
-    settingsCancelBtn.addEventListener('click', () => {
-      document.getElementById('settingsModal').style.display = 'none';
-    });
-  }
-
-  // Theme toggle buttons in settings modal
-  const themeButtons = document.querySelectorAll('.theme-btn');
-  const currentTheme = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
-
-  // Set initial active button
-  themeButtons.forEach((btn) => {
-    const theme = btn.dataset.theme;
-    if (
-      (theme === 'dark' && currentTheme === 'true') ||
-      (theme === 'system' && currentTheme === null)
-    ) {
-      btn.classList.add('active');
-    }
-  });
-
-  themeButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const theme = btn.dataset.theme;
-
-      // Update active state
-      themeButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Update theme
-      if (theme === 'dark') {
-        localStorage.setItem(STORAGE_KEYS.DARK_MODE, 'true');
-        document.body.classList.add('dark-mode');
-      } else if (theme === 'system') {
-        localStorage.removeItem(STORAGE_KEYS.DARK_MODE);
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) {
-          document.body.classList.add('dark-mode');
-        } else {
-          document.body.classList.remove('dark-mode');
-        }
-      }
-    });
-  });
+  // NOTE: Settings modal close and theme toggle buttons are now handled in ui.js openSettingsModal()
+  // to ensure event listeners are properly registered on each modal open
 
   // Language toggle buttons in settings modal
   const langButtons = document.querySelectorAll('.lang-btn');
