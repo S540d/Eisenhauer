@@ -13,8 +13,6 @@ import { auth, googleProvider, appleProvider } from './firebase-init.js';
 import {
   onAuthStateChanged,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut as firebaseSignOut,
   setPersistence,
   indexedDBLocalPersistence,
@@ -63,24 +61,10 @@ function isSessionStorageAvailable() {
 // Sign-in functions
 async function signInWithGoogle() {
   try {
-    // Use redirect for mobile/TWA, popup for desktop
-    const isMobile =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      window.matchMedia('(display-mode: standalone)').matches;
-
-    // Check if redirect previously failed
-    const redirectFailed = localStorage.getItem('auth_redirect_failed') === 'true';
-
-    if (isMobile && !redirectFailed) {
-      // Set flag to detect redirect return
-      localStorage.setItem('auth_is_redirecting', 'true');
-      await signInWithRedirect(auth, googleProvider);
-    } else {
-      // Use popup if not mobile OR if redirect previously failed
-      await signInWithPopup(auth, googleProvider);
-      // If popup succeeds, we can optionally clear the failure flag,
-      // but keeping it might be safer for this device.
-    }
+    // FIX: Using popup for all devices (including mobile/TWA)
+    // This resolves issues with storage partitioning and ITP in modern browsers
+    // where redirect flow loses session state.
+    await signInWithPopup(auth, googleProvider);
   } catch (error) {
     localStorage.removeItem('auth_is_redirecting');
     if (
@@ -108,22 +92,8 @@ async function signInWithGoogle() {
 
 async function signInWithApple() {
   try {
-    // Use redirect for mobile/TWA, popup for desktop
-    const isMobile =
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-      window.matchMedia('(display-mode: standalone)').matches;
-
-    // Check if redirect previously failed
-    const redirectFailed = localStorage.getItem('auth_redirect_failed') === 'true';
-
-    if (isMobile && !redirectFailed) {
-      // Set flag to detect redirect return
-      localStorage.setItem('auth_is_redirecting', 'true');
-      await signInWithRedirect(auth, appleProvider);
-    } else {
-      // Use popup if not mobile OR if redirect previously failed
-      await signInWithPopup(auth, appleProvider);
-    }
+    // FIX: Using popup for all devices (including mobile/TWA)
+    await signInWithPopup(auth, appleProvider);
   } catch (error) {
     localStorage.removeItem('auth_is_redirecting');
     if (
@@ -220,16 +190,6 @@ export async function initAuth() {
     }
   }
 
-  // Check if we are expecting a redirect return
-  const isRedirecting = localStorage.getItem('auth_is_redirecting');
-
-  // Handle redirect result (for mobile/TWA)
-  // Store the promise so we can wait for it if needed
-  const redirectPromise = getRedirectResult(auth).catch((error) => {
-    console.error('Error getting redirect result:', error);
-    return null;
-  });
-
   // FIX: Direct call to onAuthStateChanged WITHOUT DOMContentLoaded wrapper
   // This ensures the listener is registered immediately when the module loads
   let hasLoggedInOnce = false;
@@ -241,7 +201,6 @@ export async function initAuth() {
       // User is signed in
       hasLoggedInOnce = true;
       isGuestMode = false;
-      localStorage.removeItem('auth_is_redirecting'); // Clear flag on success
       await localforage.removeItem('guestMode');
       showApp();
 
@@ -250,33 +209,7 @@ export async function initAuth() {
         await window.onAuthStateChanged(user, false);
       }
     } else {
-      // If user is null, it might be because we are still processing the redirect result.
-      // Wait for it to complete before deciding we are truly signed out.
-      try {
-        const result = await redirectPromise;
-        if (result && result.user) {
-          // If we got a user from redirect, onAuthStateChanged will fire again (or we can handle it here)
-          // But usually onAuthStateChanged fires automatically.
-          // Just return and let the next firing handle it.
-          localStorage.removeItem('auth_is_redirecting'); // Clear flag on success
-          return;
-        }
-
-        // If we expected a redirect but got nothing
-        // AND we haven't successfully logged in during this session (prevents alert on logout)
-        if (isRedirecting && !hasLoggedInOnce) {
-          console.warn('Expected redirect result but got none.');
-          localStorage.removeItem('auth_is_redirecting');
-          // Mark redirect as failed so next time we try popup
-          localStorage.setItem('auth_redirect_failed', 'true');
-          alert(
-            'Anmeldung über Weiterleitung fehlgeschlagen. Der nächste Versuch wird über ein Popup erfolgen.'
-          );
-        }
-      } catch (e) {
-        // Ignore error, proceed to check guest mode
-      }
-
+      // User is signed out
       // Check if guest mode was active
       try {
         const wasGuestMode = await localforage.getItem('guestMode');
