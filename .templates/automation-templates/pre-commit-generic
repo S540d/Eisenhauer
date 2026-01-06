@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+echo "🔍 Running pre-commit checks (Web)..."
+
+# Check for console.log in staged files
+echo "Checking for console.log statements..."
+if git diff --cached --name-only | grep -E '\.(js|html|css)$' | xargs grep -n "console\.log\|console\.debug" 2>/dev/null | grep -v "// debug:"; then
+  echo "❌ ERROR: Found console.log/debug in staged files!"
+  echo "Please remove debug statements or add // debug: comment if intentional."
+  exit 1
+fi
+
+# Check version consistency if package.json changed
+if git diff --cached --name-only | grep -E "package\.json" >/dev/null; then
+  echo "Checking version consistency..."
+
+  PACKAGE_VERSION=$(node -p "require('./package.json').version" 2>/dev/null)
+
+  echo "package.json version: $PACKAGE_VERSION"
+
+  # Optional: Check if version exists in HTML
+  if [ -f "index.html" ]; then
+    if ! grep -q "$PACKAGE_VERSION" index.html 2>/dev/null; then
+      echo "⚠️  WARNING: Version not found in index.html"
+      echo "Consider updating version in HTML file"
+    fi
+  fi
+fi
+
+echo "✅ Pre-commit checks passed!"

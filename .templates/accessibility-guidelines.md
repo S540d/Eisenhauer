@@ -1,7 +1,19 @@
 ---
+# ⚠️ DEPRECATED - Accessibility Guidelines
+
+> **STATUS:** Diese Datei ist veraltet. Der Inhalt wurde in [ux-vorgaben.md → Barrierefreiheit](ux-vorgaben.md#barrierefreiheit-accessibility--wcag-21-aa) konsolidiert.
+>
+> **Bitte verwende stattdessen:**
+> - [ux-vorgaben.md → Barrierefreiheit](ux-vorgaben.md#barrierefreiheit-accessibility--wcag-21-aa) - Alle WCAG 2.1 AA Standards
+> - [STANDARDS_OVERVIEW.md → Barrierefreiheit (WCAG 2.1 AA)](STANDARDS_OVERVIEW.md#barrierefreiheit-wcag-21-aa) - Quick Reference
+
+---
+
 # Accessibility Guidelines - WCAG 2.1 AA Compliance
 
 Richtlinien und Checklisten für die Implementierung von barrierefreien Webinhalten nach WCAG 2.1 Level AA Standard.
+
+⚠️ **Diese Datei wird nicht mehr aktualisiert. Siehe Links oben für aktuellen Content.**
 
 ---
 

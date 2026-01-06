@@ -1,7 +1,9 @@
 ---
 # Technische Vorgaben für Projekte
 
-Allgemeine technische Standards für alle Projekttypen (Web, PWA, Node.js, TypeScript, etc.).
+Technische Standards für alle Projekttypen: Web, PWA, Node.js, TypeScript, Android, React Native/Expo.
+
+---
 
 ## Code-Qualität
 
@@ -33,12 +35,39 @@ Allgemeine technische Standards für alle Projekttypen (Web, PWA, Node.js, TypeS
 
 ## Testing Standards
 
+### Testing Pyramid
+```
+        /\
+       /  \   E2E Tests
+      /    \  - User Journeys
+     /______\
+    /        \
+   /          \ Integration Tests
+  /            \ - Feature Combinations
+ /______________\
+/                \
+\  Unit Tests   /
+ \  (70%)      /
+  \           /
+   \_________/
+```
+
+**Ideale Verteilung:**
+- Unit Tests: 70% (schnell, viele, spezifisch)
+- Integration Tests: 20% (mittel, Feature-Kombinationen)
+- E2E Tests: 10% (langsam, User-Journeys)
+
 ### Unit Tests (Pflicht für kritische Module)
 - **Framework:** Vitest (modern, schnell, TypeScript-ready) oder Jest
   - Vitest ist bevorzugt für neue Projekte
 - **Coverage-Ziel:** Mindestens 60% für gesamt Projekt, 85%+ für kritische Module
 - **Kritische Module:** Datenvalidation, API-Handler, Business Logic, Utilities
 - Kommando: `npm run test`
+
+### Integration Tests (Empfohlen)
+- **Scope:** Kombinationen von Funktionen testen (z.B. Service + Database)
+- **Framework:** Vitest mit Fixtures oder Jest
+- Kommando: `npm run test:integration`
 
 ### End-to-End Tests (Empfohlen)
 - **Framework:** Playwright (cross-browser, headless/headed)
@@ -212,13 +241,363 @@ jobs:
 
 ---
 
-## Spezielle Projekttypen
+## Android App Entwicklung
 
-### PWA (Progressive Web Apps)
-- **Service Worker:** Implementiere Service Worker für Offline-Support
-- **Manifest:** `manifest.json` mit Icons, Theme Colors, Start URL
-- **Icons:** Provide icons für verschiedene Auflösungen (192x192, 512x512, etc.)
-- **HTTPS:** Über PWA-Features ist HTTPS erforderlich
+### Edge-to-Edge Display (Android 15+)
+
+**KRITISCH:** Ab Android 15 (SDK 35+) sind Apps **standardmäßig randlos**. Alle Android-Apps MÜSSEN Edge-to-Edge kompatibel sein.
+
+#### Build Configuration
+```kotlin
+// app/build.gradle.kts
+android {
+    compileSdk = 36  // Android 15+
+
+    defaultConfig {
+        targetSdk = 36  // WICHTIG: Android 15+
+        minSdk = 21
+    }
+}
+
+dependencies {
+    // Material Components - Mindestens v1.13.0
+    implementation("com.google.android.material:material:1.13.0")
+
+    // AndroidX Core - für WindowCompat
+    implementation("androidx.core:core-ktx:1.17.0")
+}
+```
+
+#### MainActivity Implementation
+```kotlin
+// MainActivity.kt
+import androidx.core.view.WindowCompat
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        // Enable Edge-to-Edge for Android 15+ compatibility
+        enableEdgeToEdge()
+
+        // ... rest of your code
+    }
+
+    private fun enableEdgeToEdge() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+    }
+}
+```
+
+#### Theme Configuration
+**values/themes.xml (Light Mode):**
+```xml
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.YourApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+    </style>
+
+    <style name="Theme.YourApp" parent="Base.Theme.YourApp" />
+</resources>
+```
+
+**values-night/themes.xml (Dark Mode):**
+```xml
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.YourApp" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
+        <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
+    </style>
+</resources>
+```
+
+#### Checkliste - Edge-to-Edge Implementation
+- [ ] `compileSdk = 36`
+- [ ] `targetSdk = 36`
+- [ ] Material Components >= 1.13.0
+- [ ] AndroidX Core >= 1.17.0
+- [ ] `WindowCompat.setDecorFitsSystemWindows(window, false)` implementiert
+- [ ] Themes konfiguriert (Light & Dark Mode)
+- [ ] Build ohne Warnungen
+- [ ] Test auf Android 15+ Gerät/Emulator
+
+### Android App Links (Deep Linking)
+
+**WICHTIG:** Apps sollten Android App Links implementieren, damit Website-URLs automatisch die App öffnen.
+
+#### Setup für Expo/React Native Apps
+
+**1. Digital Asset Links erstellen:**
+```bash
+mkdir -p public/.well-known
+```
+
+**public/.well-known/assetlinks.json:**
+```json
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.yourcompany.yourapp",
+      "sha256_cert_fingerprints": [
+        "SHA256_FINGERPRINT_FROM_PLAY_CONSOLE"
+      ]
+    }
+  }
+]
+```
+
+**2. Intent-Filter in app.json:**
+```json
+{
+  "expo": {
+    "android": {
+      "package": "com.yourcompany.yourapp",
+      "versionCode": 2,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "yourdomain.github.io",
+              "pathPrefix": "/YourApp"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    }
+  }
+}
+```
+
+**3. Build-Skript anpassen:**
+```javascript
+// scripts/post-build.js
+const filesToCopy = [
+  { src: 'public/.nojekyll', dest: 'dist/.nojekyll' },  // WICHTIG!
+  { src: 'public/.well-known/assetlinks.json', dest: 'dist/.well-known/assetlinks.json' }
+];
+```
+
+**4. Deployen mit --dotfiles Flag:**
+```json
+{
+  "scripts": {
+    "deploy:gh-pages": "gh-pages -d dist -t --dotfiles"
+  }
+}
+```
+
+**5. SHA-256 Fingerabdruck:**
+1. Google Play Console → Setup → App-Integrität
+2. SHA-256 Zertifikatfingerabdruck kopieren
+3. **Doppelpunkte entfernen:** `AA:BB:CC:DD` → `AABBCCDD`
+4. In `assetlinks.json` eintragen
+5. Deployen: `npm run deploy`
+
+#### Testen
+```bash
+# assetlinks.json validieren
+curl -I https://yourdomain.github.io/.well-known/assetlinks.json
+# Erwartetes Ergebnis: HTTP/2 200, content-type: application/json
+```
+
+#### Checkliste - Android App Links
+- [ ] `.well-known/assetlinks.json` erstellt
+- [ ] `public/.nojekyll` erstellt
+- [ ] Build-Skript kopiert `.well-known/` nach `dist/`
+- [ ] `--dotfiles` Flag in deploy-Skript
+- [ ] SHA-256 Fingerabdruck ohne Doppelpunkte
+- [ ] Intent-Filter in `app.json`
+- [ ] `autoVerify: true` gesetzt
+- [ ] Website deployed
+- [ ] assetlinks.json erreichbar
+
+---
+
+## PWA & React Native (Expo) Vorgaben
+
+### Expo OTA Updates (KRITISCH)
+
+**KRITISCH:** Alle PWA/React Native Apps mit Expo MÜSSEN die OTA (Over-The-Air) Updates Konfiguration **bereits im ersten Play Store Build** enthalten.
+
+#### Problem
+Wenn eine App ohne OTA-Konfiguration im Play Store veröffentlicht wird, können **keine Code-Updates** an Benutzer ausgeliefert werden, ohne einen neuen Play Store Build zu erstellen.
+
+#### Anforderungen
+
+**app.json - MUSS von Anfang an enthalten sein:**
+```json
+{
+  "expo": {
+    "name": "Your App Name",
+    "slug": "your-app-slug",
+    "version": "1.0.0",
+
+    // OTA Updates Configuration - KRITISCH!
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/YOUR-PROJECT-ID"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+
+    "extra": {
+      "eas": {
+        "projectId": "YOUR-PROJECT-ID"
+      }
+    }
+  }
+}
+```
+
+**Wichtige Eigenschaften:**
+- **`updates.enabled: true`** - Aktiviert OTA Updates
+- **`updates.checkAutomatically: "ON_LOAD"`** - Prüft bei jedem App-Start
+- **`updates.fallbackToCacheTimeout: 0`** - Nutzt neue Updates sofort
+- **`runtimeVersion.policy: "appVersion"`** - Verknüpft Updates mit App-Version
+- **`extra.eas.projectId`** - Expo Project ID
+
+#### RuntimeVersion Matching
+- Mit `policy: "appVersion"`: RuntimeVersion = app.json `version` Feld
+- Beispiel: App v1.2.1 kann nur Updates für runtimeVersion "1.2.1" empfangen
+- Bei Version-Increment (1.2.1 → 1.2.2) ist neuer Play Store Build erforderlich
+
+#### Workflow - OTA Updates nutzen
+```bash
+# 1. Ersten Play Store Build erstellen:
+eas build --platform android --profile production
+
+# 2. Code-Änderungen ausliefern (ohne Store-Build):
+eas update --branch production --message "Fix: Improve chart label positioning"
+
+# 3. Benutzer erhalten Update beim nächsten App-Start
+```
+
+#### Platform-Detection für Data Loading
+
+**Richtig - Platform.OS verwenden:**
+```typescript
+import { Platform } from 'react-native';
+
+// ✅ KORREKT
+const dataUrl = Platform.OS === 'web'
+  ? './data/marketdata.json?v=${Date.now()}'
+  : 'https://yourdomain.github.io/YourApp/data/marketdata.json?v=${Date.now()}';
+
+const response = await fetch(dataUrl);
+```
+
+**Falsch - Window Detection funktioniert nicht:**
+```typescript
+// ❌ NICHT VERWENDEN - React Native hat auch window!
+const isWeb = typeof window !== 'undefined';
+```
+
+#### Checkliste - OTA Updates Setup
+
+**Vor erstem Play Store Build:**
+- [ ] Expo Account erstellt
+- [ ] EAS CLI installiert
+- [ ] Project mit EAS verbunden (`eas init`)
+- [ ] Project ID in app.json eingetragen
+- [ ] `updates` Konfiguration in app.json vorhanden
+- [ ] `runtimeVersion` policy definiert
+- [ ] EAS Build erfolgreich
+
+**Nach erstem Play Store Build:**
+- [ ] OTA Update Test: `eas update --branch production`
+- [ ] Update wird in EAS Console angezeigt
+- [ ] App lädt Update beim Start
+
+### Deployment-Strategie mit EAS Channels
+
+**Ziel:** Klare Trennung zwischen Testing (Staging) und Production für sichere Releases
+
+#### Development Workflow
+```
+1. Feature Branch
+   └─ npm run dev (localhost + emulator)
+
+2. Testing Branch
+   └─ Local testing on real devices
+
+3. Build & Test on Staging
+   └─ npm run build:staging
+   └─ Deploy to TestFlight/Internal Testing
+   └─ Real device testing
+   └─ User acceptance testing
+
+4. Staging Validated ✅
+   └─ Merge to main branch
+
+5. Production Release
+   └─ npm run build:production
+   └─ App Store / Play Store Review
+   └─ Live for Users
+```
+
+#### Configuration Files
+
+**eas.json:**
+```json
+{
+  "cli": {
+    "version": ">= 2.0.0"
+  },
+  "build": {
+    "production": {
+      "channel": "production",
+      "distribution": "store"
+    },
+    "staging": {
+      "channel": "staging",
+      "distribution": "internal"
+    }
+  },
+  "channels": {
+    "production": {
+      "publish": true
+    },
+    "staging": {
+      "publish": true
+    }
+  }
+}
+```
+
+**package.json Scripts:**
+```json
+{
+  "scripts": {
+    "build:staging": "eas build --platform all --channel staging",
+    "build:production": "eas build --platform all --channel production",
+    "publish:staging": "expo publish --channel staging",
+    "publish:production": "expo publish --channel production"
+  }
+}
+```
+
+---
+
+## Spezielle Projekttypen
 
 ### Firebase/Cloud Projects
 - **Firestore Rules:** Strikte Security Rules implementieren
@@ -265,3 +644,13 @@ jobs:
 - [ ] README aktualisiert
 - [ ] CHANGELOG aktualisiert
 - [ ] Git Tag gesetzt: `git tag v1.0.0`
+
+---
+
+## Referenzen
+
+- [Expo OTA Updates Guide](https://docs.expo.dev/eas-update/introduction/)
+- [Android Edge-to-Edge Guide](https://developer.android.com/develop/ui/views/layout/edge-to-edge)
+- [Android App Links Guide](https://developer.android.com/training/app-links)
+- [Vitest Documentation](https://vitest.dev/)
+- [Playwright Documentation](https://playwright.dev/)

@@ -81,17 +81,17 @@
 ### Woche 2: Registrierung & Launch
 
 #### Play Console Setup
-- [ ] Google Developer Account aktivieren (falls nicht vorhanden)
-- [ ] Developer Program Agreement akzeptieren
-- [ ] Zahlungsmethode hinterlegen ($25 einmalig)
-- [ ] Neues App-Projekt in Play Console erstellen
+- [x] Google Developer Account aktivieren (falls nicht vorhanden)
+- [x] Developer Program Agreement akzeptieren
+- [x] Zahlungsmethode hinterlegen ($25 einmalig)
+- [x] Neues App-Projekt in Play Console erstellen
 
 #### Store Listing Upload
-- [ ] App-Screenshots hochladen
-- [ ] Feature Graphic hochladen
-- [ ] Icon hochladen
-- [ ] Alle Text-Felder ausfüllen
-- [ ] Links konfigurieren (Privacy Policy, Support)
+- [x] App-Screenshots hochladen
+- [x] Feature Graphic hochladen
+- [x] Icon hochladen
+- [x] Alle Text-Felder ausfüllen
+- [x] Links konfigurieren (Privacy Policy, Support)
 
 #### Technical Setup
 - [ ] AAB (Android App Bundle) hochladen

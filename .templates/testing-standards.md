@@ -1,7 +1,19 @@
 ---
+# ⚠️ DEPRECATED - Testing Standards & Guidelines
+
+> **STATUS:** Diese Datei ist veraltet. Der Inhalt wurde in [technische_vorgaben.md → Testing Standards](technische_vorgaben.md#testing-standards) konsolidiert.
+>
+> **Bitte verwende stattdessen:**
+> - [technische_vorgaben.md → Testing Standards](technische_vorgaben.md#testing-standards) - Alle Testing Guidelines
+> - [STANDARDS_OVERVIEW.md → Testing](STANDARDS_OVERVIEW.md#testing) - Quick Reference
+
+---
+
 # Testing Standards & Guidelines
 
 Umfassende Richtlinien für Unit Tests, Integration Tests, E2E Tests und Coverage.
+
+⚠️ **Diese Datei wird nicht mehr aktualisiert. Siehe Links oben für aktuellen Content.**
 
 ---
 
