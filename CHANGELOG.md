@@ -7,7 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.7.6] - 2025-12-29 (Mobile Auth Persistence Fix)
+## [1.7.7] - 2026-01-06 (Auth Redesign: Popup Only) 🚀 RELEASED
+
+### 🔄 Authentication Strategy Update
+- **Universal Popup Auth**
+  - Switched from "Redirect-First" to "Popup-Only" strategy for all platforms (Desktop, Mobile, TWA, iOS PWA)
+  - **Reason:** Solves "Storage Partitioning" and lost session state issues common with redirects in modern browsers (Chrome Privacy Sandbox, Safari ITP)
+  - **Benefit:** Significantly cleaner code and more reliable login flow, especially on Android TWAs where redirects were failing silently
+
+### 🗑️ Cleanups
+- **Removed Legacy Redirect Logic**
+  - Deleted potentially unstable fallback mechanisms in `auth.js`
+  - Simplified authentication flow to a single, robust path
 
 ### 🐛 Bug Fixes
 - **Mobile Login Loop (Android TWA & iOS PWA)**
