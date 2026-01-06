@@ -10,7 +10,9 @@
   --text-primary: #1f2937;
   --text-secondary: #6b7280;
   --text-light: #9ca3af;
+  --text-color: #1f2937;
   --border-color: #e5e7eb;
+  --grid-color: #e5e7eb;
   --task-bg: #fafafa;
   --input-border: #e0e0e0;
 }
@@ -22,7 +24,9 @@
     --text-primary: #f9fafb;
     --text-secondary: #d1d5db;
     --text-light: #9ca3af;
+    --text-color: #f9fafb;
     --border-color: #404040;
+    --grid-color: #404040;
     --task-bg: #1f1f1f;
     --input-border: #4b5563;
   }
@@ -1160,7 +1164,9 @@ body.dark-mode {
   --text-primary: #f9fafb;
   --text-secondary: #d1d5db;
   --text-light: #9ca3af;
+  --text-color: #f9fafb;
   --border-color: #404040;
+  --grid-color: #404040;
   --task-bg: #1f1f1f;
   --input-border: #4b5563;
 }
@@ -2046,6 +2052,7 @@ body.dark-mode .theme-btn {
 .about-item {
   margin: 0;
   line-height: 1.5;
+  color: inherit;
 }
 
 body.dark-mode .theme-btn.active {
@@ -2058,6 +2065,22 @@ body.dark-mode .lang-btn {
 
 body.dark-mode .lang-btn.active {
   background-color: #667eea;
+}
+
+/* Dark mode styles for settings buttons */
+body.dark-mode a.settings-btn.settings-btn-flex {
+  color: #8b9eff !important;
+  background-color: transparent !important;
+}
+
+body.dark-mode button.settings-btn.settings-btn-flex {
+  color: #8b9eff;
+  background-color: transparent;
+}
+
+body.dark-mode a.settings-btn.settings-btn-flex:hover,
+body.dark-mode button.settings-btn.settings-btn-flex:hover {
+  color: #a5b4ff !important;
 }
 
 /* Settings User Info */
