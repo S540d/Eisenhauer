@@ -6,7 +6,10 @@
   "type": "module",
   "scripts": {
     "start": "python3 -m http.server 8000",
-    "build": "node update-cache-version.js && node build-config.js",
+    "build": "node update-cache-version.js && node set-base-url.js && node build-config.js",
+    "build:production": "NODE_ENV=production npm run build",
+    "build:staging": "NODE_ENV=staging npm run build",
+    "build:testing": "NODE_ENV=testing npm run build",
     "prebuild": "echo '🔧 Building with cache-busting and Firebase configuration...'",
     "postbuild": "echo '✅ Build complete with cache-busting! Ready to deploy.'",
     "deploy": "npm run build && git add -A && git commit -m 'build: update cache versions' || true && git checkout gh-pages && git merge main --no-edit && git push origin gh-pages && git checkout main",

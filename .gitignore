@@ -10,7 +10,9 @@
 
 # Firebase
 # Note: Firebase API keys are safe to commit (client-side keys, security via Firebase Rules)
-# firebase-config.js is now tracked in git for deployment
+# However, firebase-config.js and environment.js are now auto-generated at build time
+firebase-config.js
+environment.js
 .env
 .env.local
 .env.*.local
