@@ -14,32 +14,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getEnvironment, getBaseUrl } from './lib/environment-utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Determine environment
-function getEnvironment() {
-    const env = process.env.NODE_ENV || process.env.APP_ENV || 'production';
-    const validEnvs = ['production', 'staging', 'testing'];
-
-    if (!validEnvs.includes(env)) {
-        console.warn(`⚠️  Invalid environment "${env}", defaulting to "production"`);
-        return 'production';
-    }
-
-    return env;
-}
-
-// Get base URL for environment
-function getBaseUrl(env) {
-    const baseUrls = {
-        production: '/Eisenhauer/',
-        staging: '/Eisenhauer/staging/',
-        testing: '/Eisenhauer/testing/'
-    };
-    return baseUrls[env] || baseUrls.production;
-}
 
 // Inject or update base href in index.html
 function setBaseHref(environment, baseUrl) {
@@ -52,12 +30,13 @@ function setBaseHref(environment, baseUrl) {
 
     let html = fs.readFileSync(indexPath, 'utf8');
 
-    // Check if base href already exists
-    const baseHrefRegex = /<base\s+href="[^"]*"\s*\/?>/i;
+    // Check if base href already exists (allow attributes in any order)
+    const baseHrefRegex = /<base\s+[^>]*href="[^"]*"[^>]*>/i;
 
     if (baseHrefRegex.test(html)) {
         // Update existing base href
         html = html.replace(baseHrefRegex, `<base href="${baseUrl}">`);
+        // debug: Build script output
         console.log('✅ Updated existing <base href>');
     } else {
         // Insert new base href before </head>
@@ -67,16 +46,27 @@ function setBaseHref(environment, baseUrl) {
             process.exit(1);
         }
         html = html.replace(headCloseRegex, `    <base href="${baseUrl}">\n</head>`);
+        // debug: Build script output
         console.log('✅ Inserted new <base href>');
     }
 
-    // Optionally add environment marker to body
-    const bodyTagRegex = /<body[^>]*>/i;
-    if (bodyTagRegex.test(html) && !html.includes('data-environment=')) {
-        html = html.replace(bodyTagRegex, (match) => {
-            return match.replace('>', ` data-environment="${environment}">`);
+    // Add or update environment marker on <body>
+    const bodyTagRegex = /<body\b([^>]*)>/i;
+    if (bodyTagRegex.test(html)) {
+        html = html.replace(bodyTagRegex, (match, attrs) => {
+            // If body already has a data-environment attribute, update it
+            if (/data-environment\s*=\s*"/i.test(attrs)) {
+                const updatedAttrs = attrs.replace(
+                    /data-environment\s*=\s*"[^"]*"/i,
+                    `data-environment="${environment}"`
+                );
+                return `<body${updatedAttrs}>`;
+            }
+            // Otherwise, add a new data-environment attribute
+            return `<body${attrs} data-environment="${environment}">`;
         });
-        console.log(`✅ Added data-environment="${environment}" to <body>`);
+        // debug: Build script output
+        console.log(`✅ Ensured data-environment="${environment}" on <body>`);
     }
 
     fs.writeFileSync(indexPath, html, 'utf8');

@@ -12,32 +12,10 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getEnvironment, getBaseUrl } from './lib/environment-utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Determine environment
-function getEnvironment() {
-    const env = process.env.NODE_ENV || process.env.APP_ENV || 'production';
-    const validEnvs = ['production', 'staging', 'testing'];
-
-    if (!validEnvs.includes(env)) {
-        console.warn(`⚠️  Invalid environment "${env}", defaulting to "production"`);
-        return 'production';
-    }
-
-    return env;
-}
-
-// Get base URL for environment
-function getBaseUrl(env) {
-    const baseUrls = {
-        production: '/Eisenhauer/',
-        staging: '/Eisenhauer/staging/',
-        testing: '/Eisenhauer/testing/'
-    };
-    return baseUrls[env] || baseUrls.production;
-}
 
 // Read .env file for specific environment
 function loadEnv(environment) {
