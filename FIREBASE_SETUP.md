@@ -85,8 +85,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /tasks/{taskId} {
-      // User kann nur eigene Tasks lesen/schreiben
-      allow read, write: if request.auth != null && request.auth.uid == resource.data.userId;
+      // User kann nur eigene Tasks erstellen, lesen, ändern, löschen
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow read, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
     }
   }
 }
@@ -181,9 +182,12 @@ In `.github/workflows/deploy.yml`:
 - name: Build for ${{ steps.env.outputs.environment }}
   env:
     NODE_ENV: ${{ steps.env.outputs.environment }}
+    # Note: Secret names use uppercase prefixes (STAGING_, TESTING_)
     FIREBASE_API_KEY: ${{ secrets[format('{0}_FIREBASE_API_KEY', steps.env.outputs.environment)] }}
     # ... weitere Secrets
   run: |
+    # Transform environment to uppercase for secret lookup
+    ENV_UPPER=$(echo "$NODE_ENV" | tr '[:lower:]' '[:upper:]')
     npm run build:$NODE_ENV
 ```
 
@@ -262,7 +266,7 @@ Nach Firebase-Setup:
 2. Teste alle 3 Builds lokal
 3. Push zu GitHub → Deployment läuft automatisch
 4. Verifiziere in Firebase Console, dass die Environments isoliert sind
-5. Update TESTING.md mit neuen URLs
+5. Update die Test-Dokumentation mit neuen URLs
 6. Schließe Issue #110 und Phase 3 von Issue #111
 
 ---

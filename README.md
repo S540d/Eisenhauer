@@ -254,8 +254,8 @@ cat FIREBASE_SETUP.md
 
 **Detaillierte Dokumentation:**
 
-- [TESTING-WORKFLOW.md](TESTING-WORKFLOW.md) - Deployment Workflow
 - [FIREBASE_SETUP.md](FIREBASE_SETUP.md) - Firebase Environment Setup
+- Deployment Workflow (siehe Abschnitt "Workflow" oben)
 
 **Features:**
 
