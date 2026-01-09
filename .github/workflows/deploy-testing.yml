@@ -1,0 +1,53 @@
+name: Deploy to Testing Environment
+
+on:
+  push:
+    branches:
+      - testing
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
+
+    - name: Build Testing Version
+      run: npm run build:testing
+
+    - name: Deploy to Testing Subdirectory
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        publish_branch: gh-pages
+        destination_dir: testing
+        keep_files: true
+        allow_empty_commit: false
+        commit_message: '🧪 Testing deployment from ${{ github.sha }}'
+
+    - name: Comment deployment URL
+      run: |
+        echo "🧪 Testing deployment successful!"
+        echo "Testing URL: https://${{ github.repository_owner }}.github.io/Eisenhauer/testing/"
+        echo "Branch: gh-pages (subdirectory: /testing/)"
