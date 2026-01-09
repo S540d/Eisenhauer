@@ -43,9 +43,7 @@ jobs:
         publish_branch: gh-pages
         destination_dir: testing
         keep_files: true
-        destination_dir: testing
         allow_empty_commit: false
-        keep_files: true
         commit_message: '🧪 Testing deployment from ${{ github.sha }}'
 
     - name: Comment deployment URL
