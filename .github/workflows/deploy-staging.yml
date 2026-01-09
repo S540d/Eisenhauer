@@ -1,0 +1,53 @@
+name: Deploy to Staging Environment
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: |
+        if [ -f package-lock.json ]; then
+          npm ci
+        else
+          npm install
+        fi
+
+    - name: Build Staging Version
+      run: npm run build:staging
+
+    - name: Deploy to Staging Subdirectory
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist
+        publish_branch: gh-pages
+        destination_dir: staging
+        keep_files: true
+        allow_empty_commit: false
+        commit_message: '🎨 Staging deployment from ${{ github.sha }}'
+
+    - name: Comment deployment URL
+      run: |
+        echo "🎨 Staging deployment successful!"
+        echo "Staging URL: https://${{ github.repository_owner }}.github.io/Eisenhauer/staging/"
+        echo "Branch: gh-pages (subdirectory: /staging/)"
