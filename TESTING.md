@@ -270,10 +270,13 @@ allow read, update, delete: if request.auth != null
   && request.auth.uid == resource.data.userId;
 ```
 
-**Staging/Testing (permissiv):**
+**Staging/Testing (pro User, analog zu Production):**
 ```javascript
-// Alle authentifizierten User können lesen/schreiben
-allow read, write: if request.auth != null;
+// User kann nur eigene Tasks lesen/schreiben (wie in Production)
+allow read, update, delete: if request.auth != null
+  && request.auth.uid == resource.data.userId;
+allow create: if request.auth != null
+  && request.auth.uid == request.resource.data.userId;
 ```
 
 ### XSS-Schutz
