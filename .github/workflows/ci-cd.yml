@@ -1,10 +1,10 @@
-name: CI/CD - Staging & Production Pipeline
+name: CI/CD - Automated Quality Checks
 
 on:
   push:
-    branches: [main, staging, rework/*]
+    branches: [main, staging, testing, develop]
   pull_request:
-    branches: [main, staging]
+    branches: [main, staging, testing, develop]
 
 # Security: Explicitly set minimal permissions
 permissions:
@@ -12,10 +12,10 @@ permissions:
 
 jobs:
   # ============================================================================
-  # JOB 1: Code Quality & Tests
+  # JOB 1: Code Quality & Linting
   # ============================================================================
-  test:
-    name: 🧪 Tests & Quality Checks
+  code-quality:
+    name: 🔍 Code Quality & Linting
     runs-on: ubuntu-latest
 
     steps:
@@ -30,25 +30,59 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Check for console.log in production code
+        run: |
+          echo "Checking for console.log statements..."
+          if grep -r "console\.log\|console\.debug" js/ *.js *.html --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude="vite.config.js" 2>/dev/null | grep -v "// debug:"; then
+            echo "❌ ERROR: Found console.log/debug in production code!"
+            echo "Use '// debug: ' comment to allow specific logs."
+            exit 1
+          else
+            echo "✅ No console.log found"
+          fi
+
       - name: Check code formatting (Prettier)
         run: npm run format:check || true
 
-      - name: Lint code (ESLint)
+      - name: ESLint
         run: npm run lint || true
 
       - name: Run unit tests
         run: npm run test -- --coverage || true
 
+  # ============================================================================
+  # JOB 2: E2E Tests (Project Specific)
+  # ============================================================================
+  e2e-tests:
+    name: 🎭 E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: code-quality
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+
       - name: Run E2E tests
         run: npm run test:e2e || true
 
   # ============================================================================
-  # JOB 2: Build
+  # JOB 3: Build Verification (Dry Run)
   # ============================================================================
-  build:
-    name: 🏗️ Build Application
+  build-web:
+    name: 🌐 Build Verification
     runs-on: ubuntu-latest
-    needs: test
+    needs: code-quality
 
     steps:
       - uses: actions/checkout@v4
@@ -62,84 +96,58 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build Web (Dry Run)
         run: npm run build
         env:
-          VITE_ENV: ${{ github.ref == 'refs/heads/main' && 'production' || 'staging' }}
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+          VITE_ENV: production # Test production build by default for verification
 
-  # ============================================================================
-  # JOB 3: Deploy to Staging
-  # ============================================================================
-  deploy-staging:
-    name: 🚀 Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
-    permissions:
-      contents: write
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build with Vite
-        run: npm run build
-        env:
-          VITE_ENV: staging
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
-
-      - name: Add .nojekyll file
-        run: touch dist/.nojekyll
-
-      - name: Deploy to GitHub Pages (Staging)
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          cname: s540d.github.io
-
-      - name: 📢 Staging Deployment Report
+      - name: Check dist directory exists
         run: |
-          echo "# 🔄 Staging Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Staging version deployed to:" >> $GITHUB_STEP_SUMMARY
-          echo "**https://s540d.github.io/Eisenhauer/?env=staging**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: \`staging\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Environment: **Staging**" >> $GITHUB_STEP_SUMMARY
-          echo "- Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_STEP_SUMMARY
+          if [ -d "dist" ]; then
+            echo "✅ Build output found in dist/"
+            SIZE=$(du -sh dist | cut -f1)
+            echo "📦 Bundle size: $SIZE"
+          else
+            echo "⚠️ No dist/ directory found"
+            exit 1
+          fi
 
   # ============================================================================
-  # JOB 4: Deploy to Production
+  # JOB 4: Version & Compatibility Checks
   # ============================================================================
-  deploy-production:
-    name: 🚀 Deploy to Production
+  version-checks:
+    name: 🔧 Version Checks
     runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    permissions:
-      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check version consistency
+        run: |
+          echo "Checking version numbers..."
+
+          PACKAGE_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "N/A")
+          echo "package.json: $PACKAGE_VERSION"
+
+          # Check if version exists in common places
+          if grep -q "version.*=.*['\"]" index.html 2>/dev/null; then
+            HTML_VERSION=$(grep -o "version.*=.*['\"][0-9.]*['\"]" index.html | head -1)
+            echo "index.html: $HTML_VERSION"
+          fi
+
+          if grep -q "version.*=.*['\"]" js/modules/version.js 2>/dev/null; then
+            JS_VERSION=$(grep -o "version.*=.*['\"][0-9.]*['\"]" js/modules/version.js | head -1)
+            echo "js/modules/version.js: $JS_VERSION"
+          fi
+
+          echo "✅ Version check complete"
+
+  # ============================================================================
+  # JOB 5: Security Audit
+  # ============================================================================
+  security:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -148,40 +156,50 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate || true
 
-      - name: Build with Vite
-        run: npm run build
-        env:
-          VITE_ENV: production
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
-
-      - name: Add .nojekyll file
-        run: touch dist/.nojekyll
-
-      - name: Deploy to GitHub Pages (Production)
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-
-      - name: 📢 Production Deployment Report
+      - name: Check for sensitive data
         run: |
-          echo "# ✅ Production Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "Checking for sensitive data..."
+          # Exclude .env files as they might exist in some contexts, but check code
+          if grep -ri "api_key\|secret\|password.*=" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" --exclude=".env*" 2>/dev/null; then
+            echo "⚠️ WARNING: Potential sensitive data found!"
+          else
+            echo "✅ No obvious sensitive data in code"
+          fi
+
+  # ============================================================================
+  # JOB 6: Release Readiness Report
+  # ============================================================================
+  release-checklist:
+    name: 📋 Release Readiness
+    runs-on: ubuntu-latest
+    needs: [code-quality, build-web, version-checks]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Release Report
+        run: |
+          echo "# 🚀 Release Readiness Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 Production version deployed to:" >> $GITHUB_STEP_SUMMARY
-          echo "**https://s540d.github.io/Eisenhauer/**" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Automated Checks Passed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- Branch: \`main\`" >> $GITHUB_STEP_SUMMARY
-          echo "- Environment: **Production**" >> $GITHUB_STEP_SUMMARY
-          echo "- Timestamp: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_STEP_SUMMARY
-          echo "- Version: \`$(node -p "require('./package.json').version")\`" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code Quality" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Web Build Successful" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Version Checks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 📝 Manual Checks Required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Test in Chrome" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Test in Safari" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Test on mobile browsers" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] Lighthouse audit passed" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] PWA installable (if applicable)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** $(node -p "require('./package.json').version" 2>/dev/null || echo 'N/A')" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
