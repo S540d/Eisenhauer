@@ -224,30 +224,44 @@ Siehe [LICENSE](LICENSE) für Details.
 
 Pull Requests sind willkommen! Für größere Änderungen bitte zuerst ein Issue öffnen.
 
-### 🧪 Testing Workflow (Issue #74)
+### 🧪 Testing & Environment Workflow (Issue #74, #111)
 
-Dieses Projekt nutzt einen automatisierten Testing-Workflow für sicheres Deployment:
+Dieses Projekt nutzt **3 separate Environments** für sicheres Deployment:
 
 **Environments:**
-- 🧪 **Testing:** [https://s540d.github.io/Eisenhauer-testing/](https://s540d.github.io/Eisenhauer-testing/)
+- 🧪 **Testing:** [https://s540d.github.io/Eisenhauer/testing/](https://s540d.github.io/Eisenhauer/testing/)
+- 🔧 **Staging:** [https://s540d.github.io/Eisenhauer/staging/](https://s540d.github.io/Eisenhauer/staging/)
 - 🚀 **Production:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/)
 
-**Workflow:**
-1. Feature Branch erstellen und PR gegen `main` öffnen
-2. In `testing` Branch mergen → Automatischer Deploy auf Testing URL
-3. Partner testet und approved den PR
-4. Nach Approval: Merge in `main` → Automatischer Production Deploy
+**Jedes Environment nutzt eine separate Firebase-Instanz** (Issue #110):
 
-**Einmalige Einrichtung:**
+- Production: `eisenhauer-matrix`
+- Staging: `eisenhauer-staging` (separates Projekt)
+- Testing: `eisenhauer-testing` (separates Projekt)
+
+**Workflow:**
+
+1. Feature Branch erstellen und PR gegen `testing` öffnen
+2. Merge in `testing` → Automatischer Deploy auf Testing URL
+3. Tests validieren → Merge in `staging` → Deploy auf Staging URL
+4. Final approval → Merge in `main` → Production Deploy
+
+**Firebase Setup:**
 ```bash
-./.github/scripts/quick-setup.sh
+# Siehe detaillierte Anleitung
+cat FIREBASE_SETUP.md
 ```
 
-**Detaillierte Dokumentation:** Siehe [TESTING-WORKFLOW.md](TESTING-WORKFLOW.md)
+**Detaillierte Dokumentation:**
+
+- [TESTING-WORKFLOW.md](TESTING-WORKFLOW.md) - Deployment Workflow
+- [FIREBASE_SETUP.md](FIREBASE_SETUP.md) - Firebase Environment Setup
 
 **Features:**
+
 - ✅ Branch Protection (Require PR approval)
-- ✅ Separate Testing Environment
+- ✅ Separate Testing/Staging Environments
+- ✅ Isolierte Firebase-Projekte (keine Daten-Vermischung)
 - ✅ Automatisierte Deployments
 - ✅ PR Template mit Checkliste
 - ❌ Kein versehentlicher Production Deploy möglich
