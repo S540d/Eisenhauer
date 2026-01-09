@@ -1,8 +1,43 @@
 # Firebase Setup Anleitung
 
+> **Hinweis:** Seit Version 1.7.5 nutzt das Projekt **3 isolierte Firebase Projekte** für Production, Staging und Testing.
+
+## Architektur: Multi-Environment
+
+- **Production:** `eisenhauer-matrix`
+- **Staging:** `eisenhauer-staging` (Spiegelung der Prod)
+- **Testing:** `eisenhauer-testing` (Für CI/CD & Experimente)
+
+Die Konfiguration erfolgt nicht direkt im Code, sondern über `.env` Dateien:
+- `.env.production`
+- `.env.staging`
+- `.env.testing`
+
+---
+
+## Schritt 1: Firebase-Projekte erstellen
+
+Erstelle für jedes Environment ein eigenes Projekt in der [Firebase Console](https://console.firebase.google.com/):
+
+1. `eisenhauer-matrix` (Prod)
+2. `eisenhauer-staging` (Staging)
+3. `eisenhauer-testing` (Testing)
+
+## Schritt 2: Web-Apps hinzufügen
+
+Füge in jedem Projekt eine Web-App hinzu.
+
+## Schritt 3: GitHub Secrets & Environment Variablen
+
+Trage die Credentials in die entsprechenden `.env` Dateien ein. Siehe `.env.example` (bzw. die Struktur der existierenden Env-Dateien).
+
+---
+
+## (Veraltet) Legacy Setup Guide:
+
 Diese Anleitung zeigt dir, wie du Firebase Authentication und Firestore für die Eisenhauer Matrix App einrichtest.
 
-## Schritt 1: Firebase-Projekt erstellen
+## Schritt 1: Firebase-Projekt erstellen ("Legacy")
 
 1. Gehe zu [Firebase Console](https://console.firebase.google.com/)
 2. Klicke auf "Projekt hinzufügen"
