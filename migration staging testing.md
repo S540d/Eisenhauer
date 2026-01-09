@@ -1,23 +1,28 @@
 # Migration: staging → testing (Separate Testing-Umgebung)
 
-**Status:** ABGESCHLOSSEN (Phase 1) ✅
+**Status:** ABGESCHLOSSEN (Phase 1, 2 & 3) ✅
 
 **Architektur:**
 - **Technologie:** Vite Multi-Environment Builds
-- **Produktion:** `https://s540d.github.io/Eisenhauer/` (Branch: main)
-- **Testing:** `https://s540d.github.io/Eisenhauer/testing/` (Branch: testing)
-- **Staging:** `https://s540d.github.io/Eisenhauer/staging/` (Branch: staging)
+- **Produktion:** `https://s540d.github.io/Eisenhauer/` (Branch: main) -> Project: `eisenhauer-matrix`
+- **Testing:** `https://s540d.github.io/Eisenhauer/testing/` (Branch: testing) -> Project: `eisenhauer-testing`
+- **Staging:** `https://s540d.github.io/Eisenhauer/staging/` (Branch: staging) -> Project: `eisenhauer-staging`
 
 **Umsetzung:**
 - `vite.config.js` steuert `base` URL dynamisch über `VITE_ENV` / `mode`.
 - GitHub Action Workflows (`deploy.yml`, `deploy-testing.yml`, `deploy-staging.yml`) deployen in entsprechende Unterordner.
-- `.env.*` Dateien steuern API-Keys und Umgebungsvariablen.
+- `.env.*` Dateien steuern API-Keys und garantieren **vollständige Datenbank-Isolation**.
 
 -----
 
+## Status Updates
+- **Phase 1 (Setup):** ✅ Done. Environments erstellt.
+- **Phase 2 (Workflows):** ✅ Done. CI/CD Pipeline standardisiert.
+- **Phase 3 (Isolation):** ✅ Done. Separate Firebase Projekte für Prod/Staging/Testing.
+
 ## Nächste Schritte (Optional)
 
-### Phase 2: Android TWA Anpassung
+### Phase 4: Android TWA Anpassung
 
 Aktuell zeigt die Android App (TWA) fest auf die Produktions-URL.
 Um Testing auch in der App zu ermöglichen, müssten Build Flavors in Android Studio eingerichtet werden.
