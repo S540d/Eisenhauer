@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - staging
+      - testing
   workflow_dispatch:
 
 permissions:
@@ -22,9 +24,39 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
 
-    - name: Install dependencies (if any)
+    - name: Detect environment from branch
+      id: env
+      run: |
+        BRANCH=${GITHUB_REF#refs/heads/}
+        echo "Branch: $BRANCH"
+
+        case "$BRANCH" in
+          main)
+            ENV="production"
+            DEST_DIR=""
+            ;;
+          staging)
+            ENV="staging"
+            DEST_DIR="staging"
+            ;;
+          testing)
+            ENV="testing"
+            DEST_DIR="testing"
+            ;;
+          *)
+            echo "❌ Error: Unknown branch $BRANCH"
+            exit 1
+            ;;
+        esac
+
+        echo "environment=$ENV" >> $GITHUB_OUTPUT
+        echo "dest_dir=$DEST_DIR" >> $GITHUB_OUTPUT
+        echo "🌍 Environment: $ENV"
+        echo "📁 Destination: $DEST_DIR"
+
+    - name: Install dependencies
       run: |
         if [ -f package-lock.json ]; then
           npm ci
@@ -32,11 +64,13 @@ jobs:
           npm install
         fi
 
-    - name: Build with cache-busting
+    - name: Build for ${{ steps.env.outputs.environment }}
+      env:
+        NODE_ENV: ${{ steps.env.outputs.environment }}
       run: |
-        echo "Build Date: $(date)" >> BUILD_INFO.txt
-        node update-cache-version.js
-        echo "✅ Cache version updated (skipping firebase-config.js build - already committed)"
+        echo "🔨 Building for $NODE_ENV environment..."
+        npm run build:$NODE_ENV
+        echo "✅ Build complete for $NODE_ENV"
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
@@ -44,6 +78,30 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./
         publish_branch: gh-pages
-        cname:  # Optional: Add custom domain here
+        destination_dir: ${{ steps.env.outputs.dest_dir }}
         allow_empty_commit: false
-        keep_files: false
+        keep_files: ${{ steps.env.outputs.environment != 'production' }}
+        commit_message: |
+          🚀 Deploy ${{ steps.env.outputs.environment }} from ${{ github.sha }}
+
+          Environment: ${{ steps.env.outputs.environment }}
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+
+    - name: Deployment summary
+      run: |
+        ENV=${{ steps.env.outputs.environment }}
+        DEST=${{ steps.env.outputs.dest_dir }}
+
+        echo "## 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment:** $ENV" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ "$ENV" = "production" ]; then
+          echo "🌐 **URL:** https://${{ github.repository_owner }}.github.io/Eisenhauer/" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "🌐 **URL:** https://${{ github.repository_owner }}.github.io/Eisenhauer/$DEST/" >> $GITHUB_STEP_SUMMARY
+        fi
