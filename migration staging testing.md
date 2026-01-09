@@ -1,104 +1,36 @@
 # Migration: staging → testing (Separate Testing-Umgebung)
 
-**Ziel:** Vollständige Trennung von Production und Testing für TWA/PWA mit produktiven Nutzern
+**Status:** ABGESCHLOSSEN (Phase 1) ✅
 
-**Status:** Aktuell existieren beide Branches (`staging` + `testing`), aber nur staging funktioniert via `?env=staging`
+**Architektur:**
+- **Technologie:** Vite Multi-Environment Builds
+- **Produktion:** `https://s540d.github.io/Eisenhauer/` (Branch: main)
+- **Testing:** `https://s540d.github.io/Eisenhauer/testing/` (Branch: testing)
+- **Staging:** `https://s540d.github.io/Eisenhauer/staging/` (Branch: staging)
 
-**Ziel-Architektur:**
-
-```
-main    → https://s540d.github.io/Eisenhauer/          (Production - TWA/PWA)
-testing → https://s540d.github.io/Eisenhauer-testing/  (Testing - separate URL)
-```
-
------
-
-## Phase 1: Vorbereitung & Analyse
-
-### 1.1 Prüfe aktuelle Workflows
-
-```bash
-# Zeige alle GitHub Actions Workflows
-ls -la .github/workflows/
-
-# Zeige Inhalt des Testing-Workflows
-cat .github/workflows/deploy-testing.yml  # oder ähnlicher Name
-```
-
-**Aufgabe für Claude Code:**
-
-- Liste alle Workflow-Dateien auf
-- Identifiziere welcher Workflow für `staging` und welcher für `testing` zuständig ist
-- Zeige mir die Inhalte beider Workflows
-
-### 1.2 Prüfe Firebase-Konfiguration
-
-```bash
-# Prüfe aktuelle Firebase-Configs
-cat firebase-config.js
-cat .env.example
-```
-
-**Fragen zu beantworten:**
-
-- Gibt es bereits separate Firebase-Projekte für Production und Testing?
-- Wie wird aktuell zwischen Environments unterschieden? (über `isStaging()` in config.js?)
-
-### 1.3 Prüfe TWA-Konfiguration
-
-```bash
-# Zeige Android TWA Config
-cat Android/app/src/main/AndroidManifest.xml
-cat Android/app/build.gradle
-cat Android/app/src/main/res/values/strings.xml
-```
-
-**Zu prüfen:**
-
-- Welche URL ist in der TWA konfiguriert?
-- Sind Digital Asset Links auf Production oder Staging?
+**Umsetzung:**
+- `vite.config.js` steuert `base` URL dynamisch über `VITE_ENV` / `mode`.
+- GitHub Action Workflows (`deploy.yml`, `deploy-testing.yml`, `deploy-staging.yml`) deployen in entsprechende Unterordner.
+- `.env.*` Dateien steuern API-Keys und Umgebungsvariablen.
 
 -----
 
-## Phase 2: Separates Testing-Repo erstellen
+## Nächste Schritte (Optional)
 
-### 2.1 Erstelle neues GitHub Repository
+### Phase 2: Android TWA Anpassung
 
-**Manuelle Aktion (auf GitHub.com):**
+Aktuell zeigt die Android App (TWA) fest auf die Produktions-URL.
+Um Testing auch in der App zu ermöglichen, müssten Build Flavors in Android Studio eingerichtet werden.
 
-1. Gehe zu: https://github.com/new
-1. Repository Name: `Eisenhauer-testing`
-1. Visibility: Public (oder Private, wenn gewünscht)
-1. **NICHT** initialisieren mit README/License (wird später deployed)
-1. Create Repository
+### Phase 3: Refactoring (Clean Architecture)
 
-### 2.2 Aktiviere GitHub Pages für Testing-Repo
-
-**Manuelle Aktion (auf GitHub.com):**
-
-1. Gehe zu: `https://github.com/S540d/Eisenhauer-testing/settings/pages`
-1. Source: “Deploy from a branch”
-1. Branch: `main` (wird später durch Workflow erstellt)
-1. Folder: `/ (root)`
-1. Save
+Da die Environments nun stehen, kann die Entwicklung / das Refactoring im `testing` Branch sicher fortgesetzt werden.
 
 -----
 
-## Phase 3: GitHub Actions Workflow anpassen
+## Historie / Archivierter Plan
 
-### 3.1 Erstelle neuen Deployment-Workflow für Testing
-
-**Aufgabe für Claude Code:**
-
-Erstelle `.github/workflows/deploy-testing.yml` mit folgendem Inhalt:
-
-```yaml
-name: Deploy to Testing Environment
-
-on:
-  push:
-    branches:
-      - testing
+*(Ursprünglicher Plan mit separatem Repo wurde verworfen zugunsten der Subdirectory-Lösung)*      - testing
   workflow_dispatch:
 
 permissions:
