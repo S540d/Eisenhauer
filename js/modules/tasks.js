@@ -46,7 +46,7 @@ export function clearCurrentTask() {
  */
 function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
   const now = new Date(fromTimestamp);
-  let nextDate = new Date(now);
+  const nextDate = new Date(now);
 
   // Set to start of next day (00:00)
   nextDate.setDate(nextDate.getDate() + 1);
