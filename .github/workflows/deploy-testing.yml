@@ -32,28 +32,17 @@ jobs:
           npm install
         fi
 
-    - name: Build with cache-busting (Testing)
-      run: |
-        echo "🧪 TESTING BUILD - $(date)" >> BUILD_INFO.txt
-        echo "This is a TESTING deployment" >> BUILD_INFO.txt
-        node update-cache-version.js
-        echo "✅ Cache version updated for testing environment"
-
-    - name: Add testing indicator and base href
-      run: |
-        # Add a visible testing indicator to index.html
-        sed -i 's/<body>/<body data-environment="testing">/' index.html || true
-        # Add base href for /testing/ subdirectory to fix resource loading
-        sed -i 's|</head>|  <base href="/Eisenhauer/testing/">\n</head>|' index.html || true
-        echo "⚠️ Testing environment marker added"
-        echo "📍 Base href set to /Eisenhauer/testing/"
+    - name: Build Testing Version
+      run: npm run build:testing
 
     - name: Deploy to Testing Subdirectory
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
+        publish_dir: ./dist
         publish_branch: gh-pages
+        destination_dir: testing
+        keep_files: true
         destination_dir: testing
         allow_empty_commit: false
         keep_files: true

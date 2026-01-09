@@ -10,15 +10,15 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
-// Firebase configuration from environment
+// Firebase configuration from environment variables
 const firebaseConfig = {
-  apiKey: 'AIzaSyDVZh7wLZeFXpoxIqwKFtC8KsYj9zF6lBM',
-  authDomain: 'eisenhauer-matrix.firebaseapp.com',
-  projectId: 'eisenhauer-matrix',
-  storageBucket: 'eisenhauer-matrix.firebasestorage.app',
-  messagingSenderId: '174175941071',
-  appId: '1:174175941071:web:80d5a25ed700b99809e2ba',
-  measurementId: 'G-VY3618D2RT',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 /**
