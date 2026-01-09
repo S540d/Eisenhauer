@@ -10,9 +10,8 @@
 
 # Firebase
 # Note: Firebase API keys are safe to commit (client-side keys, security via Firebase Rules)
-# However, firebase-config.js and environment.js are now auto-generated at build time
-firebase-config.js
-environment.js
+# firebase-config.js and environment.js are auto-generated at build time
+# They are committed so GitHub Actions can deploy them (peaceiris/actions-gh-pages respects .gitignore)
 .env
 .env.local
 .env.*.local
