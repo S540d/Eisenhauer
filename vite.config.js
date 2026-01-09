@@ -6,13 +6,13 @@ export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '');
-  
+
   // Use VITE_ENV from loaded env or fallback to mode
   // This allows 'npm run build:testing' to set mode=testing, and if .env.testing has VITE_ENV=testing it works,
   // or just relies on mode.
   const environment = env.VITE_ENV || mode;
   const base = getBaseUrl(environment);
-  
+
   console.log(`Building for environment: ${environment}, Base URL: ${base}`);
 
   return {
