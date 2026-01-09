@@ -1,5 +1,5 @@
 const CACHE_VERSION = '2.1.2';
-const BUILD_DATE = '2025-12-09'; // Cache busting - updated 2025-12-09T18:23:15.340Z
+const BUILD_DATE = '2026-01-09'; // Cache busting - updated 2026-01-09T18:39:20.462Z
 const CACHE_NAME = `eisenhauer-matrix-v${CACHE_VERSION}-${BUILD_DATE}`;
 const urlsToCache = [
   './',
@@ -26,7 +26,6 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Opened cache:', CACHE_NAME);
         return cache.addAll(urlsToCache);
       })
   );
@@ -103,7 +102,6 @@ self.addEventListener('activate', event => {
           cacheNames.map(cacheName => {
             // Delete all caches except the current one
             if (cacheName !== CACHE_NAME) {
-              console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })

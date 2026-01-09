@@ -2,7 +2,7 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.6.0
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.6.1
 
 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 🔧 **[Installation](INSTALL.md)**
 
@@ -143,7 +143,7 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 
 ⏱️ **Dauer:** ~10 Minuten | 💰 **Kosten:** Kostenlos (Firebase Spark Plan)
 
-**Hinweis:** `firebase-config.js` ist in `.gitignore` und wird nicht committed - deine Credentials bleiben privat!
+**Hinweis für lokale Entwicklung:** Firebase-Credentials werden automatisch aus `.env.*` Files generiert. Siehe [FIREBASE_SETUP.md](FIREBASE_SETUP.md) für Details.
 
 ### 2. Lokale Entwicklung
 
@@ -246,15 +246,22 @@ Dieses Projekt nutzt **3 separate Environments** für sicheres Deployment:
 3. Tests validieren → Merge in `staging` → Deploy auf Staging URL
 4. Final approval → Merge in `main` → Production Deploy
 
-**Firebase Setup:**
+**Build Commands:**
 ```bash
-# Siehe detaillierte Anleitung
-cat FIREBASE_SETUP.md
+# Build für Production
+npm run build:production
+
+# Build für Staging
+npm run build:staging
+
+# Build für Testing
+npm run build:testing
 ```
 
 **Detaillierte Dokumentation:**
 
 - [FIREBASE_SETUP.md](FIREBASE_SETUP.md) - Firebase Environment Setup
+- [TESTING.md](TESTING.md) - Testing Guidelines & Environment Details
 - Deployment Workflow (siehe Abschnitt "Workflow" oben)
 
 **Features:**
@@ -274,7 +281,7 @@ Bei Fragen oder Feedback: [GitHub Issues](https://github.com/S540d/Eisenhauer/is
 
 Made with ❤️ and [Claude Code](https://claude.com/claude-code)
 
-Last updated: 2025-10-09
+Last updated: 2026-01-09
 <!-- workflow test -->
 # Deployment works!
 
