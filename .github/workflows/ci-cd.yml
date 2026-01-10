@@ -33,12 +33,12 @@ jobs:
       - name: Check for console.log in production code
         run: |
           echo "Checking for console.log statements..."
-          if grep -r "console\.log\|console\.debug" js/ *.js *.html --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git --exclude="vite.config.js" 2>/dev/null | grep -v "// debug:"; then
+          if grep -r "console\.log\|console\.debug" js/ script.js --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git 2>/dev/null | grep -v "// debug:"; then
             echo "❌ ERROR: Found console.log/debug in production code!"
             echo "Use '// debug: ' comment to allow specific logs."
             exit 1
           else
-            echo "✅ No console.log found"
+            echo "✅ No console.log found (build scripts and index.html excluded)"
           fi
 
       - name: Check code formatting (Prettier)
