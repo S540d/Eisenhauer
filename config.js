@@ -4,6 +4,8 @@
  * Unterstützt Staging und Production über Query-Parameter:
  * - Production: https://s540d.github.io/Eisenhauer/
  * - Staging: https://s540d.github.io/Eisenhauer/?env=staging
+ *
+ * Updated: 2026-01-10
  */
 
 /**
