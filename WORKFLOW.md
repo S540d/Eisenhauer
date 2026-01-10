@@ -5,71 +5,69 @@
 
 ---
 
-## 📋 Branch-Strategie
+## 📋 Branch-Strategie & Environments
 
-### Branches
+### 1. Testing (Branch: `testing`)
+- **Fokus:** Aktive Entwicklung, Feature-Testing.
+- **URL:** `https://s540d.github.io/Eisenhauer/testing/`
+- **Datenbank:** `eisenhauer-testing` (Isoliert)
+- **Deployment:** Automatisch bei Push auf `testing`.
 
-1. **`staging`** - Entwicklung & Tests
-   - Für alle neuen Features und Fixes
-   - Lokales Testen vor dem Merge
+### 2. Staging (Branch: `staging`)
+- **Fokus:** Integrations-Tests, Pre-Release.
+- **URL:** `https://s540d.github.io/Eisenhauer/staging/`
+- **Datenbank:** `eisenhauer-staging` (Isoliert, Spiegelt Prod-Struktur)
+- **Deployment:** Automatisch bei Push auf `staging`.
 
-2. **`main`** - Production-ready Code
-   - Nur getesteter, stabiler Code
-   - Automatisches Deployment auf GitHub Pages
-
-3. **`gh-pages`** - Deployed Build
-   - Wird automatisch von GitHub Actions aktualisiert
-   - **NIEMALS manuell bearbeiten!**
+### 3. Production (Branch: `main`)
+- **Fokus:** Live-System für Endnutzer.
+- **URL:** `https://s540d.github.io/Eisenhauer/`
+- **Datenbank:** `eisenhauer-matrix` (Produktiv-Daten)
+- **Deployment:** Automatisch bei Push/Merge auf `main`.
 
 ---
 
-## 🚀 Workflow: Feature/Fix entwickeln
+## 🚀 Workflow: Feature entwickeln
 
-### 1. Auf Staging arbeiten
-
+### 1. Feature Branch erstellen
 ```bash
-# Auf staging Branch wechseln
-git checkout staging
-git pull origin staging
-
-# Änderungen machen (Code, CSS, etc.)
-# ...
-
-# Lokal testen
-npm run dev  # http://localhost:8000/Eisenhauer/
-
-# Committen
-git add .
-git commit -m "feat: Beschreibung der Änderung"
-git push origin staging
+git checkout testing
+git pull origin testing
+git checkout -b feature/mein-feature
 ```
 
-### 2. Lokal testen
-
+### 2. Entwickeln & Testen
+Lokal wird standardmäßig die `testing` Umgebung genutzt (siehe `.env`).
 ```bash
-# Dev Server starten
 npm run dev
-
-# In Browser testen:
-# http://localhost:8000/Eisenhauer/
-
-# Production Build testen (optional)
-npm run build
-npm run preview
+# Tests laufen lassen
+npm test
 ```
 
-### 3. Nach Main mergen
-
+### 3. Merge nach Testing
 ```bash
-# Auf main wechseln
+git checkout testing
+git merge feature/mein-feature
+git push origin testing
+# -> GitHub Action deployt nach /testing/
+```
+
+### 4. Promotion zu Staging
+Wenn Feature auf Testing OK:
+```bash
+git checkout staging
+git merge testing
+git push origin staging
+# -> GitHub Action deployt nach /staging/
+```
+
+### 5. Release (Prod)
+Wenn Staging-Tests erfolgreich:
+```bash
 git checkout main
-git pull origin main
-
-# Staging in main mergen
-git merge staging --no-edit
-
-# Auf main pushen
+git merge staging
 git push origin main
+# -> GitHub Action deployt nach / (Root)
 ```
 
 ### 4. Automatisches Deployment

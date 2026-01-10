@@ -8,7 +8,11 @@
 
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -40,7 +44,12 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
 const auth = getAuth(app);
-const db = getFirestore(app);
+// Replace deprecated enableIndexedDbPersistence with initializeFirestore + persistentLocalCache
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
+});
 
 // Configure authentication providers
 const googleProvider = new GoogleAuthProvider();
@@ -49,14 +58,5 @@ googleProvider.setCustomParameters({
 });
 
 const appleProvider = new OAuthProvider('apple.com');
-
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-    console.warn('Firestore persistence failed: multiple tabs open');
-  } else if (err.code === 'unimplemented') {
-    console.warn('Firestore persistence not supported in this browser');
-  }
-});
 
 export { app, auth, db, googleProvider, appleProvider };

@@ -8,7 +8,7 @@ export const BUILD_DATE = new Date().toISOString().split('T')[0];
 
 export async function loadVersion() {
   try {
-    const response = await fetch('./package.json');
+    const response = await fetch('./version.json');
     const data = await response.json();
     APP_VERSION = 'v' + data.version;
     return APP_VERSION;

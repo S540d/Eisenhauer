@@ -2,9 +2,15 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.7.4 ✅
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.7.6 ✅
 
 📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 🔧 **[Installation](INSTALL.md)**
+
+## Environments
+
+- **Production:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/)
+- **Staging:** [https://s540d.github.io/Eisenhauer/staging/](https://s540d.github.io/Eisenhauer/staging/) (Isolierte DB)
+- **Testing:** [https://s540d.github.io/Eisenhauer/testing/](https://s540d.github.io/Eisenhauer/testing/) (Isolierte DB)
 
 ## Features
 
