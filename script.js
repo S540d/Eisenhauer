@@ -7,7 +7,7 @@
  */
 
 // Import environment config
-import { isStaging } from './config.js';
+import { isStaging } from './js/modules/env-config.js';
 
 // Import npm packages for local storage and charting
 import localforage from 'localforage';
