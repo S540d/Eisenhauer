@@ -47,17 +47,19 @@ try {
   console.log(`⏱️  Build Time: ${buildTime}`);
   console.log(`🔑 Build Hash: ${buildHash}`);
 
-  // 3. Update version.json with new build info
-  if (fs.existsSync(versionJsonPath)) {
-    const versionJson = JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'));
-    versionJson.version = VERSION;
-    versionJson.buildDate = buildDate;
-    versionJson.buildTime = buildTime;
-    versionJson.buildHash = buildHash;
-    versionJson.timestamp = now.toISOString();
-    fs.writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, 2), 'utf8');
-    console.log('✅ Updated version.json with build info');
-  }
+  // 3. Create or update version.json with new build info
+  const versionJson = fs.existsSync(versionJsonPath)
+    ? JSON.parse(fs.readFileSync(versionJsonPath, 'utf8'))
+    : {};
+
+  versionJson.version = VERSION;
+  versionJson.buildDate = buildDate;
+  versionJson.buildTime = buildTime;
+  versionJson.buildHash = buildHash;
+  versionJson.timestamp = now.toISOString();
+
+  fs.writeFileSync(versionJsonPath, JSON.stringify(versionJson, null, 2), 'utf8');
+  console.log('✅ Created/updated version.json with build info');
 
   // 4. Inject cache-busting meta tags into index.html
   if (fs.existsSync(indexHtmlPath)) {
