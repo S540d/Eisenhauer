@@ -181,12 +181,12 @@ export async function initAuth() {
   try {
     await setPersistence(auth, indexedDBLocalPersistence);
   } catch (error) {
-    console.error('Error setting persistence at init:', error);
+    console.error('Error setting persistence at init:', error); // debug:
     // Fallback to browserLocalPersistence if IndexedDB fails
     try {
       await setPersistence(auth, browserLocalPersistence);
     } catch (e) {
-      console.error('Error setting fallback persistence:', e);
+      console.error('Error setting fallback persistence:', e); // debug:
     }
   }
 

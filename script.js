@@ -654,33 +654,44 @@ function setupEventListeners() {
 window.onAuthStateChanged = async function (user, guestMode = false) {
   currentUser = user;
   isGuestMode = guestMode;
-  if (user && !isGuestMode) {
-    await loadAllTasks();
-  } else {
-    await loadAllTasks();
-  }
 
-  // Wait for DOM to be fully visible after showApp()
-  setTimeout(() => {
-    // Setup event listeners (after showApp() has been called by auth.js)
-    setupEventListeners();
+  // Only reload tasks if they haven't been loaded yet (prevents double-loading)
+  const tasksAlreadyLoaded = getTasks().length > 0;
 
-    // Initialize keyboard drag manager for accessibility
-    if (!keyboardDragManager) {
-      keyboardDragManager = new KeyboardDragManager(handleMoveTask);
+  if (!tasksAlreadyLoaded) {
+    // First load: load tasks and setup UI
+    if (user && !isGuestMode) {
+      await loadAllTasks();
+    } else {
+      await loadAllTasks();
     }
 
-    // Render tasks with callbacks (after DOM is ready)
-    // DragManager and drop zones are now setup in renderTasksWithCallbacks()
+    // Wait for DOM to be fully visible after showApp()
+    setTimeout(() => {
+      // Setup event listeners (after showApp() has been called by auth.js)
+      setupEventListeners();
+
+      // Initialize keyboard drag manager for accessibility
+      if (!keyboardDragManager) {
+        keyboardDragManager = new KeyboardDragManager(handleMoveTask);
+      }
+
+      // Render tasks with callbacks (after DOM is ready)
+      // DragManager and drop zones are now setup in renderTasksWithCallbacks()
+      renderTasksWithCallbacks();
+    }, 100);
+
+    updateOnlineStatus();
+
+    // Show drag hint if not seen
+    const hintSeen = localStorage.getItem(STORAGE_KEYS.DRAG_HINT_SEEN);
+    if (!hintSeen) {
+      showDragHint();
+    }
+  } else {
+    // Tasks already loaded: just re-sync with Firebase in background
+    await loadAllTasks();
     renderTasksWithCallbacks();
-  }, 100);
-
-  updateOnlineStatus();
-
-  // Show drag hint if not seen
-  const hintSeen = localStorage.getItem(STORAGE_KEYS.DRAG_HINT_SEEN);
-  if (!hintSeen) {
-    showDragHint();
   }
 };
 
@@ -741,8 +752,42 @@ async function initApp() {
     updateSyncStatus(getSyncStatus());
   });
 
-  // Note: Event listeners and tasks are loaded in onAuthStateChanged callback
-  // which is triggered by auth.js after showApp() is called
+  // EARLY LOAD: Check if user is already logged in (from IndexedDB cache)
+  // This allows instant app load with cached data while Firebase Auth initializes
+  try {
+    const wasGuestMode = await localforage.getItem('guestMode');
+
+    if (wasGuestMode === 'true') {
+      // Guest mode: show app and load guest tasks immediately
+      isGuestMode = true;
+      window.showApp();
+      await loadAllTasks();
+      setupEventListeners();
+      if (!keyboardDragManager) {
+        keyboardDragManager = new KeyboardDragManager(handleMoveTask);
+      }
+      renderTasksWithCallbacks();
+      updateOnlineStatus();
+    } else if (auth.currentUser) {
+      // User is logged in: show app and load their tasks immediately
+      currentUser = auth.currentUser;
+      isGuestMode = false;
+      window.showApp();
+      await loadAllTasks();
+      setupEventListeners();
+      if (!keyboardDragManager) {
+        keyboardDragManager = new KeyboardDragManager(handleMoveTask);
+      }
+      renderTasksWithCallbacks();
+      updateOnlineStatus();
+    }
+    // If neither guest nor logged in, auth.js will show login screen
+  } catch (error) {
+    console.error('Error loading cached auth state:', error); // debug:
+  }
+
+  // Note: Event listeners and tasks are loaded ABOVE for instant start
+  // Firebase Auth will re-sync in background via onAuthStateChanged callback
   initAuth();
 }
 
