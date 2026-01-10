@@ -161,17 +161,41 @@ export async function loadGuestTasks() {
  * @returns {Promise<object>} Tasks object
  */
 export async function loadUserTasks(userId, db) {
-  if (!userId || !db) return { 1: [], 2: [], 3: [], 4: [], 5: [] };
+  console.log('[DEBUG] 💾 loadUserTasks() started for userId:', userId);
+  const loadStart = performance.now();
+
+  if (!userId || !db) {
+    console.log('[DEBUG] ⚠️ loadUserTasks() - no userId or db, returning empty tasks');
+    return { 1: [], 2: [], 3: [], 4: [], 5: [] };
+  }
 
   try {
     // Load tasks from Firestore using Modular SDK
+    console.log('[DEBUG] 💾 Creating Firestore collection reference...');
+    const collectionStart = performance.now();
     const tasksRef = collection(db, 'users', userId, 'tasks');
+    console.log(
+      `[DEBUG] ✅ Collection ref created in ${(performance.now() - collectionStart).toFixed(2)}ms`
+    );
+
+    console.log('[DEBUG] 💾 Fetching documents from Firestore (getDocs)...');
+    const getDocsStart = performance.now();
     const snapshot = await getDocs(tasksRef);
+    const getDocsTime = (performance.now() - getDocsStart).toFixed(2);
+    console.log(
+      `[DEBUG] ⚡ getDocs() completed in ${getDocsTime}ms - Retrieved ${snapshot.size} documents`
+    );
+
+    if (parseFloat(getDocsTime) > 1000) {
+      console.warn(`[DEBUG] ⚠️ WARNING: Firestore getDocs took ${getDocsTime}ms - THIS IS SLOW!`);
+    }
 
     // Initialize empty tasks structure
     const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
     // Load tasks from Firestore
+    console.log('[DEBUG] 💾 Processing documents...');
+    const processStart = performance.now();
     snapshot.forEach((docSnap) => {
       const task = docSnap.data();
       task.id = docSnap.id; // Use Firestore document ID
@@ -181,8 +205,15 @@ export async function loadUserTasks(userId, db) {
         tasks[task.segment].push(task);
       }
     });
+    console.log(
+      `[DEBUG] ✅ Documents processed in ${(performance.now() - processStart).toFixed(2)}ms`
+    );
+
+    const totalTime = (performance.now() - loadStart).toFixed(2);
+    console.log(`[DEBUG] 🎉 loadUserTasks() TOTAL TIME: ${totalTime}ms`);
     return tasks;
   } catch (error) {
+    console.error('[DEBUG] ❌ loadUserTasks() ERROR:', error);
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
   }
 }
