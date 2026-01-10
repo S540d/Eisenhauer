@@ -8,11 +8,23 @@ export const BUILD_DATE = new Date().toISOString().split('T')[0];
 
 export async function loadVersion() {
   try {
-    const response = await fetch('./version.json');
+    // Add timeout to prevent long delays if version.json is missing
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+
+    const response = await fetch('./version.json', { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
     const data = await response.json();
     APP_VERSION = 'v' + data.version;
     return APP_VERSION;
   } catch (error) {
+    // Silently use fallback version if loading fails
+    console.debug('Using fallback version:', APP_VERSION); // debug:
     return APP_VERSION;
   }
 }
