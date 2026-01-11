@@ -24,6 +24,26 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Create gradle.properties
+        working-directory: ./Android
+        run: |
+          cat > gradle.properties << 'EOF'
+          # Project-wide Gradle settings
+
+          # AndroidX
+          android.useAndroidX=true
+          android.enableJetifier=true
+
+          # Performance
+          org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+          org.gradle.parallel=true
+          org.gradle.caching=true
+
+          # Kotlin
+          kotlin.code.style=official
+          EOF
+          echo "✅ Created gradle.properties"
+
       - name: Decode Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.SIGNING_KEY_STORE_BASE64 }}

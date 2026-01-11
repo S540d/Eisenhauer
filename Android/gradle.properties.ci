@@ -1,0 +1,21 @@
+# Project-wide Gradle settings
+
+# AndroidX
+android.useAndroidX=true
+android.enableJetifier=true
+
+# Performance
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+org.gradle.parallel=true
+org.gradle.caching=true
+
+# Kotlin
+kotlin.code.style=official
+
+# NOTE: Signing credentials - DO NOT commit to public repositories!
+# Copy this file to 'gradle.properties' and fill in your credentials
+
+# SIGNING_KEY_STORE_PATH=../keystore/your-release.keystore
+# SIGNING_KEY_ALIAS=your-alias
+# SIGNING_KEY_PASSWORD=your_key_password
+# SIGNING_STORE_PASSWORD=your_store_password
