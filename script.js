@@ -652,7 +652,6 @@ function setupEventListeners() {
  * This is called from auth.js with (user, isGuestMode)
  */
 window.onAuthStateChanged = async function (user, guestMode = false) {
-  console.log('[DEBUG] 📱 window.onAuthStateChanged callback started');
   const callbackStart = performance.now();
 
   currentUser = user;
@@ -660,23 +659,17 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
   // Only reload tasks if they haven't been loaded yet (prevents double-loading)
   const tasksAlreadyLoaded = getTasks().length > 0;
-  console.log('[DEBUG] 📱 Tasks already loaded:', tasksAlreadyLoaded);
 
   if (!tasksAlreadyLoaded) {
     // First load: load tasks and setup UI
-    console.log('[DEBUG] 📱 First load - loading tasks...');
     const loadTasksStart = performance.now();
     if (user && !isGuestMode) {
       await loadAllTasks();
     } else {
       await loadAllTasks();
     }
-    console.log(
-      `[DEBUG] ⚡ loadAllTasks() completed in ${(performance.now() - loadTasksStart).toFixed(2)}ms`
-    );
 
     // Wait for DOM to be fully visible after showApp()
-    console.log('[DEBUG] 📱 Waiting 100ms for DOM, then setting up UI...');
     setTimeout(() => {
       const setupStart = performance.now();
       // Setup event listeners (after showApp() has been called by auth.js)
@@ -691,12 +684,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
       // DragManager and drop zones are now setup in renderTasksWithCallbacks()
       const renderStart = performance.now();
       renderTasksWithCallbacks();
-      console.log(
-        `[DEBUG] 🎨 renderTasksWithCallbacks() completed in ${(performance.now() - renderStart).toFixed(2)}ms`
-      );
-      console.log(
-        `[DEBUG] ✅ UI setup completed in ${(performance.now() - setupStart).toFixed(2)}ms`
-      );
     }, 100);
 
     updateOnlineStatus();
@@ -708,22 +695,10 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     }
   } else {
     // Tasks already loaded: just re-sync with Firebase in background
-    console.log('[DEBUG] 📱 Tasks already loaded - re-syncing...');
     const resyncStart = performance.now();
     await loadAllTasks();
-    console.log(
-      `[DEBUG] ⚡ Re-sync loadAllTasks() completed in ${(performance.now() - resyncStart).toFixed(2)}ms`
-    );
-    const renderStart = performance.now();
     renderTasksWithCallbacks();
-    console.log(
-      `[DEBUG] 🎨 renderTasksWithCallbacks() completed in ${(performance.now() - renderStart).toFixed(2)}ms`
-    );
   }
-
-  console.log(
-    `[DEBUG] 🎉 Total window.onAuthStateChanged time: ${(performance.now() - callbackStart).toFixed(2)}ms`
-  );
 };
 
 // ============================================
@@ -814,7 +789,7 @@ async function initApp() {
     }
     // If neither guest nor logged in, auth.js will show login screen
   } catch (error) {
-    console.error('Error loading cached auth state:', error); // debug:
+    // Error loading cached auth state
   }
 
   // Note: Event listeners and tasks are loaded ABOVE for instant start

@@ -170,7 +170,6 @@ async function continueAsGuest() {
  * Solution: Initialize immediately without event listener wrapper
  */
 export async function initAuth() {
-  console.log('[DEBUG] 🔐 initAuth() started');
   const initAuthStart = performance.now();
 
   // Check sessionStorage availability (non-critical)
@@ -181,13 +180,9 @@ export async function initAuth() {
   // FIX: Ensure persistence is set to IndexedDB immediately on initialization
   // This is critical for Android TWA and iOS PWA where localStorage is unreliable
   // or cleared by the OS. This ensures we look in the right place for the session.
-  console.log('[DEBUG] 🔐 Setting auth persistence to IndexedDB...');
   const persistenceStart = performance.now();
   try {
     await setPersistence(auth, indexedDBLocalPersistence);
-    console.log(
-      `[DEBUG] ✅ Persistence set in ${(performance.now() - persistenceStart).toFixed(2)}ms`
-    );
   } catch (error) {
     console.error('Error setting persistence at init:', error); // debug:
     // Fallback to browserLocalPersistence if IndexedDB fails
@@ -200,15 +195,10 @@ export async function initAuth() {
 
   // FIX: Direct call to onAuthStateChanged WITHOUT DOMContentLoaded wrapper
   // This ensures the listener is registered immediately when the module loads
-  console.log('[DEBUG] 🔐 Registering onAuthStateChanged listener...');
   let hasLoggedInOnce = false;
 
   onAuthStateChanged(auth, async (user) => {
     const authCallbackStart = performance.now();
-    console.log(
-      '[DEBUG] 🔐 onAuthStateChanged FIRED:',
-      user ? `User: ${user.uid}` : 'No user (signed out)'
-    );
     currentUser = user;
 
     if (user) {
@@ -219,13 +209,9 @@ export async function initAuth() {
       showApp();
 
       // Call the callback from script.js (ES6 module)
-      console.log('[DEBUG] 🔐 Calling window.onAuthStateChanged callback (logged in)...');
       const callbackStart = performance.now();
       if (typeof window.onAuthStateChanged === 'function') {
         await window.onAuthStateChanged(user, false);
-        console.log(
-          `[DEBUG] ✅ window.onAuthStateChanged completed in ${(performance.now() - callbackStart).toFixed(2)}ms`
-        );
       }
     } else {
       // User is signed out
@@ -237,13 +223,9 @@ export async function initAuth() {
           showApp();
 
           // Call the callback from script.js (ES6 module)
-          console.log('[DEBUG] 🔐 Calling window.onAuthStateChanged callback (guest mode)...');
           const callbackStart = performance.now();
           if (typeof window.onAuthStateChanged === 'function') {
             await window.onAuthStateChanged(null, true);
-            console.log(
-              `[DEBUG] ✅ window.onAuthStateChanged completed in ${(performance.now() - callbackStart).toFixed(2)}ms`
-            );
           }
         } else {
           // User is signed out and not in guest mode
@@ -251,19 +233,11 @@ export async function initAuth() {
           showLogin();
         }
       } catch (error) {
-        console.error('Error checking guest mode:', error);
         isGuestMode = false;
         showLogin();
       }
     }
-    console.log(
-      `[DEBUG] 🔐 Total onAuthStateChanged callback time: ${(performance.now() - authCallbackStart).toFixed(2)}ms`
-    );
   });
-
-  console.log(
-    `[DEBUG] 🎉 initAuth() completed in ${(performance.now() - initAuthStart).toFixed(2)}ms`
-  );
 }
 
 // ============================================
