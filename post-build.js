@@ -25,6 +25,8 @@ const distPath = path.join(__dirname, 'dist');
 const indexHtmlPath = path.join(distPath, 'index.html');
 const versionJsonPath = path.join(distPath, 'version.json');
 const packageJsonPath = path.join(__dirname, 'package.json');
+const privacyPolicyPath = path.join(__dirname, 'privacy-policy.html');
+const privacyPolicyDistPath = path.join(distPath, 'privacy-policy.html');
 
 console.log('🔨 Running post-build cache-busting...');
 
@@ -102,6 +104,14 @@ try {
 
     fs.writeFileSync(indexHtmlPath, html, 'utf8');
     console.log(`✅ Added query parameter cache-busting (?v=${buildHash})`);
+  }
+
+  // 7. Copy privacy-policy.html to dist folder
+  if (fs.existsSync(privacyPolicyPath)) {
+    fs.copyFileSync(privacyPolicyPath, privacyPolicyDistPath);
+    console.log('✅ Copied privacy-policy.html to dist folder');
+  } else {
+    console.warn('⚠️  privacy-policy.html not found in root directory');
   }
 
   console.log('\n🎉 Post-build cache-busting complete!');
