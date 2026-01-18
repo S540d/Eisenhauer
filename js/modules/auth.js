@@ -232,6 +232,7 @@ export async function initAuth() {
 }
 
 // Export for module usage (no global window variables needed)
+// Note: initAuth is already exported as named function export above
 export {
   currentUser,
   isGuestMode,
@@ -241,5 +242,4 @@ export {
   signOut,
   showLogin,
   showApp,
-  initAuth,
 };
