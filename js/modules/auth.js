@@ -152,7 +152,7 @@ async function continueAsGuest() {
 
   // Request persistent storage
   if (navigator.storage && navigator.storage.persist) {
-    const isPersisted = await navigator.storage.persist();
+    await navigator.storage.persist();
   }
 
   showApp();
@@ -170,8 +170,6 @@ async function continueAsGuest() {
  * Solution: Initialize immediately without event listener wrapper
  */
 export async function initAuth() {
-  const initAuthStart = performance.now();
-
   // Check sessionStorage availability (non-critical)
   if (!isSessionStorageAvailable()) {
     // OK to continue without sessionStorage
@@ -180,36 +178,30 @@ export async function initAuth() {
   // FIX: Ensure persistence is set to IndexedDB immediately on initialization
   // This is critical for Android TWA and iOS PWA where localStorage is unreliable
   // or cleared by the OS. This ensures we look in the right place for the session.
-  const persistenceStart = performance.now();
   try {
     await setPersistence(auth, indexedDBLocalPersistence);
   } catch (error) {
-    console.error('Error setting persistence at init:', error); // debug:
+    console.error('Error setting persistence at init:', error);
     // Fallback to browserLocalPersistence if IndexedDB fails
     try {
       await setPersistence(auth, browserLocalPersistence);
     } catch (e) {
-      console.error('Error setting fallback persistence:', e); // debug:
+      console.error('Error setting fallback persistence:', e);
     }
   }
 
   // FIX: Direct call to onAuthStateChanged WITHOUT DOMContentLoaded wrapper
   // This ensures the listener is registered immediately when the module loads
-  let hasLoggedInOnce = false;
-
   onAuthStateChanged(auth, async (user) => {
-    const authCallbackStart = performance.now();
     currentUser = user;
 
     if (user) {
       // User is signed in
-      hasLoggedInOnce = true;
       isGuestMode = false;
       await localforage.removeItem('guestMode');
       showApp();
 
       // Call the callback from script.js (ES6 module)
-      const callbackStart = performance.now();
       if (typeof window.onAuthStateChanged === 'function') {
         await window.onAuthStateChanged(user, false);
       }
@@ -223,7 +215,6 @@ export async function initAuth() {
           showApp();
 
           // Call the callback from script.js (ES6 module)
-          const callbackStart = performance.now();
           if (typeof window.onAuthStateChanged === 'function') {
             await window.onAuthStateChanged(null, true);
           }
@@ -240,19 +231,7 @@ export async function initAuth() {
   });
 }
 
-// ============================================
-// REGISTER GLOBAL FUNCTIONS AT MODULE LOAD TIME
-// ============================================
-// Register actual implementations with _ prefix (for wrapper functions)
-// Wrapper functions in index.html ensure onclick handlers work even if module loads slowly
-window._signInWithGoogle = signInWithGoogle;
-window._signInWithApple = signInWithApple;
-window._continueAsGuest = continueAsGuest;
-window._signOut = signOut;
-window.showLogin = showLogin;
-window.showApp = showApp;
-
-// Export for module usage
+// Export for module usage (no global window variables needed)
 export {
   currentUser,
   isGuestMode,
@@ -262,4 +241,5 @@ export {
   signOut,
   showLogin,
   showApp,
+  initAuth,
 };

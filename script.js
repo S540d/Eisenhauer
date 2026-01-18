@@ -19,7 +19,15 @@ window.Chart = Chart;
 
 // Import Firebase services (Modular SDK V2)
 import { auth, db } from './js/modules/firebase-init.js';
-import { initAuth } from './js/modules/auth.js';
+import {
+  initAuth,
+  signInWithGoogle,
+  signInWithApple,
+  continueAsGuest,
+  signOut,
+  showLogin,
+  showApp,
+} from './js/modules/auth.js';
 
 // Import all modules
 import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js';
@@ -91,8 +99,17 @@ let isGuestMode = false;
 let keyboardDragManager = null;
 
 // ============================================
-// Expose Storage Functions to Window
+// Expose Functions to Window
 // ============================================
+// Bind Auth functions for onclick handlers in HTML
+// These are now properly exported from auth.js module (no more window._ workarounds)
+window.signInWithGoogle = signInWithGoogle;
+window.signInWithApple = signInWithApple;
+window.continueAsGuest = continueAsGuest;
+window.signOut = signOut;
+window.showLogin = showLogin;
+window.showApp = showApp;
+
 // Make import function available to UI
 window.importGuestTasksToFirestore = importGuestTasksToFirestore;
 
