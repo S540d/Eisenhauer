@@ -87,14 +87,12 @@ describe('Version Module', () => {
         });
       });
 
-      const startTime = Date.now();
       const version = await loadVersion();
-      const duration = Date.now() - startTime;
 
       // Should return fallback version
       expect(version).toBeDefined();
       expect(version).toMatch(/^v\d+\.\d+\.\d+/);
-    }, 15000);
+    }, 2000);
 
     it('should handle invalid JSON response', async () => {
       // Mock invalid JSON

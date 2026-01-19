@@ -63,8 +63,8 @@ describe('Storage Module', () => {
 
       // Spy on document methods
       const createElementSpy = vi.spyOn(document, 'createElement');
-      const appendChildSpy = vi.spyOn(document.body, 'appendChild').mockImplementation(() => {});
-      const removeChildSpy = vi.spyOn(document.body, 'removeChild').mockImplementation(() => {});
+      vi.spyOn(document.body, 'appendChild').mockImplementation(() => {});
+      vi.spyOn(document.body, 'removeChild').mockImplementation(() => {});
 
       exportData(tasks, '1.8.2');
 
@@ -134,8 +134,6 @@ describe('Storage Module', () => {
 
     it('should create filename with current date', () => {
       const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
-
-      let downloadFilename = null;
 
       global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
       global.URL.revokeObjectURL = vi.fn();

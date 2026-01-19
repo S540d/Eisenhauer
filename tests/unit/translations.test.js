@@ -5,7 +5,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   translations,
-  currentLanguage,
   setLanguage,
   getCurrentLanguage,
   getTranslation,
