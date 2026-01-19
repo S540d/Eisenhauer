@@ -77,3 +77,4 @@ playwright/.cache/
 .github/PULL_REQUEST_TEMPLATE/
 twa-manifest.json
 *.zip
+coverage/
