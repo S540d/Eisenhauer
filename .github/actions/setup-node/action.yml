@@ -1,0 +1,10 @@
+name: 'Setup Node.js'
+description: 'Setup Node.js with consistent version and npm caching'
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        cache: 'npm'
