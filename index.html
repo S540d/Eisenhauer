@@ -593,7 +593,10 @@
 
     <!-- Register Service Worker with Cache Busting -->
     <script>
-      if ('serviceWorker' in navigator) {
+      // Only register service worker in production builds (not in Vite dev mode)
+      const isProduction = !window.location.port || import.meta.env?.PROD;
+
+      if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
 
         // Get build hash from meta tag (added by post-build.js)
