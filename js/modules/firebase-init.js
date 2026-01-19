@@ -10,6 +10,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 import {
   initializeFirestore,
+  getFirestore,
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore';
@@ -46,11 +47,23 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Replace deprecated enableIndexedDbPersistence with initializeFirestore + persistentLocalCache
-const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager(),
-  }),
-});
+// Use try-catch to handle case where Firestore was already initialized
+// (can happen with multiple imports in ES modules)
+let db;
+try {
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
+  });
+} catch (error) {
+  if (error.code === 'failed-precondition' || error.message?.includes('already been called')) {
+    // Firestore already initialized, use getFirestore instead
+    db = getFirestore(app);
+  } else {
+    throw error;
+  }
+}
 
 // Configure authentication providers
 const googleProvider = new GoogleAuthProvider();
