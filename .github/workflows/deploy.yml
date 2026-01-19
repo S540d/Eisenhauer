@@ -43,4 +43,5 @@ jobs:
         publish_branch: gh-pages
         cname:  # Optional: Add custom domain here
         allow_empty_commit: false
-        keep_files: false
+        keep_files: true
+        exclude_assets: '.github,staging,testing'

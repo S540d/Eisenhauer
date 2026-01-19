@@ -45,6 +45,7 @@ jobs:
         keep_files: true
         allow_empty_commit: false
         commit_message: '🧪 Testing deployment from ${{ github.sha }}'
+        force_orphan: false
 
     - name: Comment deployment URL
       run: |
