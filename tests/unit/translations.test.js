@@ -212,12 +212,12 @@ describe('Translations', () => {
 
 // Import updateLanguageUI for DOM testing
 import { updateLanguageUI } from '../../js/modules/translations.js';
-import { beforeEach as beforeEachDOM, afterEach, vi } from 'vitest';
+import { beforeEach, afterEach, vi } from 'vitest';
 
 describe('updateLanguageUI', () => {
   let mockCallback;
 
-  beforeEachDOM(() => {
+  beforeEach(() => {
     // Reset language
     setLanguage('en');
 

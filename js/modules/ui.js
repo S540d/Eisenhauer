@@ -387,10 +387,8 @@ export function openSettingsModal(
     const target = e.target;
 
     // Handle theme button clicks
-    if (target.classList.contains('theme-btn') || target.closest('.theme-btn')) {
-      const themeBtn = target.classList.contains('theme-btn')
-        ? target
-        : target.closest('.theme-btn');
+    const themeBtn = target.closest('.theme-btn');
+    if (themeBtn) {
       const theme = themeBtn.dataset.theme;
 
       // Update active state
@@ -414,20 +412,20 @@ export function openSettingsModal(
     }
 
     // Handle About button click
-    if (target.id === 'aboutBtn' || target.closest('#aboutBtn')) {
+    if (target.closest('#aboutBtn')) {
       e.preventDefault();
       openAboutModal(version);
       return;
     }
 
     // Handle close button click
-    if (target.id === 'settingsCancelBtn' || target.closest('#settingsCancelBtn')) {
+    if (target.closest('#settingsCancelBtn')) {
       closeSettingsModal();
       return;
     }
 
     // Handle sign out button click
-    if (target.id === 'signOutBtn' || target.closest('#signOutBtn')) {
+    if (target.closest('#signOutBtn')) {
       if (window.signOut) {
         window.signOut();
         closeSettingsModal();
