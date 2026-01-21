@@ -70,12 +70,15 @@ import {
   openSettingsModal,
   openMetricsModal,
   openEditRecurringModal,
+  openTutorialModal,
+  shouldShowTutorial,
   showDragHint,
   updateOnlineStatus,
   updateSyncStatus,
   setupDropZones,
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
+import { showUndoDelete, showUndoMove, showUndoToggle } from './js/modules/undo.js';
 import {
   KeyboardDragManager,
   announceDragStart,
@@ -205,9 +208,19 @@ function handleDeleteTask(taskId, segment) {
     });
   } else {
     // Non-recurring task - delete immediately
+    const deletedTask = tasks[segment].find((t) => t.id === taskId);
     deleteTask(taskId, segment);
     syncDelete(taskId, segment);
     renderTasksWithCallbacks();
+
+    // Show undo notification
+    if (deletedTask) {
+      showUndoDelete(deletedTask, getCurrentLanguage(), () => {
+        // Save restored task to storage
+        syncSave(deletedTask);
+        renderTasksWithCallbacks();
+      });
+    }
   }
 }
 
@@ -240,6 +253,19 @@ function syncDelete(taskId, segment) {
 }
 
 /**
+ * Sync save task to storage
+ */
+function syncSave(task) {
+  if (currentUser && db && !isGuestMode) {
+    // Save to Firestore
+    saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
+  } else {
+    // Save to LocalForage (guest mode)
+    saveGuestTasks(tasks);
+  }
+}
+
+/**
  * Move task handler
  */
 function handleMoveTask(taskId, fromSegment, toSegment) {
@@ -258,12 +284,30 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
   }
+
+  // Show undo notification
+  if (movedTask) {
+    showUndoMove(taskId, fromSegment, toSegment, getCurrentLanguage(), () => {
+      // After undo, the task has been moved back, so we need to get the updated task reference
+      const updatedTask = tasks[fromSegment].find((t) => t.id === taskId);
+      if (currentUser && db && !isGuestMode && updatedTask) {
+        updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
+      } else {
+        saveGuestTasks(tasks);
+      }
+      renderTasksWithCallbacks();
+    });
+  }
 }
 
 /**
  * Toggle task handler
  */
 function handleToggleTask(taskId, segment) {
+  // Store previous state for undo
+  const task = tasks[segment]?.find((t) => t.id === taskId);
+  const wasChecked = task ? task.checked : false;
+
   const result = toggleTask(taskId, segment);
 
   // Save to storage based on mode
@@ -278,6 +322,18 @@ function handleToggleTask(taskId, segment) {
   } else {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
+  }
+
+  // Show undo notification
+  if (result && result.task) {
+    showUndoToggle(taskId, segment, wasChecked, getCurrentLanguage(), () => {
+      if (currentUser && db && !isGuestMode) {
+        updateTaskInFirestore(result.task, currentUser.uid, db, window.firebase);
+      } else {
+        saveGuestTasks(tasks);
+      }
+      renderTasksWithCallbacks();
+    });
   }
 
   renderTasksWithCallbacks();
@@ -432,20 +488,29 @@ function setupEventListeners() {
   // NOTE: Settings modal close and theme toggle buttons are now handled in ui.js openSettingsModal()
   // to ensure event listeners are properly registered on each modal open
 
-  // Language toggle buttons in settings modal
+  // Create a global changeLanguage function for use by all modals
+  window.changeLanguage = (lang) => {
+    // Update language
+    setLanguage(lang);
+    updateLanguageUI(() => renderTasksWithCallbacks());
+
+    // Update active state for all language buttons
+    const allLangButtons = document.querySelectorAll('.lang-btn');
+    allLangButtons.forEach((b) => {
+      b.classList.remove('active');
+      if (b.dataset.lang === lang) {
+        b.classList.add('active');
+      }
+    });
+  };
+
+  // Language toggle buttons in settings modal (legacy support)
   const langButtons = document.querySelectorAll('.lang-btn');
 
   langButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const lang = btn.dataset.lang;
-
-      // Update active state
-      langButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Update language
-      setLanguage(lang);
-      updateLanguageUI(() => renderTasksWithCallbacks());
+      window.changeLanguage(lang);
     });
   });
 
@@ -709,6 +774,13 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     const hintSeen = localStorage.getItem(STORAGE_KEYS.DRAG_HINT_SEEN);
     if (!hintSeen) {
       showDragHint();
+    }
+
+    // Show tutorial on first use
+    if (shouldShowTutorial()) {
+      setTimeout(() => {
+        openTutorialModal(getCurrentLanguage());
+      }, 500); // Small delay to let the app settle
     }
   } else {
     // Tasks already loaded: just re-sync with Firebase in background

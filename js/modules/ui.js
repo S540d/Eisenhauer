@@ -364,6 +364,8 @@ export function openSettingsModal(
 
   if (savedTheme === 'true') {
     activeTheme = 'dark';
+  } else if (savedTheme === 'false') {
+    activeTheme = 'light';
   } else if (savedTheme === null) {
     activeTheme = 'system';
   }
@@ -408,6 +410,13 @@ export function openSettingsModal(
           document.body.classList.remove('dark-mode');
         }
       }
+      return;
+    }
+
+    // Handle Personalisieren button click
+    if (target.closest('#personalizeBtn')) {
+      e.preventDefault();
+      openPersonalizeModal(currentLanguage);
       return;
     }
 
@@ -544,6 +553,125 @@ export function closeAboutModal() {
     aboutModal.classList.remove('active');
     aboutModal.classList.add('hidden');
     aboutModal.style.display = 'none';
+  }
+}
+
+/**
+ * Open Personalize modal
+ * @param {string} currentLanguage - Current language
+ */
+export function openPersonalizeModal(currentLanguage = 'en') {
+  const personalizeModal = document.getElementById('personalizeModal');
+
+  if (!personalizeModal) {
+    return;
+  }
+
+  // Update theme toggle button active state based on current theme
+  const themeButtons = personalizeModal.querySelectorAll('.theme-btn');
+  const savedTheme = localStorage.getItem('darkMode');
+  let activeTheme = 'system'; // Default to system
+
+  if (savedTheme === 'true') {
+    activeTheme = 'dark';
+  } else if (savedTheme === 'false') {
+    activeTheme = 'light';
+  } else if (savedTheme === null) {
+    activeTheme = 'system';
+  }
+
+  themeButtons.forEach((btn) => {
+    btn.classList.remove('active');
+    if (btn.dataset.theme === activeTheme) {
+      btn.classList.add('active');
+    }
+  });
+
+  // Update language toggle button active state
+  const langButtons = personalizeModal.querySelectorAll('.lang-btn');
+  langButtons.forEach((btn) => {
+    btn.classList.remove('active');
+    if (btn.dataset.lang === currentLanguage) {
+      btn.classList.add('active');
+    }
+  });
+
+  // Use event delegation for all personalize modal buttons
+  const existingHandler = personalizeModal._clickHandler;
+  if (existingHandler) {
+    personalizeModal.removeEventListener('click', existingHandler);
+  }
+
+  // Create new delegated click handler
+  const clickHandler = (e) => {
+    const target = e.target;
+
+    // Handle theme button clicks
+    const themeBtn = target.closest('.theme-btn');
+    if (themeBtn) {
+      const theme = themeBtn.dataset.theme;
+
+      // Update active state
+      personalizeModal.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
+      themeBtn.classList.add('active');
+
+      // Update theme
+      if (theme === 'dark') {
+        localStorage.setItem('darkMode', 'true');
+        document.body.classList.add('dark-mode');
+      } else if (theme === 'system') {
+        localStorage.removeItem('darkMode');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+      }
+      return;
+    }
+
+    // Handle language button clicks
+    const langBtn = target.closest('.lang-btn');
+    if (langBtn) {
+      const lang = langBtn.dataset.lang;
+
+      // Update active state
+      personalizeModal.querySelectorAll('.lang-btn').forEach((b) => b.classList.remove('active'));
+      langBtn.classList.add('active');
+
+      // Trigger language change (will be handled by script.js)
+      if (window.changeLanguage) {
+        window.changeLanguage(lang);
+      }
+      return;
+    }
+
+    // Handle close button click
+    if (target.closest('#personalizeCancelBtn')) {
+      closePersonalizeModal();
+      return;
+    }
+  };
+
+  // Store handler reference and add listener
+  personalizeModal._clickHandler = clickHandler;
+  personalizeModal.addEventListener('click', clickHandler);
+
+  personalizeModal.classList.remove('hidden');
+  personalizeModal.classList.add('active');
+  personalizeModal.style.display = 'flex';
+}
+
+/**
+ * Close Personalize modal
+ */
+export function closePersonalizeModal() {
+  const personalizeModal = document.getElementById('personalizeModal');
+  if (personalizeModal) {
+    personalizeModal.classList.remove('active');
+    personalizeModal.classList.add('hidden');
+    personalizeModal.style.display = 'none';
   }
 }
 
@@ -1103,4 +1231,162 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
   const newCancelBtn = cancelBtn.cloneNode(true);
   cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
   newCancelBtn.addEventListener('click', handleCancel);
+}
+
+/**
+ * Open Tutorial modal
+ * @param {string} currentLanguage - Current language
+ */
+export function openTutorialModal(currentLanguage = 'en') {
+  const tutorialModal = document.getElementById('tutorialModal');
+  if (!tutorialModal) return;
+
+  // Update translations
+  const lang = translations[currentLanguage].tutorial;
+  const tutorialTitle = document.getElementById('tutorialTitle');
+  const tutorialSkipBtn = document.getElementById('tutorialSkipBtn');
+  const tutorialBackBtn = document.getElementById('tutorialBackBtn');
+  const tutorialNextBtn = document.getElementById('tutorialNextBtn');
+  const tutorialDontShowText = document.getElementById('tutorialDontShowText');
+
+  if (tutorialTitle) tutorialTitle.textContent = lang.title;
+  if (tutorialSkipBtn) tutorialSkipBtn.textContent = lang.skip;
+  if (tutorialBackBtn) tutorialBackBtn.textContent = lang.back;
+  if (tutorialNextBtn) tutorialNextBtn.textContent = lang.next;
+  if (tutorialDontShowText) tutorialDontShowText.textContent = lang.dontShow;
+
+  // Update slide texts
+  const slide1Title = document.getElementById('tutorialSlide1Title');
+  const slide1Text = document.getElementById('tutorialSlide1Text');
+  const slide2Title = document.getElementById('tutorialSlide2Title');
+  const slide2Text = document.getElementById('tutorialSlide2Text');
+  const slide3Title = document.getElementById('tutorialSlide3Title');
+  const slide3Text = document.getElementById('tutorialSlide3Text');
+
+  if (slide1Title) slide1Title.textContent = lang.slide1.title;
+  if (slide1Text) slide1Text.textContent = lang.slide1.text;
+  if (slide2Title) slide2Title.textContent = lang.slide2.title;
+  if (slide2Text) slide2Text.textContent = lang.slide2.text;
+  if (slide3Title) slide3Title.textContent = lang.slide3.title;
+  if (slide3Text) slide3Text.textContent = lang.slide3.text;
+
+  // Initialize tutorial state
+  let currentSlide = 1;
+  const totalSlides = 3;
+
+  const updateSlide = (slideNum) => {
+    currentSlide = slideNum;
+
+    // Update slides
+    tutorialModal.querySelectorAll('.tutorial-slide').forEach((slide) => {
+      slide.classList.remove('active');
+      if (parseInt(slide.dataset.slide) === slideNum) {
+        slide.classList.add('active');
+      }
+    });
+
+    // Update dots
+    tutorialModal.querySelectorAll('.tutorial-dot').forEach((dot) => {
+      dot.classList.remove('active');
+      const isActive = parseInt(dot.dataset.slide) === slideNum;
+      if (isActive) {
+        dot.classList.add('active');
+      }
+      // Update ARIA attribute for accessibility
+      dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
+    // Update buttons
+    if (tutorialBackBtn) {
+      tutorialBackBtn.disabled = slideNum === 1;
+    }
+
+    if (tutorialNextBtn) {
+      if (slideNum === totalSlides) {
+        tutorialNextBtn.textContent = lang.done;
+      } else {
+        tutorialNextBtn.textContent = lang.next;
+      }
+    }
+  };
+
+  // Setup event handlers
+  const existingHandler = tutorialModal._clickHandler;
+  if (existingHandler) {
+    tutorialModal.removeEventListener('click', existingHandler);
+  }
+
+  const clickHandler = (e) => {
+    const target = e.target;
+
+    // Skip button
+    if (target.closest('#tutorialSkipBtn')) {
+      // User explicitly skipped the tutorial; mark as seen to avoid showing again
+      localStorage.setItem('tutorialSeen', 'true');
+      closeTutorialModal();
+      return;
+    }
+
+    // Back button
+    if (target.closest('#tutorialBackBtn')) {
+      if (currentSlide > 1) {
+        updateSlide(currentSlide - 1);
+      }
+      return;
+    }
+
+    // Next/Done button
+    if (target.closest('#tutorialNextBtn')) {
+      if (currentSlide < totalSlides) {
+        updateSlide(currentSlide + 1);
+      } else {
+        // Save "don't show again" preference
+        const dontShowAgain = document.getElementById('tutorialDontShowAgain');
+        if (dontShowAgain && dontShowAgain.checked) {
+          localStorage.setItem('tutorialSeen', 'true');
+        }
+        closeTutorialModal();
+      }
+      return;
+    }
+
+    // Dot navigation
+    const dot = target.closest('.tutorial-dot');
+    if (dot) {
+      const slideNum = parseInt(dot.dataset.slide);
+      updateSlide(slideNum);
+      return;
+    }
+  };
+
+  tutorialModal._clickHandler = clickHandler;
+  tutorialModal.addEventListener('click', clickHandler);
+
+  // Initialize first slide
+  updateSlide(1);
+
+  // Show modal
+  tutorialModal.classList.remove('hidden');
+  tutorialModal.classList.add('active');
+  tutorialModal.style.display = 'flex';
+}
+
+/**
+ * Close Tutorial modal
+ */
+export function closeTutorialModal() {
+  const tutorialModal = document.getElementById('tutorialModal');
+  if (tutorialModal) {
+    tutorialModal.classList.remove('active');
+    tutorialModal.classList.add('hidden');
+    tutorialModal.style.display = 'none';
+  }
+}
+
+/**
+ * Check if tutorial should be shown (first time user)
+ * @returns {boolean} True if tutorial should be shown
+ */
+export function shouldShowTutorial() {
+  return !localStorage.getItem('tutorialSeen');
 }

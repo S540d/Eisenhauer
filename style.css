@@ -2147,3 +2147,311 @@ body.dark-mode button.settings-btn.settings-btn-flex:hover {
 #aboutBtn:active {
   opacity: 0.6;
 }
+
+/* Undo Toast Notification */
+.undo-toast {
+  position: fixed;
+  bottom: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10000;
+  transition: bottom 0.3s ease-out;
+  min-width: 280px;
+  max-width: 90vw;
+  border: 1px solid var(--border-color);
+}
+
+.undo-toast.show {
+  bottom: 24px;
+}
+
+.undo-toast-message {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.undo-toast-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.undo-toast-btn:hover {
+  opacity: 0.8;
+}
+
+.undo-toast-btn:active {
+  opacity: 0.6;
+}
+
+/* Dark mode adjustments */
+body.dark-mode .undo-toast {
+  background: #2a2a2a;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 600px) {
+  .undo-toast {
+    bottom: -100px;
+    min-width: auto;
+    left: 16px;
+    right: 16px;
+    transform: none;
+  }
+
+  .undo-toast.show {
+    bottom: 16px;
+  }
+}
+
+/* Tutorial Modal */
+.tutorial-modal {
+  max-width: 500px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.tutorial-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--grid-color);
+}
+
+.tutorial-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tutorial-skip-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: opacity 0.2s;
+}
+
+.tutorial-skip-btn:hover {
+  opacity: 0.7;
+}
+
+.tutorial-slides {
+  position: relative;
+  min-height: 300px;
+  padding: 32px 24px;
+}
+
+.tutorial-slide {
+  display: none;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.tutorial-slide.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tutorial-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.tutorial-slide h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.tutorial-slide p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+}
+
+.tutorial-animation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.tutorial-demo-task {
+  background: var(--task-bg);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid #667eea;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.tutorial-demo-arrow,
+.tutorial-demo-swipe {
+  font-size: 32px;
+  color: #667eea;
+  animation: slide 1.5s ease-in-out infinite;
+}
+
+@keyframes slide {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
+
+.tutorial-demo-swipe {
+  animation: swipe 1.5s ease-in-out infinite;
+}
+
+@keyframes swipe {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-20px);
+  }
+}
+
+.tutorial-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 24px;
+}
+
+.tutorial-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--grid-color);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.tutorial-dot.active {
+  background: #667eea;
+  width: 24px;
+  border-radius: 4px;
+}
+
+.tutorial-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 20px;
+}
+
+.tutorial-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tutorial-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tutorial-btn-primary {
+  background: #667eea;
+  color: white;
+}
+
+.tutorial-btn-primary:hover:not(:disabled) {
+  background: #5568d3;
+}
+
+.tutorial-btn-secondary {
+  background: var(--grid-color);
+  color: var(--text-primary);
+}
+
+.tutorial-btn-secondary:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.tutorial-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--grid-color);
+}
+
+.tutorial-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.tutorial-checkbox input[type='checkbox'] {
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .tutorial-modal {
+    max-width: 95%;
+    margin: 20px;
+  }
+
+  .tutorial-slides {
+    min-height: 250px;
+    padding: 24px 16px;
+  }
+
+  .tutorial-icon {
+    font-size: 48px;
+  }
+
+  .tutorial-buttons {
+    flex-direction: column-reverse;
+  }
+
+  .tutorial-btn {
+    width: 100%;
+  }
+}

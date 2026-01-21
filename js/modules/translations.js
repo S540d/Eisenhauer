@@ -14,6 +14,43 @@ export const translations = {
       dataManagement: 'DATEN',
       exportBtn: 'Export',
       importGuestBtn: 'Import Gast-Daten',
+      personalizeBtn: 'Personalisieren',
+    },
+    personalize: {
+      title: 'Personalisieren',
+      appearance: 'ERSCHEINUNGSBILD',
+      language: 'SPRACHE',
+      themeDark: 'Dunkel',
+      themeSystem: 'System',
+      langEn: 'English',
+      langDe: 'Deutsch',
+    },
+    undo: {
+      button: 'Rückgängig',
+      taskDeleted: 'Aufgabe gelöscht',
+      taskMoved: 'Aufgabe verschoben',
+      taskCompleted: 'Als erledigt markiert',
+      taskUncompleted: 'Als unerledigt markiert',
+    },
+    tutorial: {
+      title: 'Willkommen!',
+      skip: 'Überspringen',
+      back: 'Zurück',
+      next: 'Weiter',
+      done: 'Fertig',
+      dontShow: 'Nicht mehr anzeigen',
+      slide1: {
+        title: 'Drag & Drop',
+        text: 'Ziehe Aufgaben zwischen Segmenten, um sie nach der Eisenhower-Matrix zu organisieren.',
+      },
+      slide2: {
+        title: 'Wischen zum Löschen',
+        text: 'Wische nach links über eine Aufgabe, um sie schnell zu löschen. Perfekt für Mobilgeräte!',
+      },
+      slide3: {
+        title: 'Schnellaktionen',
+        text: 'Tippe auf den + Button neben jedem Segment, um schnell Aufgaben hinzuzufügen. Markiere Aufgaben als erledigt!',
+      },
     },
     quickAddModal: {
       title: 'Neue Aufgabe',
@@ -59,6 +96,43 @@ export const translations = {
       dataManagement: 'DATA MANAGEMENT',
       exportBtn: 'Export',
       importGuestBtn: 'Import Guest Data',
+      personalizeBtn: 'Personalize',
+    },
+    personalize: {
+      title: 'Personalize',
+      appearance: 'APPEARANCE',
+      language: 'LANGUAGE',
+      themeDark: 'Dark',
+      themeSystem: 'System',
+      langEn: 'English',
+      langDe: 'Deutsch',
+    },
+    undo: {
+      button: 'Undo',
+      taskDeleted: 'Task deleted',
+      taskMoved: 'Task moved',
+      taskCompleted: 'Marked as complete',
+      taskUncompleted: 'Marked as incomplete',
+    },
+    tutorial: {
+      title: 'Welcome!',
+      skip: 'Skip',
+      back: 'Back',
+      next: 'Next',
+      done: 'Done',
+      dontShow: "Don't show this again",
+      slide1: {
+        title: 'Drag & Drop',
+        text: 'Drag tasks between segments to organize them according to the Eisenhower Matrix.',
+      },
+      slide2: {
+        title: 'Swipe to Delete',
+        text: 'Swipe left on any task to quickly delete it. Perfect for mobile!',
+      },
+      slide3: {
+        title: 'Quick Actions',
+        text: 'Tap the + button next to each segment to quickly add tasks. Check tasks to mark them as done!',
+      },
     },
     quickAddModal: {
       title: 'New Task',
@@ -329,6 +403,37 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
   if (importGuestTasksBtn) {
     importGuestTasksBtn.textContent = lang.settings.importGuestBtn;
+  }
+
+  const personalizeBtn = document.getElementById('personalizeBtn');
+  if (personalizeBtn) {
+    personalizeBtn.textContent = lang.settings.personalizeBtn;
+  }
+
+  // Update Personalize Modal texts
+  const personalizeTitle = document.getElementById('personalizeTitle');
+  if (personalizeTitle) {
+    personalizeTitle.textContent = lang.personalize.title;
+  }
+
+  const personalizeAppearanceTitle = document.getElementById('personalizeAppearanceTitle');
+  if (personalizeAppearanceTitle) {
+    personalizeAppearanceTitle.textContent = lang.personalize.appearance;
+  }
+
+  const personalizeLanguageTitle = document.getElementById('personalizeLanguageTitle');
+  if (personalizeLanguageTitle) {
+    personalizeLanguageTitle.textContent = lang.personalize.language;
+  }
+
+  const personalizeThemeDark = document.getElementById('personalizeThemeDark');
+  if (personalizeThemeDark) {
+    personalizeThemeDark.textContent = lang.personalize.themeDark;
+  }
+
+  const personalizeThemeSystem = document.getElementById('personalizeThemeSystem');
+  if (personalizeThemeSystem) {
+    personalizeThemeSystem.textContent = lang.personalize.themeSystem;
   }
 
   // Re-render all tasks to update recurring indicators

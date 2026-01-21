@@ -367,24 +367,11 @@
 
         <div id="accountSeparator" class="settings-separator" style="display: none"></div>
 
-        <!-- Appearance Settings - Dark/System Only -->
+        <!-- Personalisieren Button -->
         <div class="settings-section">
-          <h4 class="settings-section-title">APPEARANCE</h4>
-          <div id="themeToggleContainer" class="theme-toggle-container">
-            <button class="theme-btn" data-theme="dark" title="Dark Mode">Dark</button>
-            <button class="theme-btn" data-theme="system" title="System Mode">System</button>
-          </div>
-        </div>
-
-        <div class="settings-separator"></div>
-
-        <!-- Language Settings -->
-        <div class="settings-section">
-          <h4 class="settings-section-title">LANGUAGE</h4>
-          <div id="languageToggleContainer" class="theme-toggle-container">
-            <button class="lang-btn" data-lang="en" title="English">English</button>
-            <button class="lang-btn" data-lang="de" title="Deutsch">Deutsch</button>
-          </div>
+          <button id="personalizeBtn" class="settings-export-btn" style="width: 100%">
+            Personalisieren
+          </button>
         </div>
 
         <div class="settings-separator"></div>
@@ -435,6 +422,121 @@
         <div class="about-content">
           <p id="aboutVersion" class="about-item"></p>
           <p id="aboutLicense" class="about-item" style="margin-top: 12px"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personalisieren Modal -->
+    <div id="personalizeModal" class="modal">
+      <div class="modal-content">
+        <div class="settings-header">
+          <h3 id="personalizeTitle">Personalisieren</h3>
+          <button id="personalizeCancelBtn" class="close-btn" aria-label="Close">×</button>
+        </div>
+
+        <!-- Appearance Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeAppearanceTitle">ERSCHEINUNGSBILD</h4>
+          <div id="personalizeThemeToggleContainer" class="theme-toggle-container">
+            <button class="theme-btn" data-theme="dark" title="Dark Mode" id="personalizeThemeDark">
+              Dark
+            </button>
+            <button
+              class="theme-btn"
+              data-theme="system"
+              title="System Mode"
+              id="personalizeThemeSystem"
+            >
+              System
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Language Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeLanguageTitle">SPRACHE</h4>
+          <div id="personalizeLanguageToggleContainer" class="theme-toggle-container">
+            <button class="lang-btn" data-lang="en" title="English" id="personalizeLangEn">
+              English
+            </button>
+            <button class="lang-btn" data-lang="de" title="Deutsch" id="personalizeLangDe">
+              Deutsch
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
+      </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="modal">
+      <div class="modal-content tutorial-modal">
+        <div class="tutorial-header">
+          <h3 id="tutorialTitle">Welcome!</h3>
+          <button id="tutorialSkipBtn" class="tutorial-skip-btn" aria-label="Skip tutorial">
+            Skip
+          </button>
+        </div>
+
+        <div class="tutorial-slides">
+          <!-- Slide 1: Drag & Drop -->
+          <div class="tutorial-slide active" data-slide="1">
+            <div class="tutorial-icon">🖱️</div>
+            <h4 id="tutorialSlide1Title">Drag & Drop</h4>
+            <p id="tutorialSlide1Text">
+              Drag tasks between segments to organize them according to the Eisenhower Matrix.
+            </p>
+            <div class="tutorial-animation">
+              <div class="tutorial-demo-task">Sample Task</div>
+              <div class="tutorial-demo-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Swipe Actions -->
+          <div class="tutorial-slide" data-slide="2">
+            <div class="tutorial-icon">👆</div>
+            <h4 id="tutorialSlide2Title">Swipe to Delete</h4>
+            <p id="tutorialSlide2Text">
+              Swipe left on any task to quickly delete it. Perfect for mobile!
+            </p>
+            <div class="tutorial-animation">
+              <div class="tutorial-demo-task">Sample Task</div>
+              <div class="tutorial-demo-swipe">←</div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Quick Actions -->
+          <div class="tutorial-slide" data-slide="3">
+            <div class="tutorial-icon">⚡</div>
+            <h4 id="tutorialSlide3Title">Quick Actions</h4>
+            <p id="tutorialSlide3Text">
+              Tap the + button next to each segment to quickly add tasks. Check tasks to mark them
+              as done!
+            </p>
+          </div>
+        </div>
+
+        <div class="tutorial-progress">
+          <div class="tutorial-dot active" data-slide="1"></div>
+          <div class="tutorial-dot" data-slide="2"></div>
+          <div class="tutorial-dot" data-slide="3"></div>
+        </div>
+
+        <div class="tutorial-buttons">
+          <button id="tutorialBackBtn" class="tutorial-btn tutorial-btn-secondary" disabled>
+            Back
+          </button>
+          <button id="tutorialNextBtn" class="tutorial-btn tutorial-btn-primary">Next</button>
+        </div>
+
+        <div class="tutorial-footer">
+          <label class="tutorial-checkbox">
+            <input type="checkbox" id="tutorialDontShowAgain" />
+            <span id="tutorialDontShowText">Don't show this again</span>
+          </label>
         </div>
       </div>
     </div>
