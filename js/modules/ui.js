@@ -168,7 +168,14 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
         }
       },
 
+      onSwipeComplete: (data) => {
+        if (callbacks.onToggle) {
+          callbacks.onToggle(data.id, data.segment);
+        }
+      },
+
       enableSwipeDelete: true,
+      enableSwipeComplete: task.segment !== SEGMENTS.DONE, // Don't enable for Done tasks
       longPressDelay: 300,
       swipeThreshold: 100,
     });
