@@ -18,7 +18,7 @@ window.localforage = localforage;
 window.Chart = Chart;
 
 // Import Firebase services (Modular SDK V2)
-import { auth, db } from './js/modules/firebase-init.js';
+import { auth, db, storage } from './js/modules/firebase-init.js';
 import {
   initAuth,
   signInWithGoogle,
@@ -47,6 +47,7 @@ import {
   toggleTask,
   getTasks,
   setAllTasks,
+  reorderTask,
 } from './js/modules/tasks.js';
 import {
   initStorage,
@@ -81,6 +82,12 @@ import {
   announceDragStart,
   announceDragEnd,
 } from './js/modules/accessibility.js';
+import {
+  uploadBackup,
+  listBackups,
+  shouldAutoBackup,
+  markAutoBackupCompleted,
+} from './js/modules/backup.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
 // import {
 // setupDragAndDrop,
@@ -261,6 +268,46 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
 }
 
 /**
+ * Reorder task handler (move up/down within segment)
+ */
+function handleReorderTask(taskId, segment, direction) {
+  // Find current index
+  const currentIndex = tasks[segment].findIndex((t) => t.id === taskId);
+  if (currentIndex === -1) return;
+
+  // Calculate new index based on direction
+  let newIndex;
+  if (direction === 'up') {
+    newIndex = Math.max(0, currentIndex - 1);
+  } else if (direction === 'down') {
+    newIndex = Math.min(tasks[segment].length - 1, currentIndex + 1);
+  } else {
+    return;
+  }
+
+  // Don't do anything if index didn't change
+  if (newIndex === currentIndex) return;
+
+  // Reorder using existing reorderTask function
+  const reorderedTask = reorderTask(taskId, segment, newIndex);
+
+  if (reorderedTask) {
+    // Re-render
+    renderTasksWithCallbacks();
+
+    // Save to storage based on mode
+    if (currentUser && db && !isGuestMode) {
+      // In authenticated mode, save all tasks in the segment
+      // (Firestore doesn't have ordering, so we save the entire array)
+      saveAllTasks();
+    } else {
+      // Save to LocalForage (guest mode)
+      saveGuestTasks(tasks);
+    }
+  }
+}
+
+/**
  * Toggle task handler
  */
 function handleToggleTask(taskId, segment) {
@@ -351,6 +398,7 @@ function renderTasksWithCallbacks() {
     onDragEnd: handleMoveTask,
     onSwipeDelete: handleDeleteTask,
     onEditRecurring: handleEditRecurring,
+    onReorder: handleReorderTask,
   };
 
   renderAllTasks(tasks, translations, getCurrentLanguage(), callbacks);
@@ -556,6 +604,40 @@ function setupEventListeners() {
     });
   }
 
+  // Cloud Backup button
+  const createBackupBtn = document.getElementById('createBackupBtn');
+  if (createBackupBtn) {
+    createBackupBtn.addEventListener('click', async () => {
+      // Check if user is logged in
+      if (!currentUser) {
+        const message =
+          getCurrentLanguage() === 'de'
+            ? 'Du musst angemeldet sein, um ein Backup zu erstellen'
+            : 'You must be logged in to create a backup';
+        showWarning(message);
+        return;
+      }
+
+      try {
+        // Create backup
+        await uploadBackup(storage, currentUser.uid, tasks, getCurrentLanguage());
+
+        // Update last backup info in UI
+        const lastBackupInfo = document.getElementById('lastBackupInfo');
+        if (lastBackupInfo) {
+          const lang = getCurrentLanguage();
+          const date = new Date();
+          const formattedDate = date.toLocaleString(lang === 'de' ? 'de-DE' : 'en-US');
+          const lastBackupLabel = lang === 'de' ? 'Letztes Backup' : 'Last backup';
+          lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
+        }
+      } catch (error) {
+        console.error('Backup creation failed:', error);
+        // Error notification is shown by uploadBackup function
+      }
+    });
+  }
+
   // Metrics button
   const metricsBtn = document.getElementById('metricsBtn');
   if (metricsBtn) {
@@ -709,6 +791,17 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     const hintSeen = localStorage.getItem(STORAGE_KEYS.DRAG_HINT_SEEN);
     if (!hintSeen) {
       showDragHint();
+    }
+
+    // Auto-backup (only for authenticated users, not guest mode)
+    if (user && !guestMode && shouldAutoBackup()) {
+      try {
+        await uploadBackup(storage, user.uid, tasks, getCurrentLanguage());
+        markAutoBackupCompleted();
+      } catch (error) {
+        console.error('Auto-backup failed:', error);
+        // Fail silently - don't interrupt user experience
+      }
     }
   } else {
     // Tasks already loaded: just re-sync with Firebase in background

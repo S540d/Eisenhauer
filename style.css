@@ -581,6 +581,53 @@ header h1,
   transform: scale(1.2);
 }
 
+/* Reorder Buttons (Up/Down) */
+.task-reorder-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.task-item:hover .task-reorder-buttons {
+  opacity: 1;
+}
+
+.reorder-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  line-height: 1;
+  border-radius: 3px;
+  transition:
+    background 0.2s,
+    transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 20px;
+}
+
+.reorder-btn:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.reorder-btn:active {
+  transform: scale(0.95);
+}
+
+.reorder-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 /* Hide add button for Done segment */
 .q5 .segment-add-btn {
   display: none;

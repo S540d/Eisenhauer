@@ -14,6 +14,10 @@ export const translations = {
       dataManagement: 'DATEN',
       exportBtn: 'Export',
       importGuestBtn: 'Import Gast-Daten',
+      backupTitle: 'CLOUD BACKUP',
+      createBackupBtn: 'Backup erstellen',
+      lastBackup: 'Letztes Backup',
+      never: 'Nie',
     },
     quickAddModal: {
       title: 'Neue Aufgabe',
@@ -59,6 +63,10 @@ export const translations = {
       dataManagement: 'DATA MANAGEMENT',
       exportBtn: 'Export',
       importGuestBtn: 'Import Guest Data',
+      backupTitle: 'CLOUD BACKUP',
+      createBackupBtn: 'Create Backup',
+      lastBackup: 'Last backup',
+      never: 'Never',
     },
     quickAddModal: {
       title: 'New Task',
@@ -329,6 +337,17 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
   if (importGuestTasksBtn) {
     importGuestTasksBtn.textContent = lang.settings.importGuestBtn;
+  }
+
+  // Update Cloud Backup section texts
+  const backupTitle = document.getElementById('backupTitle');
+  if (backupTitle) {
+    backupTitle.textContent = lang.settings.backupTitle;
+  }
+
+  const createBackupBtn = document.getElementById('createBackupBtn');
+  if (createBackupBtn) {
+    createBackupBtn.textContent = lang.settings.createBackupBtn;
   }
 
   // Re-render all tasks to update recurring indicators
