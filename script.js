@@ -70,12 +70,15 @@ import {
   openSettingsModal,
   openMetricsModal,
   openEditRecurringModal,
+  openTutorialModal,
+  shouldShowTutorial,
   showDragHint,
   updateOnlineStatus,
   updateSyncStatus,
   setupDropZones,
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
+import { showUndoDelete, showUndoMove, showUndoToggle } from './js/modules/undo.js';
 import {
   KeyboardDragManager,
   announceDragStart,
@@ -205,9 +208,18 @@ function handleDeleteTask(taskId, segment) {
     });
   } else {
     // Non-recurring task - delete immediately
+    const deletedTask = tasks[segment].find((t) => t.id === taskId);
     deleteTask(taskId, segment);
     syncDelete(taskId, segment);
     renderTasksWithCallbacks();
+
+    // Show undo notification
+    if (deletedTask) {
+      showUndoDelete(deletedTask, getCurrentLanguage(), () => {
+        syncDelete(deletedTask.id, deletedTask.segment);
+        renderTasksWithCallbacks();
+      });
+    }
   }
 }
 
@@ -258,12 +270,28 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
   }
+
+  // Show undo notification
+  if (movedTask) {
+    showUndoMove(taskId, fromSegment, toSegment, getCurrentLanguage(), () => {
+      if (currentUser && db && !isGuestMode) {
+        updateTaskInFirestore(movedTask, currentUser.uid, db, window.firebase);
+      } else {
+        saveGuestTasks(tasks);
+      }
+      renderTasksWithCallbacks();
+    });
+  }
 }
 
 /**
  * Toggle task handler
  */
 function handleToggleTask(taskId, segment) {
+  // Store previous state for undo
+  const task = tasks[segment]?.find((t) => t.id === taskId);
+  const wasChecked = task ? task.checked : false;
+
   const result = toggleTask(taskId, segment);
 
   // Save to storage based on mode
@@ -278,6 +306,18 @@ function handleToggleTask(taskId, segment) {
   } else {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
+  }
+
+  // Show undo notification
+  if (result && result.task) {
+    showUndoToggle(taskId, segment, wasChecked, getCurrentLanguage(), () => {
+      if (currentUser && db && !isGuestMode) {
+        updateTaskInFirestore(result.task, currentUser.uid, db, window.firebase);
+      } else {
+        saveGuestTasks(tasks);
+      }
+      renderTasksWithCallbacks();
+    });
   }
 
   renderTasksWithCallbacks();
@@ -718,6 +758,13 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     const hintSeen = localStorage.getItem(STORAGE_KEYS.DRAG_HINT_SEEN);
     if (!hintSeen) {
       showDragHint();
+    }
+
+    // Show tutorial on first use
+    if (shouldShowTutorial()) {
+      setTimeout(() => {
+        openTutorialModal(getCurrentLanguage());
+      }, 500); // Small delay to let the app settle
     }
   } else {
     // Tasks already loaded: just re-sync with Firebase in background

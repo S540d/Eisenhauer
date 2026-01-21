@@ -1228,3 +1228,156 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
   cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
   newCancelBtn.addEventListener('click', handleCancel);
 }
+
+/**
+ * Open Tutorial modal
+ * @param {string} currentLanguage - Current language
+ */
+export function openTutorialModal(currentLanguage = 'en') {
+  const tutorialModal = document.getElementById('tutorialModal');
+  if (!tutorialModal) return;
+
+  // Update translations
+  const lang = translations[currentLanguage].tutorial;
+  const tutorialTitle = document.getElementById('tutorialTitle');
+  const tutorialSkipBtn = document.getElementById('tutorialSkipBtn');
+  const tutorialBackBtn = document.getElementById('tutorialBackBtn');
+  const tutorialNextBtn = document.getElementById('tutorialNextBtn');
+  const tutorialDontShowText = document.getElementById('tutorialDontShowText');
+
+  if (tutorialTitle) tutorialTitle.textContent = lang.title;
+  if (tutorialSkipBtn) tutorialSkipBtn.textContent = lang.skip;
+  if (tutorialBackBtn) tutorialBackBtn.textContent = lang.back;
+  if (tutorialNextBtn) tutorialNextBtn.textContent = lang.next;
+  if (tutorialDontShowText) tutorialDontShowText.textContent = lang.dontShow;
+
+  // Update slide texts
+  const slide1Title = document.getElementById('tutorialSlide1Title');
+  const slide1Text = document.getElementById('tutorialSlide1Text');
+  const slide2Title = document.getElementById('tutorialSlide2Title');
+  const slide2Text = document.getElementById('tutorialSlide2Text');
+  const slide3Title = document.getElementById('tutorialSlide3Title');
+  const slide3Text = document.getElementById('tutorialSlide3Text');
+
+  if (slide1Title) slide1Title.textContent = lang.slide1.title;
+  if (slide1Text) slide1Text.textContent = lang.slide1.text;
+  if (slide2Title) slide2Title.textContent = lang.slide2.title;
+  if (slide2Text) slide2Text.textContent = lang.slide2.text;
+  if (slide3Title) slide3Title.textContent = lang.slide3.title;
+  if (slide3Text) slide3Text.textContent = lang.slide3.text;
+
+  // Initialize tutorial state
+  let currentSlide = 1;
+  const totalSlides = 3;
+
+  const updateSlide = (slideNum) => {
+    currentSlide = slideNum;
+
+    // Update slides
+    tutorialModal.querySelectorAll('.tutorial-slide').forEach((slide) => {
+      slide.classList.remove('active');
+      if (parseInt(slide.dataset.slide) === slideNum) {
+        slide.classList.add('active');
+      }
+    });
+
+    // Update dots
+    tutorialModal.querySelectorAll('.tutorial-dot').forEach((dot) => {
+      dot.classList.remove('active');
+      if (parseInt(dot.dataset.slide) === slideNum) {
+        dot.classList.add('active');
+      }
+    });
+
+    // Update buttons
+    if (tutorialBackBtn) {
+      tutorialBackBtn.disabled = slideNum === 1;
+    }
+
+    if (tutorialNextBtn) {
+      if (slideNum === totalSlides) {
+        tutorialNextBtn.textContent = lang.done;
+      } else {
+        tutorialNextBtn.textContent = lang.next;
+      }
+    }
+  };
+
+  // Setup event handlers
+  const existingHandler = tutorialModal._clickHandler;
+  if (existingHandler) {
+    tutorialModal.removeEventListener('click', existingHandler);
+  }
+
+  const clickHandler = (e) => {
+    const target = e.target;
+
+    // Skip button
+    if (target.closest('#tutorialSkipBtn')) {
+      closeTutorialModal();
+      return;
+    }
+
+    // Back button
+    if (target.closest('#tutorialBackBtn')) {
+      if (currentSlide > 1) {
+        updateSlide(currentSlide - 1);
+      }
+      return;
+    }
+
+    // Next/Done button
+    if (target.closest('#tutorialNextBtn')) {
+      if (currentSlide < totalSlides) {
+        updateSlide(currentSlide + 1);
+      } else {
+        // Save "don't show again" preference
+        const dontShowAgain = document.getElementById('tutorialDontShowAgain');
+        if (dontShowAgain && dontShowAgain.checked) {
+          localStorage.setItem('tutorialSeen', 'true');
+        }
+        closeTutorialModal();
+      }
+      return;
+    }
+
+    // Dot navigation
+    const dot = target.closest('.tutorial-dot');
+    if (dot) {
+      const slideNum = parseInt(dot.dataset.slide);
+      updateSlide(slideNum);
+      return;
+    }
+  };
+
+  tutorialModal._clickHandler = clickHandler;
+  tutorialModal.addEventListener('click', clickHandler);
+
+  // Initialize first slide
+  updateSlide(1);
+
+  // Show modal
+  tutorialModal.classList.remove('hidden');
+  tutorialModal.classList.add('active');
+  tutorialModal.style.display = 'flex';
+}
+
+/**
+ * Close Tutorial modal
+ */
+export function closeTutorialModal() {
+  const tutorialModal = document.getElementById('tutorialModal');
+  if (tutorialModal) {
+    tutorialModal.classList.remove('active');
+    tutorialModal.classList.add('hidden');
+    tutorialModal.style.display = 'none';
+  }
+}
+
+/**
+ * Check if tutorial should be shown (first time user)
+ * @returns {boolean} True if tutorial should be shown
+ */
+export function shouldShowTutorial() {
+  return !localStorage.getItem('tutorialSeen');
+}

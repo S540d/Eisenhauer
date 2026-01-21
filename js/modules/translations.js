@@ -25,6 +25,33 @@ export const translations = {
       langEn: 'English',
       langDe: 'Deutsch',
     },
+    undo: {
+      button: 'Rückgängig',
+      taskDeleted: 'Aufgabe gelöscht',
+      taskMoved: 'Aufgabe verschoben',
+      taskCompleted: 'Als erledigt markiert',
+      taskUncompleted: 'Als unerledigt markiert',
+    },
+    tutorial: {
+      title: 'Willkommen!',
+      skip: 'Überspringen',
+      back: 'Zurück',
+      next: 'Weiter',
+      done: 'Fertig',
+      dontShow: 'Nicht mehr anzeigen',
+      slide1: {
+        title: 'Drag & Drop',
+        text: 'Ziehe Aufgaben zwischen Segmenten, um sie nach der Eisenhower-Matrix zu organisieren.',
+      },
+      slide2: {
+        title: 'Wischen zum Löschen',
+        text: 'Wische nach links über eine Aufgabe, um sie schnell zu löschen. Perfekt für Mobilgeräte!',
+      },
+      slide3: {
+        title: 'Schnellaktionen',
+        text: 'Tippe auf den + Button neben jedem Segment, um schnell Aufgaben hinzuzufügen. Markiere Aufgaben als erledigt!',
+      },
+    },
     quickAddModal: {
       title: 'Neue Aufgabe',
       inputPlaceholder: 'Was möchtest du tun?',
@@ -79,6 +106,33 @@ export const translations = {
       themeSystem: 'System',
       langEn: 'English',
       langDe: 'Deutsch',
+    },
+    undo: {
+      button: 'Undo',
+      taskDeleted: 'Task deleted',
+      taskMoved: 'Task moved',
+      taskCompleted: 'Marked as complete',
+      taskUncompleted: 'Marked as incomplete',
+    },
+    tutorial: {
+      title: 'Welcome!',
+      skip: 'Skip',
+      back: 'Back',
+      next: 'Next',
+      done: 'Done',
+      dontShow: "Don't show this again",
+      slide1: {
+        title: 'Drag & Drop',
+        text: 'Drag tasks between segments to organize them according to the Eisenhower Matrix.',
+      },
+      slide2: {
+        title: 'Swipe to Delete',
+        text: 'Swipe left on any task to quickly delete it. Perfect for mobile!',
+      },
+      slide3: {
+        title: 'Quick Actions',
+        text: 'Tap the + button next to each segment to quickly add tasks. Check tasks to mark them as done!',
+      },
     },
     quickAddModal: {
       title: 'New Task',

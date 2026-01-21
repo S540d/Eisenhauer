@@ -471,6 +471,76 @@
       </div>
     </div>
 
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="modal">
+      <div class="modal-content tutorial-modal">
+        <div class="tutorial-header">
+          <h3 id="tutorialTitle">Welcome!</h3>
+          <button id="tutorialSkipBtn" class="tutorial-skip-btn" aria-label="Skip tutorial">
+            Skip
+          </button>
+        </div>
+
+        <div class="tutorial-slides">
+          <!-- Slide 1: Drag & Drop -->
+          <div class="tutorial-slide active" data-slide="1">
+            <div class="tutorial-icon">🖱️</div>
+            <h4 id="tutorialSlide1Title">Drag & Drop</h4>
+            <p id="tutorialSlide1Text">
+              Drag tasks between segments to organize them according to the Eisenhower Matrix.
+            </p>
+            <div class="tutorial-animation">
+              <div class="tutorial-demo-task">Sample Task</div>
+              <div class="tutorial-demo-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Swipe Actions -->
+          <div class="tutorial-slide" data-slide="2">
+            <div class="tutorial-icon">👆</div>
+            <h4 id="tutorialSlide2Title">Swipe to Delete</h4>
+            <p id="tutorialSlide2Text">
+              Swipe left on any task to quickly delete it. Perfect for mobile!
+            </p>
+            <div class="tutorial-animation">
+              <div class="tutorial-demo-task">Sample Task</div>
+              <div class="tutorial-demo-swipe">←</div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Quick Actions -->
+          <div class="tutorial-slide" data-slide="3">
+            <div class="tutorial-icon">⚡</div>
+            <h4 id="tutorialSlide3Title">Quick Actions</h4>
+            <p id="tutorialSlide3Text">
+              Tap the + button next to each segment to quickly add tasks. Check tasks to mark them
+              as done!
+            </p>
+          </div>
+        </div>
+
+        <div class="tutorial-progress">
+          <div class="tutorial-dot active" data-slide="1"></div>
+          <div class="tutorial-dot" data-slide="2"></div>
+          <div class="tutorial-dot" data-slide="3"></div>
+        </div>
+
+        <div class="tutorial-buttons">
+          <button id="tutorialBackBtn" class="tutorial-btn tutorial-btn-secondary" disabled>
+            Back
+          </button>
+          <button id="tutorialNextBtn" class="tutorial-btn tutorial-btn-primary">Next</button>
+        </div>
+
+        <div class="tutorial-footer">
+          <label class="tutorial-checkbox">
+            <input type="checkbox" id="tutorialDontShowAgain" />
+            <span id="tutorialDontShowText">Don't show this again</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal für Metriken -->
     <div id="metricsModal" class="modal">
       <div class="modal-content metrics-modal">
