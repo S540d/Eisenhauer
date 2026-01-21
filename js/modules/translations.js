@@ -14,6 +14,16 @@ export const translations = {
       dataManagement: 'DATEN',
       exportBtn: 'Export',
       importGuestBtn: 'Import Gast-Daten',
+      personalizeBtn: 'Personalisieren',
+    },
+    personalize: {
+      title: 'Personalisieren',
+      appearance: 'ERSCHEINUNGSBILD',
+      language: 'SPRACHE',
+      themeDark: 'Dunkel',
+      themeSystem: 'System',
+      langEn: 'English',
+      langDe: 'Deutsch',
     },
     quickAddModal: {
       title: 'Neue Aufgabe',
@@ -59,6 +69,16 @@ export const translations = {
       dataManagement: 'DATA MANAGEMENT',
       exportBtn: 'Export',
       importGuestBtn: 'Import Guest Data',
+      personalizeBtn: 'Personalize',
+    },
+    personalize: {
+      title: 'Personalize',
+      appearance: 'APPEARANCE',
+      language: 'LANGUAGE',
+      themeDark: 'Dark',
+      themeSystem: 'System',
+      langEn: 'English',
+      langDe: 'Deutsch',
     },
     quickAddModal: {
       title: 'New Task',

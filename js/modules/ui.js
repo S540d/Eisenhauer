@@ -411,6 +411,13 @@ export function openSettingsModal(
       return;
     }
 
+    // Handle Personalisieren button click
+    if (target.closest('#personalizeBtn')) {
+      e.preventDefault();
+      openPersonalizeModal(currentLanguage);
+      return;
+    }
+
     // Handle About button click
     if (target.closest('#aboutBtn')) {
       e.preventDefault();
@@ -544,6 +551,123 @@ export function closeAboutModal() {
     aboutModal.classList.remove('active');
     aboutModal.classList.add('hidden');
     aboutModal.style.display = 'none';
+  }
+}
+
+/**
+ * Open Personalize modal
+ * @param {string} currentLanguage - Current language
+ */
+export function openPersonalizeModal(currentLanguage = 'en') {
+  const personalizeModal = document.getElementById('personalizeModal');
+
+  if (!personalizeModal) {
+    return;
+  }
+
+  // Update theme toggle button active state based on current theme
+  const themeButtons = personalizeModal.querySelectorAll('.theme-btn');
+  const savedTheme = localStorage.getItem('darkMode');
+  let activeTheme = 'system'; // Default to system
+
+  if (savedTheme === 'true') {
+    activeTheme = 'dark';
+  } else if (savedTheme === null) {
+    activeTheme = 'system';
+  }
+
+  themeButtons.forEach((btn) => {
+    btn.classList.remove('active');
+    if (btn.dataset.theme === activeTheme) {
+      btn.classList.add('active');
+    }
+  });
+
+  // Update language toggle button active state
+  const langButtons = personalizeModal.querySelectorAll('.lang-btn');
+  langButtons.forEach((btn) => {
+    btn.classList.remove('active');
+    if (btn.dataset.lang === currentLanguage) {
+      btn.classList.add('active');
+    }
+  });
+
+  // Use event delegation for all personalize modal buttons
+  const existingHandler = personalizeModal._clickHandler;
+  if (existingHandler) {
+    personalizeModal.removeEventListener('click', existingHandler);
+  }
+
+  // Create new delegated click handler
+  const clickHandler = (e) => {
+    const target = e.target;
+
+    // Handle theme button clicks
+    const themeBtn = target.closest('.theme-btn');
+    if (themeBtn) {
+      const theme = themeBtn.dataset.theme;
+
+      // Update active state
+      personalizeModal.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
+      themeBtn.classList.add('active');
+
+      // Update theme
+      if (theme === 'dark') {
+        localStorage.setItem('darkMode', 'true');
+        document.body.classList.add('dark-mode');
+      } else if (theme === 'system') {
+        localStorage.removeItem('darkMode');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (prefersDark) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+      }
+      return;
+    }
+
+    // Handle language button clicks
+    const langBtn = target.closest('.lang-btn');
+    if (langBtn) {
+      const lang = langBtn.dataset.lang;
+
+      // Update active state
+      personalizeModal.querySelectorAll('.lang-btn').forEach((b) => b.classList.remove('active'));
+      langBtn.classList.add('active');
+
+      // Trigger language change (will be handled by script.js)
+      if (window.changeLanguage) {
+        window.changeLanguage(lang);
+      }
+      return;
+    }
+
+    // Handle close button click
+    if (target.closest('#personalizeCancelBtn')) {
+      closePersonalizeModal();
+      return;
+    }
+  };
+
+  // Store handler reference and add listener
+  personalizeModal._clickHandler = clickHandler;
+  personalizeModal.addEventListener('click', clickHandler);
+
+  personalizeModal.classList.remove('hidden');
+  personalizeModal.classList.add('active');
+  personalizeModal.style.display = 'flex';
+}
+
+/**
+ * Close Personalize modal
+ */
+export function closePersonalizeModal() {
+  const personalizeModal = document.getElementById('personalizeModal');
+  if (personalizeModal) {
+    personalizeModal.classList.remove('active');
+    personalizeModal.classList.add('hidden');
+    personalizeModal.style.display = 'none';
   }
 }
 

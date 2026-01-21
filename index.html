@@ -367,24 +367,11 @@
 
         <div id="accountSeparator" class="settings-separator" style="display: none"></div>
 
-        <!-- Appearance Settings - Dark/System Only -->
+        <!-- Personalisieren Button -->
         <div class="settings-section">
-          <h4 class="settings-section-title">APPEARANCE</h4>
-          <div id="themeToggleContainer" class="theme-toggle-container">
-            <button class="theme-btn" data-theme="dark" title="Dark Mode">Dark</button>
-            <button class="theme-btn" data-theme="system" title="System Mode">System</button>
-          </div>
-        </div>
-
-        <div class="settings-separator"></div>
-
-        <!-- Language Settings -->
-        <div class="settings-section">
-          <h4 class="settings-section-title">LANGUAGE</h4>
-          <div id="languageToggleContainer" class="theme-toggle-container">
-            <button class="lang-btn" data-lang="en" title="English">English</button>
-            <button class="lang-btn" data-lang="de" title="Deutsch">Deutsch</button>
-          </div>
+          <button id="personalizeBtn" class="settings-export-btn" style="width: 100%">
+            Personalisieren
+          </button>
         </div>
 
         <div class="settings-separator"></div>
@@ -436,6 +423,51 @@
           <p id="aboutVersion" class="about-item"></p>
           <p id="aboutLicense" class="about-item" style="margin-top: 12px"></p>
         </div>
+      </div>
+    </div>
+
+    <!-- Personalisieren Modal -->
+    <div id="personalizeModal" class="modal">
+      <div class="modal-content">
+        <div class="settings-header">
+          <h3 id="personalizeTitle">Personalisieren</h3>
+          <button id="personalizeCancelBtn" class="close-btn" aria-label="Close">×</button>
+        </div>
+
+        <!-- Appearance Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeAppearanceTitle">ERSCHEINUNGSBILD</h4>
+          <div id="personalizeThemeToggleContainer" class="theme-toggle-container">
+            <button class="theme-btn" data-theme="dark" title="Dark Mode" id="personalizeThemeDark">
+              Dark
+            </button>
+            <button
+              class="theme-btn"
+              data-theme="system"
+              title="System Mode"
+              id="personalizeThemeSystem"
+            >
+              System
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Language Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeLanguageTitle">SPRACHE</h4>
+          <div id="personalizeLanguageToggleContainer" class="theme-toggle-container">
+            <button class="lang-btn" data-lang="en" title="English" id="personalizeLangEn">
+              English
+            </button>
+            <button class="lang-btn" data-lang="de" title="Deutsch" id="personalizeLangDe">
+              Deutsch
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
       </div>
     </div>
 

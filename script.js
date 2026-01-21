@@ -432,20 +432,29 @@ function setupEventListeners() {
   // NOTE: Settings modal close and theme toggle buttons are now handled in ui.js openSettingsModal()
   // to ensure event listeners are properly registered on each modal open
 
-  // Language toggle buttons in settings modal
+  // Create a global changeLanguage function for use by all modals
+  window.changeLanguage = (lang) => {
+    // Update language
+    setLanguage(lang);
+    updateLanguageUI(() => renderTasksWithCallbacks());
+
+    // Update active state for all language buttons
+    const allLangButtons = document.querySelectorAll('.lang-btn');
+    allLangButtons.forEach((b) => {
+      b.classList.remove('active');
+      if (b.dataset.lang === lang) {
+        b.classList.add('active');
+      }
+    });
+  };
+
+  // Language toggle buttons in settings modal (legacy support)
   const langButtons = document.querySelectorAll('.lang-btn');
 
   langButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const lang = btn.dataset.lang;
-
-      // Update active state
-      langButtons.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Update language
-      setLanguage(lang);
-      updateLanguageUI(() => renderTasksWithCallbacks());
+      window.changeLanguage(lang);
     });
   });
 
