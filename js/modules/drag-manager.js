@@ -29,7 +29,9 @@ import { showSuccess, showError } from './notifications.js';
  * @property {Function} onDragMove - Callback during drag
  * @property {Function} onDragEnd - Callback when drag ends
  * @property {Function} onSwipeDelete - Callback for swipe-to-delete
+ * @property {Function} onSwipeComplete - Callback for swipe-to-complete (swipe right)
  * @property {boolean} [enableSwipeDelete=true] - Enable horizontal swipe to delete
+ * @property {boolean} [enableSwipeComplete=true] - Enable horizontal swipe to complete
  * @property {number} [longPressDelay=300] - Long press delay in ms
  * @property {number} [swipeThreshold=100] - Swipe distance threshold
  */
@@ -75,6 +77,7 @@ export class DragManager {
   state = {
     isDragging: false,
     isSwipeDelete: false,
+    isSwipeComplete: false,
     startX: 0,
     startY: 0,
     currentX: 0,
@@ -99,7 +102,9 @@ export class DragManager {
       onDragMove: config.onDragMove || (() => {}),
       onDragEnd: config.onDragEnd || (() => {}),
       onSwipeDelete: config.onSwipeDelete || null,
+      onSwipeComplete: config.onSwipeComplete || null,
       enableSwipeDelete: config.enableSwipeDelete !== false,
+      enableSwipeComplete: config.enableSwipeComplete !== false,
       longPressDelay: config.longPressDelay || 300,
       swipeThreshold: config.swipeThreshold || 100,
     };
@@ -198,7 +203,12 @@ export class DragManager {
     this.state.deltaY = this.state.currentY - this.state.startY;
 
     // Check if movement cancels long press
-    if (!this.state.isDragging && !this.state.isSwipeDelete && this.state.longPressTimer) {
+    if (
+      !this.state.isDragging &&
+      !this.state.isSwipeDelete &&
+      !this.state.isSwipeComplete &&
+      this.state.longPressTimer
+    ) {
       const distance = Math.sqrt(
         this.state.deltaX * this.state.deltaX + this.state.deltaY * this.state.deltaY
       );
@@ -210,7 +220,7 @@ export class DragManager {
     }
 
     // Determine gesture type
-    if (!this.state.isDragging && !this.state.isSwipeDelete) {
+    if (!this.state.isDragging && !this.state.isSwipeDelete && !this.state.isSwipeComplete) {
       const absDeltaX = Math.abs(this.state.deltaX);
       const absDeltaY = Math.abs(this.state.deltaY);
 
@@ -223,6 +233,11 @@ export class DragManager {
       else if (this.config.enableSwipeDelete && this.state.deltaX < -50 && absDeltaX > absDeltaY) {
         this.#cancelLongPress();
         this.#activateSwipeDelete();
+      }
+      // Horizontal right swipe → Complete (if enabled)
+      else if (this.config.enableSwipeComplete && this.state.deltaX > 50 && absDeltaX > absDeltaY) {
+        this.#cancelLongPress();
+        this.#activateSwipeComplete();
       }
     }
 
@@ -249,6 +264,16 @@ export class DragManager {
       this.element.style.transform = `translateX(${translateX}px)`;
       this.element.style.opacity = 1 + translateX / 300; // Fade out
     }
+
+    // Handle swipe complete
+    if (this.state.isSwipeComplete) {
+      e.preventDefault();
+
+      // Apply translation
+      const translateX = Math.max(0, this.state.deltaX);
+      this.element.style.transform = `translateX(${translateX}px)`;
+      this.element.style.opacity = 1 - translateX / 300; // Fade out
+    }
   }
 
   /**
@@ -268,6 +293,11 @@ export class DragManager {
     // Handle swipe delete
     if (this.state.isSwipeDelete) {
       this.#finalizeSwipe();
+    }
+
+    // Handle swipe complete
+    if (this.state.isSwipeComplete) {
+      this.#finalizeSwipeComplete();
     }
 
     // Reset state
@@ -389,6 +419,17 @@ export class DragManager {
    */
   #activateSwipeDelete() {
     this.state.isSwipeDelete = true;
+
+    // Haptic feedback (lighter)
+    this.#triggerHaptic(30);
+  }
+
+  /**
+   * Activate swipe complete mode
+   * @private
+   */
+  #activateSwipeComplete() {
+    this.state.isSwipeComplete = true;
 
     // Haptic feedback (lighter)
     this.#triggerHaptic(30);
@@ -552,6 +593,40 @@ export class DragManager {
   }
 
   /**
+   * Finalize swipe complete
+   * @private
+   */
+  #finalizeSwipeComplete() {
+    const threshold = this.config.swipeThreshold;
+
+    if (this.state.deltaX > threshold) {
+      // Swipe exceeded threshold → Complete
+      this.element.style.transition = 'all 0.3s ease';
+      this.element.style.transform = 'translateX(300px)';
+      this.element.style.opacity = '0';
+
+      setTimeout(() => {
+        if (this.config.onSwipeComplete) {
+          this.config.onSwipeComplete(this.data);
+        }
+        // Reset element style
+        this.element.style.transition = '';
+        this.element.style.transform = '';
+        this.element.style.opacity = this.state.originalOpacity;
+      }, 300);
+    } else {
+      // Swipe too short → Reset
+      this.element.style.transition = 'all 0.3s ease';
+      this.element.style.transform = 'translateX(0)';
+      this.element.style.opacity = this.state.originalOpacity;
+
+      setTimeout(() => {
+        this.element.style.transition = '';
+      }, 300);
+    }
+  }
+
+  /**
    * Cancel drag
    * @private
    */
@@ -597,6 +672,7 @@ export class DragManager {
   #resetState() {
     this.state.isDragging = false;
     this.state.isSwipeDelete = false;
+    this.state.isSwipeComplete = false;
     this.state.startX = 0;
     this.state.startY = 0;
     this.state.currentX = 0;
