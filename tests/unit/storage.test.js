@@ -8,7 +8,11 @@ import {
   exportData,
   requestPersistentStorage,
   checkPersistentStorage,
+  saveGuestTasks,
+  loadGuestTasks,
+  importData,
 } from '../../js/modules/storage.js';
+import localforage from 'localforage';
 
 describe('Storage Module', () => {
   beforeEach(() => {
@@ -282,6 +286,263 @@ describe('Storage Module', () => {
       expect(parsed.tasks).toEqual(tasks);
       expect(parsed.version).toBe('1.8.2');
       expect(parsed.exportDate).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    });
+  });
+
+  describe('saveGuestTasks', () => {
+    it('should save tasks to localforage', async () => {
+      const tasks = {
+        1: [{ id: 1, text: 'Task 1', segment: 1 }],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+      };
+
+      const setItemSpy = vi.spyOn(localforage, 'setItem').mockResolvedValue(undefined);
+
+      await saveGuestTasks(tasks);
+
+      expect(setItemSpy).toHaveBeenCalledWith('eisenhauerTasks', tasks);
+    });
+
+    it('should handle errors gracefully', async () => {
+      const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+
+      vi.spyOn(localforage, 'setItem').mockRejectedValue(new Error('Storage full'));
+
+      await expect(saveGuestTasks(tasks)).resolves.not.toThrow();
+    });
+  });
+
+  describe('loadGuestTasks', () => {
+    beforeEach(() => {
+      localStorage.clear();
+      vi.clearAllMocks();
+    });
+
+    it('should load tasks from localforage', async () => {
+      const tasks = {
+        1: [{ id: 1, text: 'Task 1', segment: 1 }],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+      };
+
+      vi.spyOn(localforage, 'getItem').mockResolvedValue(tasks);
+
+      const result = await loadGuestTasks();
+
+      expect(result).toEqual(tasks);
+    });
+
+    it('should migrate from localStorage to localforage', async () => {
+      const tasks = {
+        1: [{ id: 1, text: 'Old task', segment: 1 }],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+      };
+
+      // Setup: no data in localforage, but data in localStorage
+      vi.spyOn(localforage, 'getItem').mockResolvedValue(null);
+      localStorage.setItem('eisenhauerTasks', JSON.stringify(tasks));
+
+      const setItemSpy = vi.spyOn(localforage, 'setItem').mockResolvedValue(undefined);
+
+      const result = await loadGuestTasks();
+
+      expect(result).toEqual(tasks);
+      expect(setItemSpy).toHaveBeenCalledWith('eisenhauerTasks', tasks);
+      expect(localStorage.getItem('eisenhauerTasks')).toBeNull();
+    });
+
+    it('should return empty structure if no data exists', async () => {
+      vi.spyOn(localforage, 'getItem').mockResolvedValue(null);
+
+      const result = await loadGuestTasks();
+
+      expect(result).toEqual({ 1: [], 2: [], 3: [], 4: [], 5: [] });
+    });
+
+    it('should handle errors and return empty structure', async () => {
+      vi.spyOn(localforage, 'getItem').mockRejectedValue(new Error('DB Error'));
+
+      const result = await loadGuestTasks();
+
+      expect(result).toEqual({ 1: [], 2: [], 3: [], 4: [], 5: [] });
+    });
+
+    it('should handle corrupt localStorage data', async () => {
+      vi.spyOn(localforage, 'getItem').mockResolvedValue(null);
+      localStorage.setItem('eisenhauerTasks', 'invalid json');
+
+      const result = await loadGuestTasks();
+
+      // Should return empty structure on parse error
+      expect(result).toEqual({ 1: [], 2: [], 3: [], 4: [], 5: [] });
+    });
+  });
+
+  describe('importData', () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      global.confirm = vi.fn();
+    });
+
+    it('should import and merge tasks when user confirms', async () => {
+      const currentTasks = {
+        1: [{ id: 1, text: 'Existing task', segment: 1 }],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+      };
+
+      const importedData = {
+        version: '1.8.0',
+        exportDate: '2024-01-01',
+        tasks: {
+          1: [{ id: 2, text: 'Imported task', segment: 1 }],
+          2: [{ id: 3, text: 'Another imported', segment: 2 }],
+          3: [],
+          4: [],
+          5: [],
+        },
+      };
+
+      const fileContent = JSON.stringify(importedData);
+      const file = new File([fileContent], 'backup.json', { type: 'application/json' });
+
+      global.confirm.mockReturnValue(true); // User chooses to merge
+
+      const saveCallback = vi.fn().mockResolvedValue(undefined);
+
+      const result = await importData(file, currentTasks, saveCallback);
+
+      // Should have merged tasks
+      expect(result[1].length).toBe(2); // Existing + imported
+      expect(result[2].length).toBe(1); // Imported task in segment 2
+      expect(saveCallback).toHaveBeenCalled();
+    });
+
+    it('should replace tasks when user cancels merge', async () => {
+      const currentTasks = {
+        1: [{ id: 1, text: 'Existing task', segment: 1 }],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+      };
+
+      const importedData = {
+        version: '1.8.0',
+        tasks: {
+          1: [{ id: 2, text: 'Imported task', segment: 1 }],
+          2: [],
+          3: [],
+          4: [],
+          5: [],
+        },
+      };
+
+      const fileContent = JSON.stringify(importedData);
+      const file = new File([fileContent], 'backup.json', { type: 'application/json' });
+
+      global.confirm.mockReturnValue(false); // User chooses to replace
+
+      const saveCallback = vi.fn().mockResolvedValue(undefined);
+
+      const result = await importData(file, currentTasks, saveCallback);
+
+      // Should have replaced tasks
+      expect(result).toEqual(importedData.tasks);
+      expect(result[1].length).toBe(1);
+      expect(result[1][0].text).toBe('Imported task');
+      expect(saveCallback).toHaveBeenCalledWith(importedData.tasks);
+    });
+
+    it('should reject on invalid data format', async () => {
+      const invalidData = {
+        version: '1.8.0',
+        // Missing 'tasks' field
+      };
+
+      const fileContent = JSON.stringify(invalidData);
+      const file = new File([fileContent], 'invalid.json', { type: 'application/json' });
+
+      await expect(importData(file, {}, null)).rejects.toThrow('Ungültiges Datenformat');
+    });
+
+    it('should reject on invalid JSON', async () => {
+      const file = new File(['invalid json {'], 'invalid.json', { type: 'application/json' });
+
+      await expect(importData(file, {}, null)).rejects.toThrow();
+    });
+
+    it('should generate new IDs for merged tasks to avoid conflicts', async () => {
+      const currentTasks = {
+        1: [{ id: 100, text: 'Existing task', segment: 1 }],
+        2: [],
+        3: [],
+        4: [],
+        5: [],
+      };
+
+      const importedData = {
+        tasks: {
+          1: [{ id: 100, text: 'Imported task with same ID', segment: 1 }],
+          2: [],
+          3: [],
+          4: [],
+          5: [],
+        },
+      };
+
+      const fileContent = JSON.stringify(importedData);
+      const file = new File([fileContent], 'backup.json', { type: 'application/json' });
+
+      global.confirm.mockReturnValue(true); // Merge
+
+      const result = await importData(file, currentTasks, null);
+
+      // Should have 2 tasks
+      expect(result[1].length).toBe(2);
+      // IDs should be different
+      expect(result[1][0].id).not.toBe(result[1][1].id);
+    });
+
+    it('should work without save callback', async () => {
+      const importedData = {
+        tasks: { 1: [], 2: [], 3: [], 4: [], 5: [] },
+      };
+
+      const fileContent = JSON.stringify(importedData);
+      const file = new File([fileContent], 'backup.json', { type: 'application/json' });
+
+      global.confirm.mockReturnValue(false);
+
+      const result = await importData(file, {}, null);
+
+      expect(result).toEqual(importedData.tasks);
+    });
+
+    it('should handle file read errors', async () => {
+      const file = new File(['test'], 'test.json', { type: 'application/json' });
+
+      // Force a read error by mocking FileReader
+      const originalFileReader = global.FileReader;
+      global.FileReader = vi.fn(function () {
+        this.readAsText = vi.fn(function () {
+          setTimeout(() => this.onerror(new Error('Read error')), 0);
+        });
+      });
+
+      await expect(importData(file, {}, null)).rejects.toThrow('Fehler beim Lesen der Datei');
+
+      global.FileReader = originalFileReader;
     });
   });
 });

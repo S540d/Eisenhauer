@@ -3,7 +3,7 @@
 ## Project Overview
 Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Matrix principle.
 
-**Current Version:** 1.8.2 (versionCode 13)
+**Current Version:** 1.8.3 (versionCode 14)
 
 **Tech Stack:**
 - Vanilla JavaScript (ES6 modules)
@@ -92,6 +92,12 @@ Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Ma
 - ✅ **Node Version Consistency** - All workflows use Node 20 via .nvmrc
 - ✅ **Composite Action** - .github/actions/setup-node for DRY workflow code
 - ✅ **Merge Strategy Documentation** - Clear guidelines for testing→staging→main flow
+
+### v1.8.3 Release (2026-01-20)
+- ✅ **Android version sync** (PR #134)
+  - Updated build.gradle: versionCode 14, versionName 1.8.3
+  - Synced with PWA version from package.json
+  - Play Store AAB build successful (Run #31)
 
 ### v1.8.2 Fixes (2026-01-19)
 - ✅ **Firebase initializeFirestore duplicate call fix** (Commit 8961271)

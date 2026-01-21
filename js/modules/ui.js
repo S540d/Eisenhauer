@@ -375,17 +375,27 @@ export function openSettingsModal(
     }
   });
 
-  // Setup theme button event listeners (re-register on each modal open to ensure consistency)
-  themeButtons.forEach((btn) => {
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
+  // Use event delegation for all settings modal buttons to avoid listener loss after DOM changes
+  // Remove any existing delegated listener first
+  const existingHandler = settingsModal._clickHandler;
+  if (existingHandler) {
+    settingsModal.removeEventListener('click', existingHandler);
+  }
 
-    newBtn.addEventListener('click', () => {
-      const theme = newBtn.dataset.theme;
+  // Create new delegated click handler
+  const clickHandler = (e) => {
+    const target = e.target;
+
+    // Handle theme button clicks
+    if (target.classList.contains('theme-btn') || target.closest('.theme-btn')) {
+      const themeBtn = target.classList.contains('theme-btn')
+        ? target
+        : target.closest('.theme-btn');
+      const theme = themeBtn.dataset.theme;
 
       // Update active state
       document.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
-      newBtn.classList.add('active');
+      themeBtn.classList.add('active');
 
       // Update theme
       if (theme === 'dark') {
@@ -400,8 +410,35 @@ export function openSettingsModal(
           document.body.classList.remove('dark-mode');
         }
       }
-    });
-  });
+      return;
+    }
+
+    // Handle About button click
+    if (target.id === 'aboutBtn' || target.closest('#aboutBtn')) {
+      e.preventDefault();
+      openAboutModal(version);
+      return;
+    }
+
+    // Handle close button click
+    if (target.id === 'settingsCancelBtn' || target.closest('#settingsCancelBtn')) {
+      closeSettingsModal();
+      return;
+    }
+
+    // Handle sign out button click
+    if (target.id === 'signOutBtn' || target.closest('#signOutBtn')) {
+      if (window.signOut) {
+        window.signOut();
+        closeSettingsModal();
+      }
+      return;
+    }
+  };
+
+  // Store handler reference and add listener
+  settingsModal._clickHandler = clickHandler;
+  settingsModal.addEventListener('click', clickHandler);
 
   // Update language toggle button active state - use currentLanguage parameter
   const langButtons = document.querySelectorAll('.lang-btn');
@@ -417,7 +454,6 @@ export function openSettingsModal(
   const accountSection = document.getElementById('accountSection');
   const accountSeparator = document.getElementById('accountSeparator');
   const userEmailDisplay = document.getElementById('userEmailDisplay');
-  const signOutBtn = document.getElementById('signOutBtn');
 
   // Show sign out button for both Firebase login and guest mode
   if (currentUser || isGuestMode) {
@@ -439,55 +475,13 @@ export function openSettingsModal(
 
       userEmailDisplay.appendChild(emailLabel);
     }
-
-    // Setup sign out button event listener
-    if (signOutBtn) {
-      // Remove old listener by cloning (prevent duplicate listeners)
-      const newSignOutBtn = signOutBtn.cloneNode(true);
-      signOutBtn.parentNode.replaceChild(newSignOutBtn, signOutBtn);
-
-      // Add new listener
-      newSignOutBtn.addEventListener('click', () => {
-        if (window.signOut) {
-          window.signOut();
-          // Close settings modal after sign-out
-          closeSettingsModal();
-        } else {
-        }
-      });
-    }
   } else {
     // Not in app yet - hide sign out button
     if (accountSection) accountSection.style.display = 'none';
     if (accountSeparator) accountSeparator.style.display = 'none';
   }
 
-  // Setup About button event listener
-  const aboutBtn = document.getElementById('aboutBtn');
-  if (aboutBtn) {
-    // Remove old listener by cloning (prevent duplicate listeners)
-    const newAboutBtn = aboutBtn.cloneNode(true);
-    aboutBtn.parentNode.replaceChild(newAboutBtn, aboutBtn);
-
-    // Add new listener
-    newAboutBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      openAboutModal(version);
-    });
-  }
-
-  // Setup close settings button event listener
-  const settingsCancelBtn = document.getElementById('settingsCancelBtn');
-  if (settingsCancelBtn) {
-    // Remove old listener by cloning
-    const newSettingsCancelBtn = settingsCancelBtn.cloneNode(true);
-    settingsCancelBtn.parentNode.replaceChild(newSettingsCancelBtn, settingsCancelBtn);
-
-    // Add new listener
-    newSettingsCancelBtn.addEventListener('click', () => {
-      closeSettingsModal();
-    });
-  }
+  // Note: All button clicks (About, Sign Out, Close) are now handled via event delegation above
 
   settingsModal.classList.remove('hidden');
   settingsModal.classList.add('active');
