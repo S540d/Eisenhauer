@@ -216,7 +216,8 @@ function handleDeleteTask(taskId, segment) {
     // Show undo notification
     if (deletedTask) {
       showUndoDelete(deletedTask, getCurrentLanguage(), () => {
-        syncDelete(deletedTask.id, deletedTask.segment);
+        // Save restored task to storage
+        syncSave(deletedTask);
         renderTasksWithCallbacks();
       });
     }
@@ -252,6 +253,19 @@ function syncDelete(taskId, segment) {
 }
 
 /**
+ * Sync save task to storage
+ */
+function syncSave(task) {
+  if (currentUser && db && !isGuestMode) {
+    // Save to Firestore
+    saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
+  } else {
+    // Save to LocalForage (guest mode)
+    saveGuestTasks(tasks);
+  }
+}
+
+/**
  * Move task handler
  */
 function handleMoveTask(taskId, fromSegment, toSegment) {
@@ -274,8 +288,10 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
   // Show undo notification
   if (movedTask) {
     showUndoMove(taskId, fromSegment, toSegment, getCurrentLanguage(), () => {
-      if (currentUser && db && !isGuestMode) {
-        updateTaskInFirestore(movedTask, currentUser.uid, db, window.firebase);
+      // After undo, the task has been moved back, so we need to get the updated task reference
+      const updatedTask = tasks[fromSegment].find((t) => t.id === taskId);
+      if (currentUser && db && !isGuestMode && updatedTask) {
+        updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
       } else {
         saveGuestTasks(tasks);
       }

@@ -2211,7 +2211,6 @@ body.dark-mode .undo-toast {
   .undo-toast {
     bottom: -100px;
     min-width: auto;
-    width: calc(100% - 32px);
     left: 16px;
     right: 16px;
     transform: none;

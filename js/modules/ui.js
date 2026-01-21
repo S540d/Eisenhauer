@@ -364,6 +364,8 @@ export function openSettingsModal(
 
   if (savedTheme === 'true') {
     activeTheme = 'dark';
+  } else if (savedTheme === 'false') {
+    activeTheme = 'light';
   } else if (savedTheme === null) {
     activeTheme = 'system';
   }
@@ -572,6 +574,8 @@ export function openPersonalizeModal(currentLanguage = 'en') {
 
   if (savedTheme === 'true') {
     activeTheme = 'dark';
+  } else if (savedTheme === 'false') {
+    activeTheme = 'light';
   } else if (savedTheme === null) {
     activeTheme = 'system';
   }
@@ -1284,9 +1288,12 @@ export function openTutorialModal(currentLanguage = 'en') {
     // Update dots
     tutorialModal.querySelectorAll('.tutorial-dot').forEach((dot) => {
       dot.classList.remove('active');
-      if (parseInt(dot.dataset.slide) === slideNum) {
+      const isActive = parseInt(dot.dataset.slide) === slideNum;
+      if (isActive) {
         dot.classList.add('active');
       }
+      // Update ARIA attribute for accessibility
+      dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
     // Update buttons
@@ -1314,6 +1321,8 @@ export function openTutorialModal(currentLanguage = 'en') {
 
     // Skip button
     if (target.closest('#tutorialSkipBtn')) {
+      // User explicitly skipped the tutorial; mark as seen to avoid showing again
+      localStorage.setItem('tutorialSeen', 'true');
       closeTutorialModal();
       return;
     }

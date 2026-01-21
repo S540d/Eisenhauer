@@ -170,6 +170,35 @@ export function addTaskToSegment(taskText, segmentId, recurringConfig = null, sa
 }
 
 /**
+ * Restore a task with all its properties (for undo operations)
+ * @param {object} taskObject - Complete task object to restore
+ * @param {function} saveCallback - Callback to save changes
+ * @returns {object} The restored task
+ */
+export function restoreTask(taskObject, saveCallback = null) {
+  // Input validation
+  if (!taskObject || typeof taskObject !== 'object') {
+    throw new TypeError('Task object must be provided');
+  }
+  if (!Number.isInteger(taskObject.segment) || taskObject.segment < 1 || taskObject.segment > 5) {
+    throw new RangeError('Task segment must be an integer between 1 and 5');
+  }
+  if (!taskObject.id) {
+    throw new Error('Task ID is required');
+  }
+
+  // Add task back to segment with all original properties preserved
+  tasks[taskObject.segment].push(taskObject);
+
+  // Call save callback if provided
+  if (saveCallback) {
+    saveCallback(taskObject);
+  }
+
+  return taskObject;
+}
+
+/**
  * Delete a task from a segment
  * @param {number} taskId - Task ID to delete
  * @param {number} segmentId - Segment ID containing the task

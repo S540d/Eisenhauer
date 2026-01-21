@@ -405,6 +405,37 @@ export function updateLanguageUI(renderAllTasksCallback) {
     importGuestTasksBtn.textContent = lang.settings.importGuestBtn;
   }
 
+  const personalizeBtn = document.getElementById('personalizeBtn');
+  if (personalizeBtn) {
+    personalizeBtn.textContent = lang.settings.personalizeBtn;
+  }
+
+  // Update Personalize Modal texts
+  const personalizeTitle = document.getElementById('personalizeTitle');
+  if (personalizeTitle) {
+    personalizeTitle.textContent = lang.personalize.title;
+  }
+
+  const personalizeAppearanceTitle = document.getElementById('personalizeAppearanceTitle');
+  if (personalizeAppearanceTitle) {
+    personalizeAppearanceTitle.textContent = lang.personalize.appearance;
+  }
+
+  const personalizeLanguageTitle = document.getElementById('personalizeLanguageTitle');
+  if (personalizeLanguageTitle) {
+    personalizeLanguageTitle.textContent = lang.personalize.language;
+  }
+
+  const personalizeThemeDark = document.getElementById('personalizeThemeDark');
+  if (personalizeThemeDark) {
+    personalizeThemeDark.textContent = lang.personalize.themeDark;
+  }
+
+  const personalizeThemeSystem = document.getElementById('personalizeThemeSystem');
+  if (personalizeThemeSystem) {
+    personalizeThemeSystem.textContent = lang.personalize.themeSystem;
+  }
+
   // Re-render all tasks to update recurring indicators
   if (renderAllTasksCallback) {
     renderAllTasksCallback();

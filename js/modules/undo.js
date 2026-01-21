@@ -3,7 +3,7 @@
  * Handles undo functionality for task operations (delete, move, complete)
  */
 
-import { addTaskToSegment, moveTask, deleteTask, toggleTask } from './tasks.js';
+import { restoreTask, moveTask, toggleTask } from './tasks.js';
 import { translations } from './translations.js';
 
 /**
@@ -147,8 +147,8 @@ export function showUndoDelete(task, currentLanguage = 'en', onSuccess) {
   const toast = createToast(
     message,
     () => {
-      // Restore task
-      addTaskToSegment(task.segment, task.text, task.id, task);
+      // Restore task with all original properties
+      restoreTask(task);
       if (onSuccess) {
         onSuccess();
       }
@@ -180,8 +180,8 @@ export function showUndoMove(taskId, fromSegment, toSegment, currentLanguage = '
   const toast = createToast(
     message,
     () => {
-      // Move back to original segment
-      moveTask(taskId, fromSegment);
+      // Move back to original segment (from toSegment back to fromSegment)
+      moveTask(taskId, toSegment, fromSegment);
       if (onSuccess) {
         onSuccess();
       }
