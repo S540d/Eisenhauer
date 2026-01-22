@@ -323,13 +323,8 @@ function handleReorderTask(taskId, segment, direction) {
   // Don't do anything if index didn't change
   if (newIndex === currentIndex) return;
 
-  // Reorder using existing reorderTask function
-  const reorderedTask = reorderTask(taskId, segment, newIndex);
-
-  if (reorderedTask) {
-    // Re-render
-    renderTasksWithCallbacks();
-
+  // Reorder using existing reorderTask function with save callback
+  const reorderedTask = reorderTask(taskId, segment, newIndex, () => {
     // Save to storage based on mode
     if (currentUser && db && !isGuestMode) {
       // In authenticated mode, save all tasks in the segment
@@ -339,6 +334,11 @@ function handleReorderTask(taskId, segment, direction) {
       // Save to LocalForage (guest mode)
       saveGuestTasks(tasks);
     }
+  });
+
+  if (reorderedTask) {
+    // Re-render
+    renderTasksWithCallbacks();
   }
 }
 
