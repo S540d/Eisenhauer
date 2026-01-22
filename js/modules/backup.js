@@ -15,11 +15,17 @@ const BACKUP_PREFIX = 'backup-';
  * @returns {object} Backup data
  */
 function createBackupData(tasks) {
+  // Ensure tasks is a valid object before attempting to deep clone
+  const safeTasks =
+    tasks && typeof tasks === 'object'
+      ? JSON.parse(JSON.stringify(tasks)) // Deep clone
+      : {};
+
   return {
     version: '1.0',
     timestamp: Date.now(),
     createdAt: new Date().toISOString(),
-    tasks: JSON.parse(JSON.stringify(tasks)), // Deep clone
+    tasks: safeTasks,
   };
 }
 
@@ -34,6 +40,10 @@ function createBackupData(tasks) {
 export async function uploadBackup(storage, userId, tasks, currentLanguage = 'en') {
   if (!storage || !userId) {
     throw new Error('Storage and userId are required');
+  }
+
+  if (!tasks) {
+    throw new Error('Tasks object is required');
   }
 
   try {
@@ -199,6 +209,8 @@ export function shouldAutoBackup() {
   if (!lastBackup) return true;
 
   const lastBackupTime = parseInt(lastBackup);
+  if (isNaN(lastBackupTime)) return true;
+
   const now = Date.now();
   const dayInMs = 24 * 60 * 60 * 1000;
   const weekInMs = 7 * dayInMs;

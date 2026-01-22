@@ -82,12 +82,7 @@ import {
   announceDragStart,
   announceDragEnd,
 } from './js/modules/accessibility.js';
-import {
-  uploadBackup,
-  listBackups,
-  shouldAutoBackup,
-  markAutoBackupCompleted,
-} from './js/modules/backup.js';
+import { uploadBackup, shouldAutoBackup, markAutoBackupCompleted } from './js/modules/backup.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
 // import {
 // setupDragAndDrop,
@@ -621,6 +616,9 @@ function setupEventListeners() {
       try {
         // Create backup
         await uploadBackup(storage, currentUser.uid, tasks, getCurrentLanguage());
+
+        // Mark backup as completed to reset auto-backup timer
+        markAutoBackupCompleted();
 
         // Update last backup info in UI
         const lastBackupInfo = document.getElementById('lastBackupInfo');
