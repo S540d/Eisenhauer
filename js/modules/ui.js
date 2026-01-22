@@ -177,6 +177,43 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     div._dragManager = dragManager;
   }
 
+  // Add reorder buttons (up/down) for non-touch devices or non-Done tasks
+  const shouldShowReorderButtons = !isDoneTask && !isTouchDevice();
+
+  if (shouldShowReorderButtons && callbacks.onReorder) {
+    const reorderContainer = document.createElement('div');
+    reorderContainer.className = 'task-reorder-buttons';
+
+    const taskIndex = callbacks.taskIndex ?? 0;
+    const totalTasks = callbacks.totalTasks ?? 1;
+    const isFirst = taskIndex === 0;
+    const isLast = taskIndex === totalTasks - 1;
+
+    const upBtn = document.createElement('button');
+    upBtn.className = 'reorder-btn reorder-up';
+    upBtn.setAttribute('aria-label', `Move task "${task.text}" up`);
+    upBtn.textContent = '↑';
+    upBtn.disabled = isFirst;
+    upBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      callbacks.onReorder(task.id, task.segment, 'up');
+    });
+
+    const downBtn = document.createElement('button');
+    downBtn.className = 'reorder-btn reorder-down';
+    downBtn.setAttribute('aria-label', `Move task "${task.text}" down`);
+    downBtn.textContent = '↓';
+    downBtn.disabled = isLast;
+    downBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      callbacks.onReorder(task.id, task.segment, 'down');
+    });
+
+    reorderContainer.appendChild(upBtn);
+    reorderContainer.appendChild(downBtn);
+    div.appendChild(reorderContainer);
+  }
+
   return div;
 }
 
@@ -195,8 +232,12 @@ export function renderSegment(segmentId, tasks, translations, currentLanguage, c
   segmentElement.innerHTML = '';
 
   const segmentTasks = tasks[segmentId] || [];
-  segmentTasks.forEach((task) => {
-    const taskElement = createTaskElement(task, translations, currentLanguage, callbacks);
+  segmentTasks.forEach((task, index) => {
+    const taskElement = createTaskElement(task, translations, currentLanguage, {
+      ...callbacks,
+      taskIndex: index,
+      totalTasks: segmentTasks.length,
+    });
     segmentElement.appendChild(taskElement);
   });
 }
@@ -486,6 +527,39 @@ export function openSettingsModal(
     // Not in app yet - hide sign out button
     if (accountSection) accountSection.style.display = 'none';
     if (accountSeparator) accountSeparator.style.display = 'none';
+  }
+
+  // Show/hide backup section - only for authenticated users (not guest mode)
+  const backupSection = document.getElementById('backupSection');
+  const backupSeparator = document.getElementById('backupSeparator');
+
+  if (backupSection) {
+    if (currentUser && !isGuestMode) {
+      backupSection.style.display = 'block';
+      if (backupSeparator) backupSeparator.style.display = 'block';
+
+      // Update last backup timestamp
+      const lastBackupInfo = document.getElementById('lastBackupInfo');
+      const lastAutoBackup = localStorage.getItem('lastAutoBackup');
+
+      if (lastBackupInfo) {
+        const lang = currentLanguage === 'de' ? 'de' : 'en';
+        const neverText = currentLanguage === 'de' ? 'Nie' : 'Never';
+
+        if (lastAutoBackup) {
+          const date = new Date(parseInt(lastAutoBackup));
+          const formattedDate = date.toLocaleString(lang === 'de' ? 'de-DE' : 'en-US');
+          const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
+          lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
+        } else {
+          const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
+          lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}`;
+        }
+      }
+    } else {
+      backupSection.style.display = 'none';
+      if (backupSeparator) backupSeparator.style.display = 'none';
+    }
   }
 
   // Note: All button clicks (About, Sign Out, Close) are now handled via event delegation above

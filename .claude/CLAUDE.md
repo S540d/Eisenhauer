@@ -119,6 +119,19 @@ Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Ma
 - ✅ All 25 tests now passing
 - ✅ DOM persistence issue in Happy DOM resolved
 
+### Issue #136 - Mobile-First & Produktivitäts-Verbesserungen (IN PROGRESS)
+- ✅ **PR #137 - Foundation & Quick Wins (MERGED - 2026-01-21)**
+  - Personalisieren modal with theme & language settings
+  - Undo functionality with toast notifications (12 unit tests)
+  - Interactive onboarding tutorial (3 slides)
+  - All 12 Copilot suggestions fixed
+- 🔄 **PR #138 - Drag & Drop Improvements (PENDING)**
+  - Swipe-right-to-complete functionality
+  - Task reordering within segments
+- 🔄 **PR #139 - Backend Features (PENDING)**
+  - Automatic cloud backup (Firebase Storage)
+  - Task reordering UI (up/down buttons)
+
 ## Known Issues & Gotchas
 
 ### Issue #121 - Android TWA Environments (Critical)
@@ -140,8 +153,10 @@ js/modules/
 ├── auth.js              # Authentication & user management (clean ES6 exports)
 ├── storage.js          # Firestore operations
 ├── offline-queue.js    # Offline sync queue
-├── tasks.js            # Task CRUD operations
-├── ui.js               # UI rendering
+├── tasks.js            # Task CRUD operations (incl. restoreTask for undo)
+├── ui.js               # UI rendering (incl. modals: Personalize, Tutorial)
+├── undo.js             # Undo functionality with toast notifications
+├── translations.js     # Multi-language support (DE/EN)
 ├── error-handler.js    # Error handling
 ├── env-config.js       # Environment detection (prod/staging/testing)
 └── version.js          # Version management

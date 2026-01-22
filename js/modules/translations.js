@@ -15,6 +15,10 @@ export const translations = {
       exportBtn: 'Export',
       importGuestBtn: 'Import Gast-Daten',
       personalizeBtn: 'Personalisieren',
+      backupTitle: 'CLOUD BACKUP',
+      createBackupBtn: 'Backup erstellen',
+      lastBackup: 'Letztes Backup',
+      never: 'Nie',
     },
     personalize: {
       title: 'Personalisieren',
@@ -97,6 +101,10 @@ export const translations = {
       exportBtn: 'Export',
       importGuestBtn: 'Import Guest Data',
       personalizeBtn: 'Personalize',
+      backupTitle: 'CLOUD BACKUP',
+      createBackupBtn: 'Create Backup',
+      lastBackup: 'Last backup',
+      never: 'Never',
     },
     personalize: {
       title: 'Personalize',
@@ -434,6 +442,38 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const personalizeThemeSystem = document.getElementById('personalizeThemeSystem');
   if (personalizeThemeSystem) {
     personalizeThemeSystem.textContent = lang.personalize.themeSystem;
+  }
+
+  // Update Cloud Backup section texts
+  const backupTitle = document.getElementById('backupTitle');
+  if (backupTitle) {
+    backupTitle.textContent = lang.settings.backupTitle;
+  }
+
+  const createBackupBtn = document.getElementById('createBackupBtn');
+  if (createBackupBtn) {
+    createBackupBtn.textContent = lang.settings.createBackupBtn;
+  }
+
+  // Update last backup info text (label and "never" word) while preserving timestamp
+  const lastBackupInfo = document.getElementById('lastBackupInfo');
+  if (lastBackupInfo) {
+    const existingText = lastBackupInfo.textContent || '';
+    let suffix = '';
+
+    const colonIndex = existingText.indexOf(':');
+    if (colonIndex !== -1) {
+      suffix = existingText.slice(colonIndex + 1).trim();
+    }
+
+    const lowerSuffix = suffix.toLowerCase();
+    if (!suffix || lowerSuffix === 'never' || lowerSuffix === 'nie') {
+      suffix = lang.settings.never;
+    }
+
+    lastBackupInfo.textContent = suffix
+      ? `${lang.settings.lastBackup}: ${suffix}`
+      : lang.settings.lastBackup;
   }
 
   // Re-render all tasks to update recurring indicators

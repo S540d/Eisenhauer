@@ -14,6 +14,7 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -73,4 +74,7 @@ googleProvider.setCustomParameters({
 
 const appleProvider = new OAuthProvider('apple.com');
 
-export { app, auth, db, googleProvider, appleProvider };
+// Initialize Firebase Storage
+const storage = getStorage(app);
+
+export { app, auth, db, storage, googleProvider, appleProvider };

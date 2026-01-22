@@ -278,6 +278,41 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
 }
 
 /**
+ * Reorder task within the same segment
+ * @param {number} taskId - Task ID to reorder
+ * @param {number} segment - Segment ID
+ * @param {number} newIndex - New index position
+ * @returns {object|null} The reordered task or null if not found
+ */
+export function reorderTask(taskId, segment, newIndex) {
+  // Input validation
+  if (!Number.isInteger(segment) || segment < 1 || segment > 5) {
+    throw new RangeError('Segment ID must be an integer between 1 and 5');
+  }
+  if (taskId == null) {
+    throw new Error('Task ID cannot be null or undefined');
+  }
+  if (!Number.isInteger(newIndex) || newIndex < 0) {
+    throw new Error('New index must be a non-negative integer');
+  }
+
+  const taskIndex = tasks[segment].findIndex((t) => t.id === taskId);
+  if (taskIndex === -1) return null;
+
+  // If task is already at the target position, no need to reorder
+  if (taskIndex === newIndex) return tasks[segment][taskIndex];
+
+  // Remove task from current position
+  const [task] = tasks[segment].splice(taskIndex, 1);
+
+  // Insert at new position
+  const safeIndex = Math.min(newIndex, tasks[segment].length);
+  tasks[segment].splice(safeIndex, 0, task);
+
+  return task;
+}
+
+/**
  * Toggle task completion (move to/from Done segment)
  * @param {number} taskId - Task ID to toggle
  * @param {number} segmentId - Current segment ID

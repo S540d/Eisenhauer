@@ -36,7 +36,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea" />
 
-    <link rel="stylesheet" href="style.css?v=1.8.3" />
+    <link rel="stylesheet" href="style.css?v=1769023367650" />
   </head>
   <body>
     <!-- Staging Banner -->
@@ -391,6 +391,17 @@
 
         <div class="settings-separator"></div>
 
+        <!-- Cloud Backup (only visible when authenticated) -->
+        <div id="backupSection" class="settings-section" style="display: none">
+          <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP</h4>
+          <button id="createBackupBtn" class="settings-export-btn" style="width: 100%">
+            Backup erstellen
+          </button>
+          <p id="lastBackupInfo" class="settings-info" style="margin-top: 8px"></p>
+        </div>
+
+        <div id="backupSeparator" class="settings-separator" style="display: none"></div>
+
         <!-- Feedback, Support & About - Unified Row -->
         <div class="settings-section settings-row">
           <a
@@ -691,7 +702,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1.8.3"></script>
+    <script type="module" src="script.js?v=1769023367650"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>
