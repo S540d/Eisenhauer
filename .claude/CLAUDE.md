@@ -3,7 +3,7 @@
 ## Project Overview
 Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Matrix principle.
 
-**Current Version:** 1.8.3 (versionCode 14)
+**Current Version:** 1.9.0 (versionCode 15)
 
 **Tech Stack:**
 - Vanilla JavaScript (ES6 modules)
@@ -93,6 +93,18 @@ Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Ma
 - ✅ **Composite Action** - .github/actions/setup-node for DRY workflow code
 - ✅ **Merge Strategy Documentation** - Clear guidelines for testing→staging→main flow
 
+### v1.9.0 Release (2026-01-23)
+- ✅ **Issue #136 - Mobile-First & Produktivitäts-Verbesserungen (6/17 Features DEPLOYED)**
+  - Updated build.gradle: versionCode 15, versionName 1.9.0
+  - Merged testing → staging → main
+  - Features included:
+    - Personalisieren modal (theme & language settings)
+    - Undo functionality with toast notifications
+    - Interactive onboarding tutorial
+    - Swipe-right-to-complete
+    - Task reordering (UI + backend)
+    - Automatic cloud backup to Firebase Storage (weekly)
+
 ### v1.8.3 Release (2026-01-20)
 - ✅ **Android version sync** (PR #134)
   - Updated build.gradle: versionCode 14, versionName 1.8.3
@@ -120,20 +132,20 @@ Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Ma
 - ✅ DOM persistence issue in Happy DOM resolved
 
 ### Issue #136 - Mobile-First & Produktivitäts-Verbesserungen (IN PROGRESS - 6/17 Features)
-- ✅ **PR #137 - Foundation & Quick Wins (MERGED to testing - 2026-01-21)**
+- ✅ **PR #137 - Foundation & Quick Wins (MERGED to main - v1.9.0)**
   - Personalisieren modal with theme & language settings
   - Undo functionality with toast notifications (12 unit tests)
   - Interactive onboarding tutorial (3 slides)
   - All 12 Copilot suggestions fixed
-- ✅ **PR #138 - Drag & Drop Improvements (MERGED to testing - 2026-01-21)**
+- ✅ **PR #138 - Drag & Drop Improvements (MERGED to main - v1.9.0)**
   - Swipe-right-to-complete functionality
   - Task reordering foundation (reorderTask function)
   - 4 Copilot suggestions addressed
-- ✅ **PR #139 - Backend Features (MERGED to testing - 2026-01-21)**
+- ✅ **PR #139 - Backend Features (MERGED to main - v1.9.0)**
   - Automatic cloud backup to Firebase Storage (weekly, keep last 4)
   - Task reordering UI (up/down buttons for desktop)
   - 10 Copilot suggestions fixed
-- 🔄 **PR #140 - Copilot Fixes (PENDING review)**
+- 🔄 **PR #140 - Copilot Fixes (Optional - not blocking v1.9.0)**
   - PR #138 suggestions applied retroactively
   - saveCallback for persistence
   - JSDoc corrections

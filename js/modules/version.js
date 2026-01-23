@@ -3,7 +3,7 @@
  * Handles app version loading and display
  */
 
-export let APP_VERSION = 'v1.7.7'; // Fallback version
+export let APP_VERSION = 'v1.9.0'; // Fallback version
 export const BUILD_DATE = new Date().toISOString().split('T')[0];
 
 export async function loadVersion() {
