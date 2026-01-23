@@ -76,7 +76,7 @@ Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Ma
 
 ### Bug Fixes
 - Check [open issues](https://github.com/S540d/Eisenhauer/issues)
-- High priority: #121 (Android TWA), #120 (Technical Debt)
+- High priority: #121 (Android TWA)
 - Reference issue number in commits
 
 ### Before Committing
@@ -119,18 +119,24 @@ Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Ma
 - ✅ All 25 tests now passing
 - ✅ DOM persistence issue in Happy DOM resolved
 
-### Issue #136 - Mobile-First & Produktivitäts-Verbesserungen (IN PROGRESS)
-- ✅ **PR #137 - Foundation & Quick Wins (MERGED - 2026-01-21)**
+### Issue #136 - Mobile-First & Produktivitäts-Verbesserungen (IN PROGRESS - 6/17 Features)
+- ✅ **PR #137 - Foundation & Quick Wins (MERGED to testing - 2026-01-21)**
   - Personalisieren modal with theme & language settings
   - Undo functionality with toast notifications (12 unit tests)
   - Interactive onboarding tutorial (3 slides)
   - All 12 Copilot suggestions fixed
-- 🔄 **PR #138 - Drag & Drop Improvements (PENDING)**
+- ✅ **PR #138 - Drag & Drop Improvements (MERGED to testing - 2026-01-21)**
   - Swipe-right-to-complete functionality
-  - Task reordering within segments
-- 🔄 **PR #139 - Backend Features (PENDING)**
-  - Automatic cloud backup (Firebase Storage)
-  - Task reordering UI (up/down buttons)
+  - Task reordering foundation (reorderTask function)
+  - 4 Copilot suggestions addressed
+- ✅ **PR #139 - Backend Features (MERGED to testing - 2026-01-21)**
+  - Automatic cloud backup to Firebase Storage (weekly, keep last 4)
+  - Task reordering UI (up/down buttons for desktop)
+  - 10 Copilot suggestions fixed
+- 🔄 **PR #140 - Copilot Fixes (PENDING review)**
+  - PR #138 suggestions applied retroactively
+  - saveCallback for persistence
+  - JSDoc corrections
 
 ## Known Issues & Gotchas
 
@@ -149,14 +155,15 @@ Eisenhauer Matrix PWA - A task management app using the Eisenhauer/Eisenhower Ma
 ### Module Structure
 ```
 js/modules/
-├── firebase-init.js     # Firebase v9 initialization (with duplicate call protection)
+├── firebase-init.js     # Firebase v9 initialization (with duplicate call protection + Storage)
 ├── auth.js              # Authentication & user management (clean ES6 exports)
 ├── storage.js          # Firestore operations
 ├── offline-queue.js    # Offline sync queue
-├── tasks.js            # Task CRUD operations (incl. restoreTask for undo)
-├── ui.js               # UI rendering (incl. modals: Personalize, Tutorial)
+├── tasks.js            # Task CRUD operations (incl. restoreTask, reorderTask)
+├── ui.js               # UI rendering (incl. modals: Personalize, Tutorial, Settings)
 ├── undo.js             # Undo functionality with toast notifications
-├── translations.js     # Multi-language support (DE/EN)
+├── backup.js           # Cloud backup to Firebase Storage (weekly auto-backup)
+├── translations.js     # Multi-language support (DE/EN, incl. backup translations)
 ├── error-handler.js    # Error handling
 ├── env-config.js       # Environment detection (prod/staging/testing)
 └── version.js          # Version management
