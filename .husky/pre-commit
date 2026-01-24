@@ -2,7 +2,7 @@
 echo "🔍 Running pre-commit checks..."
 
 # Stage only files that pass all checks
-STAGED_FILES=$(git diff --cached --name-only | grep -E '\.(js|ts|jsx|tsx|json|css|html)$')
+STAGED_FILES=$(git diff --cached --name-only | grep -E '\.(js|ts|jsx|tsx|json|css|html)$' || true)
 
 # ============================================================================
 # 1. Format Check with Prettier

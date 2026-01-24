@@ -5,6 +5,9 @@
 .vscode/
 .idea/
 
+# Claude Code (private instructions)
+.claude/
+
 # Logs
 *.log
 

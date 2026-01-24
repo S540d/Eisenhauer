@@ -278,21 +278,14 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
 }
 
 /**
-<<<<<<< HEAD
- * Reorder task within the same segment
- * @param {number} taskId - Task ID to reorder
- * @param {number} segment - Segment ID
- * @param {number} newIndex - New index position
- * @returns {object|null} The reordered task or null if not found
-=======
  * Reorder task within same segment (for drag & drop sorting)
- * @param {string} taskId - Task ID
+ * @param {number} taskId - Task ID
  * @param {number} segment - Segment ID
  * @param {number} newIndex - New position index in the segment
+ * @param {function} saveCallback - Optional callback to save changes
  * @returns {object|null} Reordered task or null if not found
->>>>>>> 6d61f7edf82db96bddb0e94956ef3783336a5f02
  */
-export function reorderTask(taskId, segment, newIndex) {
+export function reorderTask(taskId, segment, newIndex, saveCallback = null) {
   // Input validation
   if (!Number.isInteger(segment) || segment < 1 || segment > 5) {
     throw new RangeError('Segment ID must be an integer between 1 and 5');
@@ -316,6 +309,11 @@ export function reorderTask(taskId, segment, newIndex) {
   // Insert at new position
   const safeIndex = Math.min(newIndex, tasks[segment].length);
   tasks[segment].splice(safeIndex, 0, task);
+
+  // Call save callback if provided
+  if (saveCallback) {
+    saveCallback(task);
+  }
 
   return task;
 }
