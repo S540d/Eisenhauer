@@ -36,9 +36,18 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea" />
 
-    <link rel="stylesheet" href="style.css?v=1769023367650" />
+    <link rel="stylesheet" href="style.css?v=1769366386060" />
   </head>
   <body>
+    <!-- Splash Screen (shown while app loads) -->
+    <div id="splashScreen" class="splash-screen">
+      <div class="splash-content">
+        <img src="icons/icon-192x192.png" alt="Eisenhauer Matrix" class="splash-logo" />
+        <h1 class="splash-title">Eisenhauer Matrix</h1>
+        <div class="splash-loader"></div>
+      </div>
+    </div>
+
     <!-- Staging Banner -->
     <div id="stagingBanner" class="staging-banner" style="display: none">
       <div class="staging-banner-content">
@@ -702,7 +711,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1769023367650"></script>
+    <script type="module" src="script.js?v=1769366386060"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>

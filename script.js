@@ -975,6 +975,19 @@ async function initApp() {
   // Note: Event listeners and tasks are loaded ABOVE for instant start
   // Firebase Auth will re-sync in background via onAuthStateChanged callback
   initAuth();
+
+  // Hide splash screen after app initialization
+  const splashScreen = document.getElementById('splashScreen');
+  if (splashScreen) {
+    // Add a minimum display time to ensure smooth animation
+    setTimeout(() => {
+      splashScreen.classList.add('hidden');
+      // Remove from DOM after animation completes
+      setTimeout(() => {
+        splashScreen.remove();
+      }, 300);
+    }, 1500); // Show splash for at least 1.5 seconds
+  }
 }
 
 // Start the app when DOM is ready
