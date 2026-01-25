@@ -979,14 +979,32 @@ async function initApp() {
   // Hide splash screen after app initialization
   const splashScreen = document.getElementById('splashScreen');
   if (splashScreen) {
-    // Add a minimum display time to ensure smooth animation
-    setTimeout(() => {
-      splashScreen.classList.add('hidden');
-      // Remove from DOM after animation completes
+    const appLoadStart = performance.now();
+    const minDisplayTime = 500; // Minimum 500ms to prevent flashing
+
+    // Hide splash screen when app is ready
+    const hideSplashScreen = () => {
+      const elapsed = performance.now() - appLoadStart;
+      const remainingTime = Math.max(0, minDisplayTime - elapsed);
+
       setTimeout(() => {
-        splashScreen.remove();
-      }, 300);
-    }, 1500); // Show splash for at least 1.5 seconds
+        splashScreen.classList.add('hidden');
+        // Remove from DOM after transition completes
+        setTimeout(() => {
+          splashScreen.remove();
+        }, 300);
+      }, remainingTime);
+    };
+
+    // Wait for app to be fully ready (or max 2s)
+    const maxWaitTime = 2000;
+    const readyCheck = setTimeout(hideSplashScreen, maxWaitTime);
+
+    // Or hide immediately if app is already ready
+    if (document.readyState === 'complete') {
+      clearTimeout(readyCheck);
+      hideSplashScreen();
+    }
   }
 }
 

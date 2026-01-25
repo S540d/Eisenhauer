@@ -55,17 +55,14 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 9999;
-  animation: splashFadeOut 500ms ease-in-out forwards;
-  animation-delay: 1000ms;
+  opacity: 1;
+  transition: opacity 300ms ease-in-out;
 }
 
-@keyframes splashFadeOut {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    pointer-events: none;
+/* Dark mode support for splash screen */
+@media (prefers-color-scheme: dark) {
+  .splash-screen {
+    background: linear-gradient(135deg, #4c51bf 0%, #553c9a 50%, #4c51bf 100%);
   }
 }
 
@@ -126,7 +123,7 @@ body {
   border-top-color: white;
   border-radius: 50%;
   animation: splashLoaderSpin 800ms linear infinite;
-  animation-delay: 400ms;
+  animation-delay: 150ms;
   opacity: 0;
   animation-fill-mode: forwards;
 }
@@ -144,8 +141,24 @@ body {
 
 /* Hide splash screen when app is ready */
 .splash-screen.hidden {
-  animation: splashFadeOut 300ms ease-in-out forwards;
-  animation-delay: 0ms;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .splash-logo,
+  .splash-title,
+  .splash-loader {
+    animation: none;
+    opacity: 1;
+  }
+  .splash-screen {
+    transition: opacity 0.2s ease;
+  }
+  .splash-screen.hidden {
+    opacity: 0;
+  }
 }
 
 /* Staging Banner Styles */
