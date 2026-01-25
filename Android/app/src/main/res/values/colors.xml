@@ -8,6 +8,7 @@
     <!-- Background colors -->
     <color name="backgroundColor">#667eea</color>
     <color name="splashBackground">#667eea</color>
+    <color name="splashGradientCenter">#764ba2</color>
 
     <!-- Status bar and navigation bar -->
     <color name="statusBarColor">#667eea</color>
