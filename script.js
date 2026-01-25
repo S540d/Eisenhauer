@@ -975,6 +975,37 @@ async function initApp() {
   // Note: Event listeners and tasks are loaded ABOVE for instant start
   // Firebase Auth will re-sync in background via onAuthStateChanged callback
   initAuth();
+
+  // Hide splash screen after app initialization
+  const splashScreen = document.getElementById('splashScreen');
+  if (splashScreen) {
+    const appLoadStart = performance.now();
+    const minDisplayTime = 500; // Minimum 500ms to prevent flashing
+
+    // Hide splash screen when app is ready
+    const hideSplashScreen = () => {
+      const elapsed = performance.now() - appLoadStart;
+      const remainingTime = Math.max(0, minDisplayTime - elapsed);
+
+      setTimeout(() => {
+        splashScreen.classList.add('hidden');
+        // Remove from DOM after transition completes
+        setTimeout(() => {
+          splashScreen.remove();
+        }, 300);
+      }, remainingTime);
+    };
+
+    // Wait for app to be fully ready (or max 2s)
+    const maxWaitTime = 2000;
+    const readyCheck = setTimeout(hideSplashScreen, maxWaitTime);
+
+    // Or hide immediately if app is already ready
+    if (document.readyState === 'complete') {
+      clearTimeout(readyCheck);
+      hideSplashScreen();
+    }
+  }
 }
 
 // Start the app when DOM is ready
