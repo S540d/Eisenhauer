@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: gh-pages-deployment
+  cancel-in-progress: false
+
 jobs:
   deploy-testing:
     runs-on: ubuntu-latest

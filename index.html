@@ -36,18 +36,9 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea" />
 
-    <link rel="stylesheet" href="style.css?v=1769366949021" />
+    <link rel="stylesheet" href="style.css?v=1769367060116" />
   </head>
   <body>
-    <!-- Splash Screen (shown while app loads) -->
-    <div id="splashScreen" class="splash-screen">
-      <div class="splash-content">
-        <img src="icons/icon-192x192.png" alt="Eisenhauer Matrix" class="splash-logo" />
-        <h1 class="splash-title">Eisenhauer Matrix</h1>
-        <div class="splash-loader"></div>
-      </div>
-    </div>
-
     <!-- Staging Banner -->
     <div id="stagingBanner" class="staging-banner" style="display: none">
       <div class="staging-banner-content">
@@ -711,7 +702,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1769366949021"></script>
+    <script type="module" src="script.js?v=1769367060116"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>
@@ -721,18 +712,48 @@
       if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
 
+        // Detect current environment from URL path using robust path matching
+        const currentPath = window.location.pathname;
+        const pathSegments = currentPath.split('/').filter(Boolean);
+        let currentEnvironment = 'production';
+
+        // Use lastIndexOf to find the rightmost occurrence of staging/testing
+        const stagingIndex = pathSegments.lastIndexOf('staging');
+        const testingIndex = pathSegments.lastIndexOf('testing');
+
+        if (stagingIndex !== -1 && stagingIndex > testingIndex) {
+          currentEnvironment = 'staging';
+        } else if (testingIndex !== -1) {
+          currentEnvironment = 'testing';
+        }
+
         // Get build hash from meta tag (added by post-build.js)
         const buildHashElement = document.querySelector('meta[name="build-hash"]');
-        const currentBuildHash = buildHashElement ? buildHashElement.content : 'unknown';
+        const currentBuildHash = buildHashElement ? buildHashElement.content : Date.now().toString();
 
-        // Store current build hash in localStorage
-        const cachedBuildHash = localStorage.getItem('sw-build-hash');
-        const buildHashChanged = cachedBuildHash && cachedBuildHash !== currentBuildHash;
+        // Store current environment in localStorage
+        const cachedEnvironment = localStorage.getItem('sw-environment');
+        const environmentChanged =
+          cachedEnvironment !== null && cachedEnvironment !== currentEnvironment;
+        const isFirstVisit = cachedEnvironment === null;
 
-        if (buildHashChanged) {
-          console.log(
-            `[Service Worker] Build hash changed (${cachedBuildHash} → ${currentBuildHash}). Clearing cache...`
-          );
+        // Store current build hash in localStorage (environment-specific key)
+        const buildHashKey = `sw-build-hash-${currentEnvironment}`;
+        const cachedBuildHash = localStorage.getItem(buildHashKey);
+        const buildHashChanged =
+          cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
+
+        // Clear caches if environment changed, build hash changed, or first visit
+        const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
+
+        if (shouldClearCache) {
+          const reason = environmentChanged
+            ? `Environment changed (${cachedEnvironment} → ${currentEnvironment})`
+            : buildHashChanged
+              ? `Build hash changed (${cachedBuildHash} → ${currentBuildHash})`
+              : 'First visit - establishing fresh cache';
+          console.log(`[Service Worker] ${reason}. Clearing caches...`);
+
           // Clear all caches to force fresh content
           if ('caches' in window) {
             caches.keys().then((names) => {
@@ -741,9 +762,17 @@
               });
             });
           }
+
+          // Always clear old build hashes from other environments (not just on environment change)
+          ['production', 'staging', 'testing'].forEach((env) => {
+            if (env !== currentEnvironment) {
+              localStorage.removeItem(`sw-build-hash-${env}`);
+            }
+          });
         }
 
-        localStorage.setItem('sw-build-hash', currentBuildHash);
+        localStorage.setItem('sw-environment', currentEnvironment);
+        localStorage.setItem(buildHashKey, currentBuildHash);
 
         // Reload page when new service worker takes over
         // ONLY if it's not the first load to avoid reload loops
