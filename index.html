@@ -36,7 +36,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea" />
 
-    <link rel="stylesheet" href="style.css?v=1769366562769" />
+    <link rel="stylesheet" href="style.css?v=1769367060116" />
   </head>
   <body>
     <!-- Staging Banner -->
@@ -702,7 +702,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1769366562769"></script>
+    <script type="module" src="script.js?v=1769367060116"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>
@@ -712,33 +712,46 @@
       if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
 
-        // Detect current environment from URL path
+        // Detect current environment from URL path using robust path matching
         const currentPath = window.location.pathname;
+        const pathSegments = currentPath.split('/').filter(Boolean);
         let currentEnvironment = 'production';
-        if (currentPath.includes('/staging/')) {
+
+        // Use lastIndexOf to find the rightmost occurrence of staging/testing
+        const stagingIndex = pathSegments.lastIndexOf('staging');
+        const testingIndex = pathSegments.lastIndexOf('testing');
+
+        if (stagingIndex !== -1 && stagingIndex > testingIndex) {
           currentEnvironment = 'staging';
-        } else if (currentPath.includes('/testing/')) {
+        } else if (testingIndex !== -1) {
           currentEnvironment = 'testing';
         }
 
         // Get build hash from meta tag (added by post-build.js)
         const buildHashElement = document.querySelector('meta[name="build-hash"]');
-        const currentBuildHash = buildHashElement ? buildHashElement.content : 'unknown';
+        const currentBuildHash = buildHashElement ? buildHashElement.content : Date.now().toString();
 
         // Store current environment in localStorage
         const cachedEnvironment = localStorage.getItem('sw-environment');
-        const environmentChanged = cachedEnvironment && cachedEnvironment !== currentEnvironment;
+        const environmentChanged =
+          cachedEnvironment !== null && cachedEnvironment !== currentEnvironment;
+        const isFirstVisit = cachedEnvironment === null;
 
         // Store current build hash in localStorage (environment-specific key)
         const buildHashKey = `sw-build-hash-${currentEnvironment}`;
         const cachedBuildHash = localStorage.getItem(buildHashKey);
-        const buildHashChanged = cachedBuildHash && cachedBuildHash !== currentBuildHash;
+        const buildHashChanged =
+          cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
 
-        // Clear caches if environment changed or build hash changed
-        if (environmentChanged || buildHashChanged) {
+        // Clear caches if environment changed, build hash changed, or first visit
+        const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
+
+        if (shouldClearCache) {
           const reason = environmentChanged
             ? `Environment changed (${cachedEnvironment} → ${currentEnvironment})`
-            : `Build hash changed (${cachedBuildHash} → ${currentBuildHash})`;
+            : buildHashChanged
+              ? `Build hash changed (${cachedBuildHash} → ${currentBuildHash})`
+              : 'First visit - establishing fresh cache';
           console.log(`[Service Worker] ${reason}. Clearing caches...`);
 
           // Clear all caches to force fresh content
@@ -750,14 +763,12 @@
             });
           }
 
-          // Clear old build hashes from other environments
-          if (environmentChanged) {
-            ['production', 'staging', 'testing'].forEach((env) => {
-              if (env !== currentEnvironment) {
-                localStorage.removeItem(`sw-build-hash-${env}`);
-              }
-            });
-          }
+          // Always clear old build hashes from other environments (not just on environment change)
+          ['production', 'staging', 'testing'].forEach((env) => {
+            if (env !== currentEnvironment) {
+              localStorage.removeItem(`sw-build-hash-${env}`);
+            }
+          });
         }
 
         localStorage.setItem('sw-environment', currentEnvironment);
