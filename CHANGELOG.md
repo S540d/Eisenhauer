@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.1] - 2026-01-26 🚀 RELEASED
+
+### 📱 Android App
+- **Version Update**
+  - Updated to v1.9.1 (versionCode: 16)
+  - Synced with PWA version for consistency
+
+### 🎨 UI Improvements
+- **Splash Screen Enhancement**
+  - Gradient background with elegant color transition (#667eea → #764ba2)
+  - Larger, centered app logo (192dp × 192dp) for better visibility
+  - Smoother fade-out animation (500ms) for professional appearance
+  - See [SPLASH_SCREEN_IMPROVEMENT.md](SPLASH_SCREEN_IMPROVEMENT.md) for details
+
+### 🐛 Bug Fixes
+- **Service Worker Cache**
+  - Fixed cache invalidation for gh-pages deployment
+  - Improved resource loading reliability
+  - Fixed concurrency issues with multiple builds
+
+### 🔄 Build & Deployment
+- **GitHub Actions**
+  - Enhanced build-android.yml workflow
+  - Fixed concurrency for gh-pages deployment
+  - Automated version bumping workflow
+
+---
+
 ## [1.7.7] - 2026-01-06 (Auth Redesign: Popup Only) 🚀 RELEASED
 
 ### 🔄 Authentication Strategy Update
