@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.2] - 2026-01-27 🚀 RELEASED
+
+### 🐛 Bug Fixes
+- **Auto-Backup Notifications**
+  - Fixed issue where "Backup failed" banner appeared on app startup
+  - Added `showNotification` parameter to `uploadBackup()` function
+  - Auto-backup errors are now only logged to console (no user-facing notifications)
+  - Manual backups continue to show success/error notifications
+  - See [Issue #147](https://github.com/S540d/Eisenhauer/issues/147) for future improvements
+
+### ✅ Testing
+- **Unit Tests**
+  - Added comprehensive test coverage for backup.js module
+  - 8 new tests for `showNotification` parameter behavior
+  - Total test count: 184 tests (all passing)
+
+### 📱 Android App
+- **Version Update**
+  - Updated to v1.9.2 (versionCode: 17)
+  - Synced with PWA version
+
+### 📝 Documentation
+- Created Issue #147 to track future backup error handling improvements
+
+---
+
 ## [1.9.1] - 2026-01-26 🚀 RELEASED
 
 ### 📱 Android App
