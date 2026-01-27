@@ -35,9 +35,16 @@ function createBackupData(tasks) {
  * @param {string} userId - User ID
  * @param {object} tasks - Tasks object
  * @param {string} currentLanguage - Current language for notifications
+ * @param {boolean} showNotification - Whether to show success/error notifications (default: true)
  * @returns {Promise<string>} Backup filename
  */
-export async function uploadBackup(storage, userId, tasks, currentLanguage = 'en') {
+export async function uploadBackup(
+  storage,
+  userId,
+  tasks,
+  currentLanguage = 'en',
+  showNotification = true
+) {
   if (!storage || !userId) {
     throw new Error('Storage and userId are required');
   }
@@ -65,14 +72,18 @@ export async function uploadBackup(storage, userId, tasks, currentLanguage = 'en
     // Clean up old backups
     await cleanupOldBackups(storage, userId);
 
-    const message = currentLanguage === 'de' ? 'Backup erstellt' : 'Backup created';
-    showSuccess(message);
+    if (showNotification) {
+      const message = currentLanguage === 'de' ? 'Backup erstellt' : 'Backup created';
+      showSuccess(message);
+    }
 
     return filename;
   } catch (error) {
     console.error('Backup upload failed:', error);
-    const message = currentLanguage === 'de' ? 'Backup fehlgeschlagen' : 'Backup failed';
-    showError(message);
+    if (showNotification) {
+      const message = currentLanguage === 'de' ? 'Backup fehlgeschlagen' : 'Backup failed';
+      showError(message);
+    }
     throw error;
   }
 }
