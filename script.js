@@ -866,7 +866,7 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     // Auto-backup (only for authenticated users, not guest mode)
     if (user && !guestMode && shouldAutoBackup()) {
       try {
-        await uploadBackup(storage, user.uid, tasks, getCurrentLanguage());
+        await uploadBackup(storage, user.uid, tasks, getCurrentLanguage(), false);
         markAutoBackupCompleted();
       } catch (error) {
         console.error('Auto-backup failed:', error);
