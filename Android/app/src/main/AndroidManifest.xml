@@ -9,7 +9,7 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="${appName}"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Translucent.NoTitleBar"
@@ -19,7 +19,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
+            android:label="${appName}"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTop">
 
@@ -37,14 +37,14 @@
                 <!-- Handle links from GitHub Pages domain -->
                 <data
                     android:scheme="https"
-                    android:host="s540d.github.io"
-                    android:pathPrefix="/Eisenhauer" />
+                    android:host="${hostName}"
+                    android:pathPrefix="${pathPrefix}" />
             </intent-filter>
 
             <!-- TWA Metadata -->
             <meta-data
                 android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="https://s540d.github.io/Eisenhauer/" />
+                android:value="${defaultUrl}" />
 
             <meta-data
                 android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR"

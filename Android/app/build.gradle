@@ -16,6 +16,45 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions = ["environment"]
+
+    productFlavors {
+        prod {
+            dimension "environment"
+            applicationId "com.sven4321.eisenhauer"
+            manifestPlaceholders = [
+                appName: "@string/app_name",
+                defaultUrl: "https://s540d.github.io/Eisenhauer/",
+                hostName: "s540d.github.io",
+                pathPrefix: "/Eisenhauer"
+            ]
+        }
+
+        staging {
+            dimension "environment"
+            applicationId "com.sven4321.eisenhauer.staging"
+            versionNameSuffix "-staging"
+            manifestPlaceholders = [
+                appName: "@string/app_name_staging",
+                defaultUrl: "https://s540d.github.io/Eisenhauer/staging/",
+                hostName: "s540d.github.io",
+                pathPrefix: "/Eisenhauer/staging"
+            ]
+        }
+
+        testing {
+            dimension "environment"
+            applicationId "com.sven4321.eisenhauer.testing"
+            versionNameSuffix "-testing"
+            manifestPlaceholders = [
+                appName: "@string/app_name_testing",
+                defaultUrl: "https://s540d.github.io/Eisenhauer/testing/",
+                hostName: "s540d.github.io",
+                pathPrefix: "/Eisenhauer/testing"
+            ]
+        }
+    }
+
     signingConfigs {
         release {
             storeFile file(project.hasProperty('SIGNING_KEY_STORE_PATH')
