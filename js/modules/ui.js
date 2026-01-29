@@ -679,19 +679,40 @@ export function openPersonalizeModal(currentLanguage = 'en') {
 
   // Update environment toggle button active state
   const envButtons = personalizeModal.querySelectorAll('.env-btn');
-  const params = new URLSearchParams(window.location.search);
-  const currentEnv = params.get('env') === 'staging' ? 'staging' : 'production';
-  envButtons.forEach((btn) => {
-    btn.classList.remove('active');
-    if (btn.dataset.env === currentEnv) {
-      btn.classList.add('active');
-    }
-  });
+  const pathname = window.location.pathname || '';
+  const isTestingEnv = pathname.includes('/Eisenhauer/testing/');
+
+  // Determine current environment from pathname
+  let currentEnv = 'production';
+  if (isTestingEnv) {
+    currentEnv = 'testing';
+  } else if (pathname.includes('/staging/')) {
+    currentEnv = 'staging';
+  }
+
+  // If we're on the testing environment, hide the environment switcher entirely
+  if (isTestingEnv) {
+    envButtons.forEach((btn) => {
+      btn.style.display = 'none';
+    });
+  } else {
+    envButtons.forEach((btn) => {
+      btn.classList.remove('active');
+      if (btn.dataset.env === currentEnv) {
+        btn.classList.add('active');
+      }
+    });
+  }
 
   // Show/hide environment warning based on current environment
   const envWarning = document.getElementById('personalizeEnvWarning');
   if (envWarning) {
-    envWarning.style.display = currentEnv === 'staging' ? 'block' : 'none';
+    if (isTestingEnv) {
+      // Do not show a staging/production warning in testing
+      envWarning.style.display = 'none';
+    } else {
+      envWarning.style.display = currentEnv === 'staging' ? 'block' : 'none';
+    }
   }
 
   // Use event delegation for all personalize modal buttons
@@ -749,8 +770,8 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     const envBtn = target.closest('.env-btn');
     if (envBtn) {
       const targetEnv = envBtn.dataset.env;
-      const params = new URLSearchParams(window.location.search);
-      const currentEnv = params.get('env') === 'staging' ? 'staging' : 'production';
+      const pathname = window.location && window.location.pathname ? window.location.pathname : '';
+      const currentEnv = pathname.includes('/staging/') ? 'staging' : 'production';
 
       // Don't do anything if clicking the already active environment
       if (targetEnv === currentEnv) {

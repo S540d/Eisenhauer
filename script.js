@@ -564,15 +564,26 @@ function setupEventListeners() {
     // Sign out if user is logged in
     if (currentUser) {
       try {
-        await signOut(auth);
+        await signOut();
       } catch (error) {
         console.error('Error signing out:', error);
       }
     }
 
-    // Build target URL
-    const baseUrl = window.location.origin + window.location.pathname;
-    const targetUrl = targetEnv === 'staging' ? `${baseUrl}?env=staging` : baseUrl;
+    // Build target URL based on deployment paths
+    const { origin, pathname, search, hash } = window.location;
+
+    let newPathname = pathname;
+
+    if (targetEnv === 'staging') {
+      // Ensure we are under /Eisenhauer/staging/
+      newPathname = pathname.replace(/\/Eisenhauer\/?/, '/Eisenhauer/staging/');
+    } else {
+      // Ensure we are under /Eisenhauer/ (production)
+      newPathname = pathname.replace('/staging/', '/');
+    }
+
+    const targetUrl = origin + newPathname + search + hash;
 
     // Redirect to target environment
     window.location.href = targetUrl;
