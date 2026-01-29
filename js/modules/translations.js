@@ -28,6 +28,15 @@ export const translations = {
       themeSystem: 'System',
       langEn: 'English',
       langDe: 'Deutsch',
+      environment: 'UMGEBUNG',
+      envProduction: 'Production',
+      envStaging: 'Staging',
+      envDescription: 'Wechsle zur Staging-Umgebung zum Testen neuer Features',
+      envWarning: '⚠️ Staging-Daten werden regelmäßig zurückgesetzt',
+      envSwitchTitle: 'Umgebung wechseln',
+      envSwitchMessage: 'Du wirst abgemeldet und zur {env}-Umgebung weitergeleitet.',
+      envSwitchConfirm: 'Wechseln',
+      envSwitchCancel: 'Abbrechen',
     },
     undo: {
       button: 'Rückgängig',
@@ -114,6 +123,15 @@ export const translations = {
       themeSystem: 'System',
       langEn: 'English',
       langDe: 'Deutsch',
+      environment: 'ENVIRONMENT',
+      envProduction: 'Production',
+      envStaging: 'Staging',
+      envDescription: 'Switch to staging environment to test new features',
+      envWarning: '⚠️ Staging data is reset regularly',
+      envSwitchTitle: 'Switch Environment',
+      envSwitchMessage: 'You will be signed out and redirected to the {env} environment.',
+      envSwitchConfirm: 'Switch',
+      envSwitchCancel: 'Cancel',
     },
     undo: {
       button: 'Undo',
@@ -442,6 +460,32 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const personalizeThemeSystem = document.getElementById('personalizeThemeSystem');
   if (personalizeThemeSystem) {
     personalizeThemeSystem.textContent = lang.personalize.themeSystem;
+  }
+
+  // Update Environment section texts
+  const personalizeEnvironmentTitle = document.getElementById('personalizeEnvironmentTitle');
+  if (personalizeEnvironmentTitle) {
+    personalizeEnvironmentTitle.textContent = lang.personalize.environment;
+  }
+
+  const personalizeEnvProduction = document.getElementById('personalizeEnvProduction');
+  if (personalizeEnvProduction) {
+    personalizeEnvProduction.textContent = lang.personalize.envProduction;
+  }
+
+  const personalizeEnvStaging = document.getElementById('personalizeEnvStaging');
+  if (personalizeEnvStaging) {
+    personalizeEnvStaging.textContent = lang.personalize.envStaging;
+  }
+
+  const personalizeEnvDescription = document.getElementById('personalizeEnvDescription');
+  if (personalizeEnvDescription) {
+    personalizeEnvDescription.textContent = lang.personalize.envDescription;
+  }
+
+  const personalizeEnvWarning = document.getElementById('personalizeEnvWarning');
+  if (personalizeEnvWarning) {
+    personalizeEnvWarning.textContent = lang.personalize.envWarning;
   }
 
   // Update Cloud Backup section texts

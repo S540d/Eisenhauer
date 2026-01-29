@@ -547,6 +547,37 @@ function setupEventListeners() {
     });
   };
 
+  // Create a global switchEnvironment function for use by all modals
+  window.switchEnvironment = async (targetEnv, currentLang) => {
+    const lang = translations[currentLang];
+    const envName =
+      targetEnv === 'staging' ? lang.personalize.envStaging : lang.personalize.envProduction;
+
+    // Show confirmation dialog
+    const message = lang.personalize.envSwitchMessage.replace('{env}', envName);
+    const confirmed = confirm(`${lang.personalize.envSwitchTitle}\n\n${message}`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    // Sign out if user is logged in
+    if (currentUser) {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error('Error signing out:', error);
+      }
+    }
+
+    // Build target URL
+    const baseUrl = window.location.origin + window.location.pathname;
+    const targetUrl = targetEnv === 'staging' ? `${baseUrl}?env=staging` : baseUrl;
+
+    // Redirect to target environment
+    window.location.href = targetUrl;
+  };
+
   // Language toggle buttons in settings modal (legacy support)
   const langButtons = document.querySelectorAll('.lang-btn');
 

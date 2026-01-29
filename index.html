@@ -479,6 +479,32 @@
         </div>
 
         <div class="settings-separator"></div>
+
+        <!-- Environment Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeEnvironmentTitle">UMGEBUNG</h4>
+          <div id="personalizeEnvironmentToggleContainer" class="theme-toggle-container">
+            <button
+              class="env-btn"
+              data-env="production"
+              title="Production"
+              id="personalizeEnvProduction"
+            >
+              Production
+            </button>
+            <button class="env-btn" data-env="staging" title="Staging" id="personalizeEnvStaging">
+              Staging
+            </button>
+          </div>
+          <p class="settings-info" id="personalizeEnvDescription">
+            Wechsle zur Staging-Umgebung zum Testen neuer Features
+          </p>
+          <div id="personalizeEnvWarning" class="settings-warning" style="display: none">
+            ⚠️ Staging-Daten werden regelmäßig zurückgesetzt
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
       </div>
     </div>
 

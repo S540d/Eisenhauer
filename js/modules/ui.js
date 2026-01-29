@@ -677,6 +677,23 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     }
   });
 
+  // Update environment toggle button active state
+  const envButtons = personalizeModal.querySelectorAll('.env-btn');
+  const params = new URLSearchParams(window.location.search);
+  const currentEnv = params.get('env') === 'staging' ? 'staging' : 'production';
+  envButtons.forEach((btn) => {
+    btn.classList.remove('active');
+    if (btn.dataset.env === currentEnv) {
+      btn.classList.add('active');
+    }
+  });
+
+  // Show/hide environment warning based on current environment
+  const envWarning = document.getElementById('personalizeEnvWarning');
+  if (envWarning) {
+    envWarning.style.display = currentEnv === 'staging' ? 'block' : 'none';
+  }
+
   // Use event delegation for all personalize modal buttons
   const existingHandler = personalizeModal._clickHandler;
   if (existingHandler) {
@@ -724,6 +741,25 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       // Trigger language change (will be handled by script.js)
       if (window.changeLanguage) {
         window.changeLanguage(lang);
+      }
+      return;
+    }
+
+    // Handle environment button clicks
+    const envBtn = target.closest('.env-btn');
+    if (envBtn) {
+      const targetEnv = envBtn.dataset.env;
+      const params = new URLSearchParams(window.location.search);
+      const currentEnv = params.get('env') === 'staging' ? 'staging' : 'production';
+
+      // Don't do anything if clicking the already active environment
+      if (targetEnv === currentEnv) {
+        return;
+      }
+
+      // Trigger environment switch (will be handled by script.js)
+      if (window.switchEnvironment) {
+        window.switchEnvironment(targetEnv, currentLanguage);
       }
       return;
     }
