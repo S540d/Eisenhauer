@@ -42,12 +42,12 @@ android {
             ]
         }
 
-        testing {
+        beta {
             dimension "environment"
-            applicationId "com.sven4321.eisenhauer.testing"
-            versionNameSuffix "-testing"
+            applicationId "com.sven4321.eisenhauer.beta"
+            versionNameSuffix "-beta"
             manifestPlaceholders = [
-                appName: "@string/app_name_testing",
+                appName: "@string/app_name_beta",
                 defaultUrl: "https://s540d.github.io/Eisenhauer/testing/",
                 hostName: "s540d.github.io",
                 pathPrefix: "/Eisenhauer/testing"

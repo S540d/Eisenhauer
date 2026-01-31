@@ -2,7 +2,7 @@
 <resources>
     <string name="app_name">Eisenhauer Matrix</string>
     <string name="app_name_staging">Eisenhauer (Staging)</string>
-    <string name="app_name_testing">Eisenhauer (Testing)</string>
+    <string name="app_name_beta">Eisenhauer (Beta)</string>
     <string name="app_short_name">Eisenhauer</string>
     <string name="app_description">Task Management nach der Eisenhauer-Matrix-Methode</string>
 
