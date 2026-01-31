@@ -2256,6 +2256,11 @@ body.dark-mode .lang-btn.active {
   color: white;
 }
 
+.env-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 body.dark-mode .env-btn {
   background-color: rgba(255, 255, 255, 0.1);
 }
