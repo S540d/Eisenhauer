@@ -64,7 +64,7 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew bundleRelease --no-daemon
+          ./gradlew bundleProdRelease --no-daemon
 
       - name: Build Release APK (for direct distribution)
         working-directory: ./Android
@@ -74,31 +74,31 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleProdRelease --no-daemon
 
       - name: Upload AAB (Play Store)
         uses: actions/upload-artifact@v4
         with:
           name: eisenhauer-v${{ github.run_number }}-playstore-aab
-          path: Android/app/build/outputs/bundle/release/app-release.aab
+          path: Android/app/build/outputs/bundle/prodRelease/app-prod-release.aab
           retention-days: 90
 
       - name: Upload APK (Direct Distribution)
         uses: actions/upload-artifact@v4
         with:
           name: eisenhauer-v${{ github.run_number }}-direct-apk
-          path: Android/app/build/outputs/apk/release/app-release.apk
+          path: Android/app/build/outputs/apk/prodRelease/app-prod-release.apk
           retention-days: 30
 
       - name: Build Info
         run: |
           echo "✅ Android Build erfolgreich!"
           echo "Version: $(cat version.json | grep version | head -1 | cut -d'"' -f4)"
-          if [ -f "Android/app/build/outputs/bundle/release/app-release.aab" ]; then
-            echo "AAB Größe: $(ls -lh Android/app/build/outputs/bundle/release/app-release.aab | awk '{print $5}')"
+          if [ -f "Android/app/build/outputs/bundle/prodRelease/app-prod-release.aab" ]; then
+            echo "AAB Größe: $(ls -lh Android/app/build/outputs/bundle/prodRelease/app-prod-release.aab | awk '{print $5}')"
           fi
-          if [ -f "Android/app/build/outputs/apk/release/app-release.apk" ]; then
-            echo "APK Größe: $(ls -lh Android/app/build/outputs/apk/release/app-release.apk | awk '{print $5}')"
+          if [ -f "Android/app/build/outputs/apk/prodRelease/app-prod-release.apk" ]; then
+            echo "APK Größe: $(ls -lh Android/app/build/outputs/apk/prodRelease/app-prod-release.apk | awk '{print $5}')"
           fi
 
       - name: Cleanup Keystore
