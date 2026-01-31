@@ -690,19 +690,17 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     currentEnv = 'staging';
   }
 
-  // If we're on the testing environment, hide the environment switcher entirely
-  if (isTestingEnv) {
-    envButtons.forEach((btn) => {
-      btn.style.display = 'none';
-    });
-  } else {
-    envButtons.forEach((btn) => {
-      btn.classList.remove('active');
-      if (btn.dataset.env === currentEnv) {
-        btn.classList.add('active');
-      }
-    });
-  }
+  // Disable all environment buttons (keep them visible but non-functional)
+  envButtons.forEach((btn) => {
+    btn.classList.remove('active');
+    if (btn.dataset.env === currentEnv) {
+      btn.classList.add('active');
+    }
+    // Disable the button to make it non-functional
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+  });
 
   // Show/hide environment warning based on current environment
   const envWarning = document.getElementById('personalizeEnvWarning');
@@ -766,22 +764,10 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       return;
     }
 
-    // Handle environment button clicks
+    // Handle environment button clicks - DISABLED
     const envBtn = target.closest('.env-btn');
     if (envBtn) {
-      const targetEnv = envBtn.dataset.env;
-      const pathname = window.location && window.location.pathname ? window.location.pathname : '';
-      const currentEnv = pathname.includes('/staging/') ? 'staging' : 'production';
-
-      // Don't do anything if clicking the already active environment
-      if (targetEnv === currentEnv) {
-        return;
-      }
-
-      // Trigger environment switch (will be handled by script.js)
-      if (window.switchEnvironment) {
-        window.switchEnvironment(targetEnv, currentLanguage);
-      }
+      // Environment switching is disabled - do nothing
       return;
     }
 
