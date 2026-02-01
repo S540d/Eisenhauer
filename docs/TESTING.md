@@ -35,7 +35,7 @@ The project supports three isolated environments:
 - **URL:** https://s540d.github.io/Eisenhauer/testing/
 - **Firebase Project:** `eisenhauer-testing`
 - **Branch:** `testing`
-- **Android App ID:** `com.sven4321.eisenhauer.testing`
+- **Android App ID:** `com.sven4321.eisenhauer.beta` (Flavor: `beta`)
 - **Build Command:** `npm run build:testing`
 
 ---
@@ -155,19 +155,19 @@ adb install app/build/outputs/apk/staging/release/app-staging-release.apk
 **App Name:** Eisenhauer (Staging)
 **Package:** `com.sven4321.eisenhauer.staging`
 
-#### Testing Build
+#### Testing/Beta Build
 
 ```bash
 cd android
-./gradlew assembleTestingRelease
+./gradlew assembleBetaRelease
 
 # Install on device
-adb install app/build/outputs/apk/testing/release/app-testing-release.apk
+adb install app/build/outputs/apk/beta/release/app-beta-release.apk
 ```
 
 **Opens:** https://s540d.github.io/Eisenhauer/testing/
-**App Name:** Eisenhauer (Testing)
-**Package:** `com.sven4321.eisenhauer.testing`
+**App Name:** Eisenhauer (Beta)
+**Package:** `com.sven4321.eisenhauer.beta`
 
 ### Side-by-Side Installation
 
@@ -176,17 +176,17 @@ All three apps can be installed simultaneously on one device due to different pa
 ```bash
 # Install all three
 cd android
-./gradlew assembleProdRelease assembleStagingRelease assembleTestingRelease
+./gradlew assembleProdRelease assembleStagingRelease assembleBetaRelease
 
 adb install app/build/outputs/apk/prod/release/app-prod-release.apk
 adb install app/build/outputs/apk/staging/release/app-staging-release.apk
-adb install app/build/outputs/apk/testing/release/app-testing-release.apk
+adb install app/build/outputs/apk/beta/release/app-beta-release.apk
 ```
 
 **Result:** Three separate app icons in launcher:
-- "Eisenhauer Matrix"
+- "Eisenhauer Matrix" (Production)
 - "Eisenhauer (Staging)"
-- "Eisenhauer (Testing)"
+- "Eisenhauer (Beta)" (Testing environment)
 
 ### Digital Asset Links Verification
 
@@ -378,6 +378,6 @@ This means Digital Asset Links verification failed.
 
 ---
 
-**Last Updated:** 2026-01-29
+**Last Updated:** 2026-02-01
 **Maintainer:** S540d
-**Version:** 1.9.2
+**Version:** 1.10.0
