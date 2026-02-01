@@ -1,8 +1,21 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: 'Build flavor'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - prod
+          - staging
+          - beta
   push:
+    branches:
+      - main
     paths:
       - 'Android/**'
       - '.github/workflows/build-android.yml'
@@ -10,6 +23,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        flavor: ${{ github.event.inputs.flavor == 'all' && fromJson('["prod", "staging", "beta"]') || fromJson(format('["{0}"]', github.event.inputs.flavor || 'prod')) }}
 
     steps:
       - name: Checkout repository
@@ -55,7 +71,22 @@ jobs:
             echo "⚠️ No keystore found - building unsigned"
           fi
 
-      - name: Build Release AAB (for Play Store)
+      - name: Set flavor variables
+        id: flavor
+        run: |
+          FLAVOR="${{ matrix.flavor }}"
+          FLAVOR_CAP="$(echo ${FLAVOR:0:1} | tr '[:lower:]' '[:upper:]')${FLAVOR:1}"
+          echo "name=$FLAVOR" >> $GITHUB_OUTPUT
+          echo "cap=$FLAVOR_CAP" >> $GITHUB_OUTPUT
+
+          # Set display name for artifacts
+          case $FLAVOR in
+            prod) echo "display=Production" >> $GITHUB_OUTPUT ;;
+            staging) echo "display=Staging" >> $GITHUB_OUTPUT ;;
+            beta) echo "display=Beta (Testing)" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Build Release AAB (${{ steps.flavor.outputs.display }})
         working-directory: ./Android
         env:
           SIGNING_KEY_STORE_PATH: ${{ github.workspace }}/Android/app/keystore.jks
@@ -64,9 +95,9 @@ jobs:
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew bundleProdRelease --no-daemon
+          ./gradlew bundle${{ steps.flavor.outputs.cap }}Release --no-daemon
 
-      - name: Build Release APK (for direct distribution)
+      - name: Build Release APK (${{ steps.flavor.outputs.display }})
         working-directory: ./Android
         env:
           SIGNING_KEY_STORE_PATH: ${{ github.workspace }}/Android/app/keystore.jks
@@ -74,31 +105,39 @@ jobs:
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
-          ./gradlew assembleProdRelease --no-daemon
+          ./gradlew assemble${{ steps.flavor.outputs.cap }}Release --no-daemon
 
-      - name: Upload AAB (Play Store)
+      - name: Upload AAB (${{ steps.flavor.outputs.display }})
         uses: actions/upload-artifact@v4
         with:
-          name: eisenhauer-v${{ github.run_number }}-playstore-aab
-          path: Android/app/build/outputs/bundle/prodRelease/app-prod-release.aab
+          name: eisenhauer-${{ matrix.flavor }}-v${{ github.run_number }}-aab
+          path: Android/app/build/outputs/bundle/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.aab
           retention-days: 90
 
-      - name: Upload APK (Direct Distribution)
+      - name: Upload APK (${{ steps.flavor.outputs.display }})
         uses: actions/upload-artifact@v4
         with:
-          name: eisenhauer-v${{ github.run_number }}-direct-apk
-          path: Android/app/build/outputs/apk/prodRelease/app-prod-release.apk
+          name: eisenhauer-${{ matrix.flavor }}-v${{ github.run_number }}-apk
+          path: Android/app/build/outputs/apk/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.apk
           retention-days: 30
 
       - name: Build Info
         run: |
-          echo "✅ Android Build erfolgreich!"
-          echo "Version: $(cat version.json | grep version | head -1 | cut -d'"' -f4)"
-          if [ -f "Android/app/build/outputs/bundle/prodRelease/app-prod-release.aab" ]; then
-            echo "AAB Größe: $(ls -lh Android/app/build/outputs/bundle/prodRelease/app-prod-release.aab | awk '{print $5}')"
+          echo "## 📱 Android Build: ${{ steps.flavor.outputs.display }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Flavor | \`${{ matrix.flavor }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | $(cat version.json | grep version | head -1 | cut -d'"' -f4) |" >> $GITHUB_STEP_SUMMARY
+
+          AAB_PATH="Android/app/build/outputs/bundle/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.aab"
+          APK_PATH="Android/app/build/outputs/apk/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.apk"
+
+          if [ -f "$AAB_PATH" ]; then
+            echo "| AAB Size | $(ls -lh $AAB_PATH | awk '{print $5}') |" >> $GITHUB_STEP_SUMMARY
           fi
-          if [ -f "Android/app/build/outputs/apk/prodRelease/app-prod-release.apk" ]; then
-            echo "APK Größe: $(ls -lh Android/app/build/outputs/apk/prodRelease/app-prod-release.apk | awk '{print $5}')"
+          if [ -f "$APK_PATH" ]; then
+            echo "| APK Size | $(ls -lh $APK_PATH | awk '{print $5}') |" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Cleanup Keystore
