@@ -1,0 +1,180 @@
+name: Deploy to GitHub Pages (Unified)
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - testing
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - production
+          - staging
+          - testing
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gh-pages-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine environment
+        id: env
+        run: |
+          # Manual trigger with specific environment
+          if [ "${{ github.event.inputs.environment }}" != "" ] && [ "${{ github.event.inputs.environment }}" != "auto" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          # Auto-detect from branch
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            ENV="production"
+          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
+            ENV="staging"
+          elif [ "${{ github.ref }}" = "refs/heads/testing" ]; then
+            ENV="testing"
+          else
+            echo "Unknown branch: ${{ github.ref }}"
+            exit 1
+          fi
+
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+
+          # Set deployment-specific variables
+          case $ENV in
+            production)
+              echo "build_script=build" >> $GITHUB_OUTPUT
+              echo "destination_dir=" >> $GITHUB_OUTPUT
+              echo "emoji=🚀" >> $GITHUB_OUTPUT
+              echo "url=https://s540d.github.io/Eisenhauer/" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "build_script=build:staging" >> $GITHUB_OUTPUT
+              echo "destination_dir=staging" >> $GITHUB_OUTPUT
+              echo "emoji=🎨" >> $GITHUB_OUTPUT
+              echo "url=https://s540d.github.io/Eisenhauer/staging/" >> $GITHUB_OUTPUT
+              ;;
+            testing)
+              echo "build_script=build:testing" >> $GITHUB_OUTPUT
+              echo "destination_dir=testing" >> $GITHUB_OUTPUT
+              echo "emoji=🧪" >> $GITHUB_OUTPUT
+              echo "url=https://s540d.github.io/Eisenhauer/testing/" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+          echo "Deploying to: $ENV"
+
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build ${{ steps.env.outputs.environment }}
+        run: npm run ${{ steps.env.outputs.build_script }}
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          destination_dir: ${{ steps.env.outputs.destination_dir }}
+          keep_files: true
+          allow_empty_commit: false
+          commit_message: '${{ steps.env.outputs.emoji }} ${{ steps.env.outputs.environment }} deployment from ${{ github.sha }}'
+          force_orphan: false
+          exclude_assets: '.github'
+
+      - name: Cleanup sensitive files from gh-pages
+        run: |
+          echo "🧹 Cleaning up sensitive files from gh-pages branch..."
+
+          # Save current working directory state
+          git stash --include-untracked || true
+
+          # Checkout gh-pages branch
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          # List of files/directories to remove
+          FILES_TO_REMOVE=(
+            ".env"
+            ".env.production"
+            ".env.staging"
+            ".env.testing"
+            ".vscode/"
+            ".husky/"
+            "node_modules/"
+            ".templates/"
+            "coverage/"
+            "Android/"
+            ".archive/"
+            "build/"
+            "builds/"
+            ".design-system/"
+            "*.log"
+          )
+
+          # Remove files if they exist
+          REMOVED=0
+          for item in "${FILES_TO_REMOVE[@]}"; do
+            if [ -e "$item" ] || [ -d "$item" ]; then
+              echo "  Removing: $item"
+              rm -rf "$item"
+              REMOVED=1
+            fi
+          done
+
+          # Commit and push if changes were made
+          if [ $REMOVED -eq 1 ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "🧹 Auto-cleanup: Remove sensitive files from gh-pages" || true
+            git push origin gh-pages
+            echo "✅ Cleanup completed and pushed"
+          else
+            echo "✅ No cleanup needed - gh-pages is already clean"
+          fi
+
+          # Switch back to original branch
+          git checkout -
+
+      - name: Deployment Summary
+        run: |
+          echo "${{ steps.env.outputs.emoji }} ${{ steps.env.outputs.environment }} deployment successful!"
+          echo "URL: ${{ steps.env.outputs.url }}"
+          echo "Branch: gh-pages${{ steps.env.outputs.destination_dir && format(' (subdirectory: /{0}/)', steps.env.outputs.destination_dir) || ' (root directory)' }}"
+          echo "🧹 Auto-cleanup: Sensitive files removed from gh-pages"
+
+          # Add summary to GitHub Actions
+          echo "## ${{ steps.env.outputs.emoji }} Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | **${{ steps.env.outputs.environment }}** |" >> $GITHUB_STEP_SUMMARY
+          echo "| URL | ${{ steps.env.outputs.url }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
