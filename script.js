@@ -7,7 +7,7 @@
  */
 
 // Import environment config
-import { isStaging } from './js/modules/env-config.js';
+import { isStaging, isTesting, getEnvironmentLabel } from './js/modules/env-config.js';
 
 // Import npm packages for local storage and charting
 import localforage from 'localforage';
@@ -945,11 +945,20 @@ async function initApp() {
   }
   // If savedTheme === 'false', stay in light mode (do nothing)
 
-  // Initialize staging banner
-  if (isStaging()) {
-    const stagingBanner = document.getElementById('stagingBanner');
-    if (stagingBanner) {
-      stagingBanner.style.display = 'block';
+  // Initialize environment banner (for staging/testing)
+  if (isStaging() || isTesting()) {
+    const envBanner = document.getElementById('stagingBanner');
+    if (envBanner) {
+      envBanner.style.display = 'block';
+      // Update badge text based on environment
+      const badge = envBanner.querySelector('.staging-badge');
+      if (badge) {
+        badge.textContent = isTesting() ? '🧪 TESTING' : '⚠️ STAGING';
+      }
+      // Update banner class for different styling
+      if (isTesting()) {
+        envBanner.classList.add('testing-banner');
+      }
     }
   }
 

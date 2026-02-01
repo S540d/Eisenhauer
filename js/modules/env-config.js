@@ -1,28 +1,31 @@
 /**
  * Environment Configuration
  *
- * Unterstützt Staging und Production über Query-Parameter:
+ * Build-time environment detection via Vite:
  * - Production: https://s540d.github.io/Eisenhauer/
- * - Staging: https://s540d.github.io/Eisenhauer/?env=staging
+ * - Staging: https://s540d.github.io/Eisenhauer/staging/
+ * - Testing: https://s540d.github.io/Eisenhauer/testing/
  *
- * Updated: 2026-01-10
+ * Environment is set at build time via VITE_ENV in .env files.
+ *
+ * Updated: 2026-02-01
  */
 
 /**
- * @typedef {'production' | 'staging'} Environment
+ * @typedef {'production' | 'staging' | 'testing'} Environment
  */
 
 /**
- * Detect current environment from URL query parameter
+ * Get current environment from Vite build-time configuration
  * @returns {Environment} Current environment
  */
 export function detectEnvironment() {
-  if (typeof window === 'undefined') return 'production';
+  // Use Vite's import.meta.env which is replaced at build time
+  const env = import.meta.env.VITE_ENV;
 
-  const params = new URLSearchParams(window.location.search);
-  const env = params.get('env');
-
-  return env === 'staging' ? 'staging' : 'production';
+  if (env === 'testing') return 'testing';
+  if (env === 'staging') return 'staging';
+  return 'production';
 }
 
 /**
@@ -34,7 +37,8 @@ export function getConfig() {
 
   const baseConfig = {
     environment,
-    isDevelopment: false,
+    isDevelopment: import.meta.env.DEV || false,
+    isTesting: environment === 'testing',
     isStaging: environment === 'staging',
     isProduction: environment === 'production',
   };
@@ -44,12 +48,21 @@ export function getConfig() {
 
 /**
  * Get environment indicator for UI
- * @returns {string} Environment label ('STAGING', 'PRODUCTION', or empty)
+ * @returns {string} Environment label ('TESTING', 'STAGING', or empty for production)
  */
 export function getEnvironmentLabel() {
   const config = getConfig();
+  if (config.isTesting) return 'TESTING';
   if (config.isStaging) return 'STAGING';
   return '';
+}
+
+/**
+ * Check if running in testing environment
+ * @returns {boolean} True if testing
+ */
+export function isTesting() {
+  return getConfig().isTesting;
 }
 
 /**
@@ -66,4 +79,20 @@ export function isStaging() {
  */
 export function isProduction() {
   return getConfig().isProduction;
+}
+
+/**
+ * Get the base URL for the current environment
+ * @returns {string} Base URL path
+ */
+export function getBaseUrl() {
+  const env = detectEnvironment();
+  switch (env) {
+    case 'testing':
+      return '/Eisenhauer/testing/';
+    case 'staging':
+      return '/Eisenhauer/staging/';
+    default:
+      return '/Eisenhauer/';
+  }
 }
