@@ -472,33 +472,39 @@ document.addEventListener('click', (e) => {
 
 ### Deployment Strategy
 
-**GitHub Actions Workflows:**
+**Unified GitHub Actions Workflow:**
+
+A single `deploy-unified.yml` handles all three environments with branch-based detection:
 
 ```yaml
-# .github/workflows/deploy.yml (main → production)
+# .github/workflows/deploy-unified.yml
 on:
   push:
-    branches: [main]
+    branches: [main, staging, testing]
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [auto, production, staging, testing]
 
 jobs:
   deploy:
-    - npm run build            # VITE_ENV=production
-    - Deploy to /              # Root of gh-pages
+    steps:
+      - name: Determine environment
+        # main → production (/)
+        # staging → staging (/staging/)
+        # testing → testing (/testing/)
 
-# .github/workflows/deploy-staging.yml
-on:
-  push:
-    branches: [staging]
+      - name: Build ${{ env }}
+        run: npm run ${{ build_script }}
 
-jobs:
-  deploy-staging:
-    - npm run build:staging    # VITE_ENV=staging
-    - Deploy to /staging/      # Subdirectory
+      - name: Deploy to GitHub Pages
+        # Uses peaceiris/actions-gh-pages@v3
 ```
 
 **Concurrency Control:**
 
-All three workflows use the same concurrency group to prevent race conditions:
+All deployments use the same concurrency group to prevent race conditions:
 
 ```yaml
 concurrency:
@@ -565,8 +571,8 @@ productFlavors {
         applicationId "com.sven4321.eisenhauer.staging"
         manifestPlaceholders = [defaultUrl: "https://...Eisenhauer/staging/"]
     }
-    testing {
-        applicationId "com.sven4321.eisenhauer.testing"
+    beta {  // Named 'beta' due to Android 'testing' keyword constraint
+        applicationId "com.sven4321.eisenhauer.beta"
         manifestPlaceholders = [defaultUrl: "https://...Eisenhauer/testing/"]
     }
 }
@@ -627,11 +633,17 @@ rollupOptions: {
 // Workbox configuration in vite.config.js
 workbox: {
   globPatterns: ['**/*.{js,css,html,png,svg,json}'],
-  cleanupOutdatedCaches: true
+  cleanupOutdatedCaches: true,
+  cacheId: `eisenhauer-${environment}`  // Environment-specific cache
 }
 ```
 
-**Cache naming:** Environment-specific (from #145)
+**Cache Isolation:** Each environment has its own cache namespace:
+- `eisenhauer-production`
+- `eisenhauer-staging`
+- `eisenhauer-testing`
+
+This prevents cache pollution when switching between environments.
 
 ---
 
@@ -681,6 +693,6 @@ The app is **WCAG 2.1 Level AA compliant**.
 
 ---
 
-**Version:** 1.9.2
-**Last Updated:** 2026-01-29
+**Version:** 1.10.0
+**Last Updated:** 2026-02-01
 **Maintainer:** S540d
