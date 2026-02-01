@@ -3,7 +3,12 @@
  * Replaces old compat SDK with modern modular imports
  *
  * @fileoverview Firebase v9+ modular SDK setup
- * @version 2.0.0
+ * @version 2.1.0
+ *
+ * Environment Isolation:
+ * - Production: eisenhauer-matrix (Firebase project)
+ * - Staging: eisenhauer-staging (Firebase project)
+ * - Testing: eisenhauer-testing (Firebase project)
  */
 
 import { initializeApp } from 'firebase/app';
@@ -16,6 +21,9 @@ import {
 } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
+// Current environment from Vite build
+const CURRENT_ENV = import.meta.env.VITE_ENV || 'production';
+
 // Firebase configuration from environment variables
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -26,6 +34,19 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
+
+// Safeguard: Verify Firebase project matches expected environment
+const expectedProjects = {
+  production: 'eisenhauer-matrix',
+  staging: 'eisenhauer-staging',
+  testing: 'eisenhauer-testing',
+};
+
+if (expectedProjects[CURRENT_ENV] && firebaseConfig.projectId !== expectedProjects[CURRENT_ENV]) {
+  console.warn(
+    `⚠️ Firebase project mismatch! Expected "${expectedProjects[CURRENT_ENV]}" for ${CURRENT_ENV}, got "${firebaseConfig.projectId}"`
+  );
+}
 
 /**
  * SECURITY NOTE:
@@ -76,5 +97,11 @@ const appleProvider = new OAuthProvider('apple.com');
 
 // Initialize Firebase Storage
 const storage = getStorage(app);
+
+// Export current environment for debugging
+export const firebaseEnvironment = {
+  env: CURRENT_ENV,
+  projectId: firebaseConfig.projectId,
+};
 
 export { app, auth, db, storage, googleProvider, appleProvider };

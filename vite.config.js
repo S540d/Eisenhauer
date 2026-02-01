@@ -43,6 +43,8 @@ export default defineConfig(({ mode }) => {
         workbox: {
           globPatterns: ['**/*.{js,css,html,png,svg,json,ico,woff,woff2}'],
           cleanupOutdatedCaches: true,
+          // Environment-specific cache name to prevent cross-environment cache pollution
+          cacheId: `eisenhauer-${environment}`,
         },
         manifest: {
           name: 'Eisenhauer Matrix',
