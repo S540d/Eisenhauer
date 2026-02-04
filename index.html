@@ -36,7 +36,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea" />
 
-    <link rel="stylesheet" href="style.css?v=1.9.2" />
+    <link rel="stylesheet" href="style.css?v=1769935681002" />
   </head>
   <body>
     <!-- Staging Banner -->
@@ -393,7 +393,7 @@
 
         <!-- Cloud Backup (only visible when authenticated) -->
         <div id="backupSection" class="settings-section" style="display: none">
-          <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP</h4>
+          <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP (BETA)</h4>
           <button id="createBackupBtn" class="settings-export-btn" style="width: 100%">
             Backup erstellen
           </button>
@@ -427,12 +427,43 @@
     <div id="aboutModal" class="modal">
       <div class="modal-content about-modal">
         <div class="settings-header">
-          <h3>About</h3>
+          <h3 id="aboutTitle">About</h3>
           <button id="aboutCancelBtn" class="close-btn" aria-label="Close">×</button>
         </div>
         <div class="about-content">
-          <p id="aboutVersion" class="about-item"></p>
-          <p id="aboutLicense" class="about-item" style="margin-top: 12px"></p>
+          <!-- App License -->
+          <div class="about-section">
+            <h4 id="aboutLicenseTitle" class="about-section-title">APP-LIZENZ</h4>
+            <p id="aboutLicenseInfo" class="about-item">Open Source • MIT License</p>
+            <p id="aboutNoCommercial" class="about-item about-item-hint">
+              Keine kommerzielle Nutzung ohne Genehmigung
+            </p>
+            <a
+              id="aboutRepositoryLink"
+              href="https://github.com/S540d/Eisenhauer"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="about-link"
+              >GitHub Repository</a
+            >
+          </div>
+
+          <!-- Support -->
+          <div class="about-section">
+            <h4 id="aboutSupportTitle" class="about-section-title">UNTERSTÜTZUNG</h4>
+            <a
+              href="https://ko-fi.com/devsven"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="about-support-link"
+              >☕ <span id="aboutSupportMe">Support me</span></a
+            >
+            <a
+              href="mailto:devsven@posteo.de?subject=Eisenhauer%20-%20Bug%20Report"
+              class="about-support-link"
+              >🐛 <span id="aboutReportBug">Fehler melden</span></a
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -728,7 +759,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1.9.2"></script>
+    <script type="module" src="script.js?v=1769935681002"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>
