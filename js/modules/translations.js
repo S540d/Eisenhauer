@@ -38,6 +38,16 @@ export const translations = {
       envSwitchConfirm: 'Wechseln',
       envSwitchCancel: 'Abbrechen',
     },
+    about: {
+      title: 'Über',
+      licenseTitle: 'APP-LIZENZ',
+      licenseInfo: 'Open Source • MIT License',
+      noCommercial: 'Keine kommerzielle Nutzung ohne Genehmigung',
+      repository: 'GitHub Repository',
+      supportTitle: 'UNTERSTÜTZUNG',
+      supportMe: 'Support me',
+      reportBug: 'Fehler melden',
+    },
     undo: {
       button: 'Rückgängig',
       taskDeleted: 'Aufgabe gelöscht',
@@ -132,6 +142,16 @@ export const translations = {
       envSwitchMessage: 'You will be signed out and redirected to the {env} environment.',
       envSwitchConfirm: 'Switch',
       envSwitchCancel: 'Cancel',
+    },
+    about: {
+      title: 'About',
+      licenseTitle: 'APP LICENSE',
+      licenseInfo: 'Open Source • MIT License',
+      noCommercial: 'No commercial use without permission',
+      repository: 'GitHub Repository',
+      supportTitle: 'SUPPORT',
+      supportMe: 'Support me',
+      reportBug: 'Report a bug',
     },
     undo: {
       button: 'Undo',

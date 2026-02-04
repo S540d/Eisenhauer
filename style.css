@@ -2222,10 +2222,65 @@ body.dark-mode .theme-btn {
   color: var(--text-color);
 }
 
+.about-section {
+  margin-bottom: 24px;
+}
+
+.about-section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--text-color);
+}
+
 .about-item {
-  margin: 0;
+  margin: 0 0 4px 0;
   line-height: 1.5;
-  color: inherit;
+  color: var(--text-secondary);
+}
+
+.about-item-hint {
+  font-size: 12px;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.about-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.about-link:hover {
+  text-decoration: underline;
+}
+
+.about-support-link {
+  display: block;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  color: #667eea;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  background-color: var(--grid-color);
+  transition: opacity 0.2s ease;
+}
+
+.about-support-link:hover {
+  opacity: 0.8;
+}
+
+body.dark-mode .about-support-link {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .about-link {
+  color: #8b9eff;
 }
 
 body.dark-mode .theme-btn.active {

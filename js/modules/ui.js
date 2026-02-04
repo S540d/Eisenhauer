@@ -471,7 +471,7 @@ export function openSettingsModal(
     // Handle About button click
     if (target.closest('#aboutBtn')) {
       e.preventDefault();
-      openAboutModal(version);
+      openAboutModal(version, currentLanguage);
       return;
     }
 
@@ -592,20 +592,24 @@ export function closeSettingsModal() {
  * Open About modal
  * @param {string} version - App version
  */
-export function openAboutModal(version) {
+export function openAboutModal(version, currentLanguage = 'en') {
   const aboutModal = document.getElementById('aboutModal');
   if (!aboutModal) return;
 
-  // Update version text
-  const aboutVersion = document.getElementById('aboutVersion');
-  if (aboutVersion) {
-    aboutVersion.textContent = `Version: ${version}`;
-  }
-
-  // Update license text
-  const aboutLicense = document.getElementById('aboutLicense');
-  if (aboutLicense) {
-    aboutLicense.innerHTML = `<strong>License:</strong> MIT<br>No commercial use without permission`;
+  const lang = translations[currentLanguage]?.about;
+  if (lang) {
+    const set = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+    set('aboutTitle', lang.title);
+    set('aboutLicenseTitle', lang.licenseTitle);
+    set('aboutLicenseInfo', lang.licenseInfo);
+    set('aboutNoCommercial', lang.noCommercial);
+    set('aboutRepositoryLink', lang.repository);
+    set('aboutSupportTitle', lang.supportTitle);
+    set('aboutSupportMe', lang.supportMe);
+    set('aboutReportBug', lang.reportBug);
   }
 
   aboutModal.classList.add('active');
@@ -614,11 +618,9 @@ export function openAboutModal(version) {
   // Setup close button event listener
   const aboutCancelBtn = document.getElementById('aboutCancelBtn');
   if (aboutCancelBtn) {
-    // Remove old listener by cloning
     const newAboutCancelBtn = aboutCancelBtn.cloneNode(true);
     aboutCancelBtn.parentNode.replaceChild(newAboutCancelBtn, aboutCancelBtn);
 
-    // Add new listener
     newAboutCancelBtn.addEventListener('click', () => {
       closeAboutModal();
     });
