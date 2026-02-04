@@ -471,7 +471,7 @@ export function openSettingsModal(
     // Handle About button click
     if (target.closest('#aboutBtn')) {
       e.preventDefault();
-      openAboutModal(version);
+      openAboutModal(version, currentLanguage);
       return;
     }
 
@@ -592,20 +592,24 @@ export function closeSettingsModal() {
  * Open About modal
  * @param {string} version - App version
  */
-export function openAboutModal(version) {
+export function openAboutModal(version, currentLanguage = 'en') {
   const aboutModal = document.getElementById('aboutModal');
   if (!aboutModal) return;
 
-  // Update version text
-  const aboutVersion = document.getElementById('aboutVersion');
-  if (aboutVersion) {
-    aboutVersion.textContent = `Version: ${version}`;
-  }
-
-  // Update license text
-  const aboutLicense = document.getElementById('aboutLicense');
-  if (aboutLicense) {
-    aboutLicense.innerHTML = `<strong>License:</strong> MIT<br>No commercial use without permission`;
+  const lang = translations[currentLanguage]?.about;
+  if (lang) {
+    const set = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+    set('aboutTitle', lang.title);
+    set('aboutLicenseTitle', lang.licenseTitle);
+    set('aboutLicenseInfo', lang.licenseInfo);
+    set('aboutNoCommercial', lang.noCommercial);
+    set('aboutRepositoryLink', lang.repository);
+    set('aboutSupportTitle', lang.supportTitle);
+    set('aboutSupportMe', lang.supportMe);
+    set('aboutReportBug', lang.reportBug);
   }
 
   aboutModal.classList.add('active');
@@ -614,11 +618,9 @@ export function openAboutModal(version) {
   // Setup close button event listener
   const aboutCancelBtn = document.getElementById('aboutCancelBtn');
   if (aboutCancelBtn) {
-    // Remove old listener by cloning
     const newAboutCancelBtn = aboutCancelBtn.cloneNode(true);
     aboutCancelBtn.parentNode.replaceChild(newAboutCancelBtn, aboutCancelBtn);
 
-    // Add new listener
     newAboutCancelBtn.addEventListener('click', () => {
       closeAboutModal();
     });
@@ -677,40 +679,6 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     }
   });
 
-  // Update environment toggle button active state
-  const envButtons = personalizeModal.querySelectorAll('.env-btn');
-  const pathname = window.location.pathname || '';
-  const isTestingEnv = pathname.includes('/Eisenhauer/testing/');
-
-  // Determine current environment from pathname
-  let currentEnv = 'production';
-  if (isTestingEnv) {
-    currentEnv = 'testing';
-  } else if (pathname.includes('/staging/')) {
-    currentEnv = 'staging';
-  }
-
-  // Disable all environment buttons (keep them visible but non-functional)
-  envButtons.forEach((btn) => {
-    btn.classList.remove('active');
-    if (btn.dataset.env === currentEnv) {
-      btn.classList.add('active');
-    }
-    // Disable the button to make it non-functional
-    btn.disabled = true;
-  });
-
-  // Show/hide environment warning based on current environment
-  const envWarning = document.getElementById('personalizeEnvWarning');
-  if (envWarning) {
-    if (isTestingEnv) {
-      // Do not show a staging/production warning in testing
-      envWarning.style.display = 'none';
-    } else {
-      envWarning.style.display = currentEnv === 'staging' ? 'block' : 'none';
-    }
-  }
-
   // Use event delegation for all personalize modal buttons
   const existingHandler = personalizeModal._clickHandler;
   if (existingHandler) {
@@ -759,13 +727,6 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       if (window.changeLanguage) {
         window.changeLanguage(lang);
       }
-      return;
-    }
-
-    // Handle environment button clicks
-    const envBtn = target.closest('.env-btn');
-    if (envBtn) {
-      // Environment switching is disabled - do nothing
       return;
     }
 

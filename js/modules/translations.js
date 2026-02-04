@@ -15,7 +15,7 @@ export const translations = {
       exportBtn: 'Export',
       importGuestBtn: 'Import Gast-Daten',
       personalizeBtn: 'Personalisieren',
-      backupTitle: 'CLOUD BACKUP',
+      backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Backup erstellen',
       lastBackup: 'Letztes Backup',
       never: 'Nie',
@@ -28,20 +28,20 @@ export const translations = {
       themeSystem: 'System',
       langEn: 'English',
       langDe: 'Deutsch',
-      environment: 'UMGEBUNG',
-      envProduction: 'Standard',
-      envStaging: 'Beta',
-      envDescription: 'Wechsle zur Beta-Umgebung zum Testen neuer Features',
-      envWarning: '⚠️ Beta-Daten werden regelmäßig zurückgesetzt',
-      envSwitchTitle: 'Umgebung wechseln',
-      envSwitchMessage: 'Du wirst abgemeldet und zur {env}-Umgebung weitergeleitet.',
-      envSwitchConfirm: 'Wechseln',
-      envSwitchCancel: 'Abbrechen',
+    },
+    about: {
+      title: 'Über',
+      licenseTitle: 'APP-LIZENZ',
+      licenseInfo: 'Open Source • MIT License',
+      noCommercial: 'Keine kommerzielle Nutzung ohne Genehmigung',
+      repository: 'GitHub Repository',
+      supportTitle: 'UNTERSTÜTZUNG',
+      supportMe: 'Support me',
+      reportBug: 'Fehler melden',
     },
     undo: {
       button: 'Rückgängig',
       taskDeleted: 'Aufgabe gelöscht',
-      taskMoved: 'Aufgabe verschoben',
       taskCompleted: 'Als erledigt markiert',
       taskUncompleted: 'Als unerledigt markiert',
     },
@@ -110,7 +110,7 @@ export const translations = {
       exportBtn: 'Export',
       importGuestBtn: 'Import Guest Data',
       personalizeBtn: 'Personalize',
-      backupTitle: 'CLOUD BACKUP',
+      backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Create Backup',
       lastBackup: 'Last backup',
       never: 'Never',
@@ -123,20 +123,20 @@ export const translations = {
       themeSystem: 'System',
       langEn: 'English',
       langDe: 'Deutsch',
-      environment: 'ENVIRONMENT',
-      envProduction: 'Standard',
-      envStaging: 'Beta',
-      envDescription: 'Switch to beta environment to test new features',
-      envWarning: '⚠️ Beta data is reset regularly',
-      envSwitchTitle: 'Switch Environment',
-      envSwitchMessage: 'You will be signed out and redirected to the {env} environment.',
-      envSwitchConfirm: 'Switch',
-      envSwitchCancel: 'Cancel',
+    },
+    about: {
+      title: 'About',
+      licenseTitle: 'APP LICENSE',
+      licenseInfo: 'Open Source • MIT License',
+      noCommercial: 'No commercial use without permission',
+      repository: 'GitHub Repository',
+      supportTitle: 'SUPPORT',
+      supportMe: 'Support me',
+      reportBug: 'Report a bug',
     },
     undo: {
       button: 'Undo',
       taskDeleted: 'Task deleted',
-      taskMoved: 'Task moved',
       taskCompleted: 'Marked as complete',
       taskUncompleted: 'Marked as incomplete',
     },
@@ -460,32 +460,6 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const personalizeThemeSystem = document.getElementById('personalizeThemeSystem');
   if (personalizeThemeSystem) {
     personalizeThemeSystem.textContent = lang.personalize.themeSystem;
-  }
-
-  // Update Environment section texts
-  const personalizeEnvironmentTitle = document.getElementById('personalizeEnvironmentTitle');
-  if (personalizeEnvironmentTitle) {
-    personalizeEnvironmentTitle.textContent = lang.personalize.environment;
-  }
-
-  const personalizeEnvProduction = document.getElementById('personalizeEnvProduction');
-  if (personalizeEnvProduction) {
-    personalizeEnvProduction.textContent = lang.personalize.envProduction;
-  }
-
-  const personalizeEnvStaging = document.getElementById('personalizeEnvStaging');
-  if (personalizeEnvStaging) {
-    personalizeEnvStaging.textContent = lang.personalize.envStaging;
-  }
-
-  const personalizeEnvDescription = document.getElementById('personalizeEnvDescription');
-  if (personalizeEnvDescription) {
-    personalizeEnvDescription.textContent = lang.personalize.envDescription;
-  }
-
-  const personalizeEnvWarning = document.getElementById('personalizeEnvWarning');
-  if (personalizeEnvWarning) {
-    personalizeEnvWarning.textContent = lang.personalize.envWarning;
   }
 
   // Update Cloud Backup section texts
