@@ -1,0 +1,26 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sven4321.eisenhauer",
+      "sha256_cert_fingerprints": ["REPLACE_WITH_YOUR_RELEASE_CERT_FINGERPRINT"]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sven4321.eisenhauer.staging",
+      "sha256_cert_fingerprints": ["REPLACE_WITH_YOUR_RELEASE_CERT_FINGERPRINT"]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.sven4321.eisenhauer.testing",
+      "sha256_cert_fingerprints": ["REPLACE_WITH_YOUR_RELEASE_CERT_FINGERPRINT"]
+    }
+  }
+]

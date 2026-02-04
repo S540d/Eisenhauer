@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Eisenhauer/staging/service-worker.js', { scope: '/Eisenhauer/staging/' })})}
