@@ -959,29 +959,22 @@ header h1,
 }
 
 .cancel-btn {
-  padding: 14px 20px;
-  background: var(--grid-color);
-  border: 2px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-color);
-  transition: opacity 0.2s ease;
   flex-shrink: 0;
-  min-height: auto;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  width: auto;
+  background: var(--grid-color);
+  color: var(--text-color);
+  border-color: transparent;
 }
 
 .cancel-btn:hover {
+  background: var(--grid-color);
   opacity: 0.8;
 }
 
-.cancel-btn:active {
-  opacity: 0.6;
+body.dark-mode .cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  border-color: transparent;
 }
 
 /* Recurring Task Configuration */
@@ -1614,30 +1607,12 @@ body.dark-mode .search-highlight {
   justify-content: flex-end;
 }
 
+.modal-buttons .btn {
+  width: auto;
+}
+
 .submit-btn {
-  background: #667eea;
-  color: white;
-  border: 2px solid #667eea;
-  padding: 14px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
   flex: 1;
-  min-height: auto;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-}
-
-.submit-btn:hover {
-  opacity: 0.8;
-}
-
-.submit-btn:active {
-  opacity: 0.6;
 }
 
 .submit-btn:disabled {
@@ -1703,15 +1678,8 @@ body.dark-mode .search-highlight {
     line-height: 1.3;
   }
 
-  .theme-toggle-container {
+  .toggle-group {
     gap: 6px;
-  }
-
-  .theme-btn,
-  .lang-btn {
-    padding: 6px 10px;
-    min-height: 32px;
-    font-size: 11px;
   }
 
   .settings-separator {
@@ -2043,8 +2011,9 @@ body.dark-mode .segment.keyboard-target::before {
 
 .settings-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
+  color: var(--text-color);
 }
 
 .close-btn {
@@ -2066,50 +2035,97 @@ body.dark-mode .segment.keyboard-target::before {
 }
 
 .settings-section {
-  padding: 8px 12px;
+  padding: 12px;
 }
 
 .settings-section-title {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 0 8px 0;
+  letter-spacing: 1px;
+  margin: 0 0 10px 0;
 }
 
 .settings-info {
   font-size: 13px;
   color: var(--text-secondary);
   margin: 0;
+  line-height: 1.5;
 }
 
-.theme-toggle-container {
+/* ========================================================================== */
+/* Unified Button System                                                       */
+/* ========================================================================== */
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  color: #667eea;
+  border: 1.5px solid #667eea;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 36px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.btn:hover {
+  background: rgba(102, 126, 234, 0.08);
+}
+
+.btn:active {
+  background: rgba(102, 126, 234, 0.15);
+}
+
+.btn.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.btn:visited {
+  color: #667eea;
+}
+
+/* Toggle group: row of equal-width toggle buttons */
+.toggle-group {
   display: flex;
   gap: 8px;
 }
 
-.theme-btn {
+.btn-toggle {
   flex: 1;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--grid-color);
-  color: var(--text-color);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 32px;
+  width: auto;
 }
 
-.theme-btn:hover {
-  opacity: 0.8;
+.btn-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.theme-btn.active {
-  background-color: #667eea;
+/* Dark mode */
+body.dark-mode .btn {
+  color: #8b9eff;
+  border-color: #8b9eff;
+}
+
+body.dark-mode .btn:hover {
+  background: rgba(139, 158, 255, 0.1);
+}
+
+body.dark-mode .btn.active {
+  background: #667eea;
   color: white;
+  border-color: #667eea;
 }
 
 .settings-separator {
@@ -2118,93 +2134,14 @@ body.dark-mode .segment.keyboard-target::before {
   margin: 0;
 }
 
-.settings-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--grid-color);
-  color: var(--text-color);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  text-decoration: none;
-  min-height: 32px;
-}
-
-.settings-btn:hover {
-  opacity: 0.8;
-}
-
-.settings-btn:active {
-  opacity: 0.6;
-}
-
-a.settings-btn {
-  color: #667eea !important;
-  background-color: transparent !important;
-}
-
-a.settings-btn:visited {
-  color: #667eea;
-}
-
-a.settings-btn.settings-btn-flex {
-  color: #667eea !important;
-  background-color: transparent !important;
-  border-radius: 0;
-}
-
-button.settings-btn.settings-btn-flex {
-  color: #667eea;
-  background-color: transparent;
-  border-radius: 0;
-}
-
-.lang-btn {
-  flex: 1;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--grid-color);
-  color: var(--text-color);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 32px;
-}
-
-.lang-btn:hover {
-  opacity: 0.8;
-}
-
-.lang-btn.active {
-  background-color: #667eea;
-  color: white;
-}
-
 .settings-row {
   display: flex;
-  justify-content: space-between;
   gap: 8px;
-  padding: 0;
+  padding: 12px;
 }
 
-.settings-btn-flex {
+.settings-row .btn {
   flex: 1;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 8px;
-}
-
-body.dark-mode .theme-btn {
-  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* About Modal Styles */
@@ -2224,10 +2161,12 @@ body.dark-mode .theme-btn {
 }
 
 .about-section-title {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
-  margin: 0 0 8px 0;
-  color: var(--text-color);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 10px 0;
 }
 
 .about-item {
@@ -2242,98 +2181,9 @@ body.dark-mode .theme-btn {
   margin-top: 4px;
 }
 
-.about-link {
-  display: inline-block;
+.about-section .btn {
   margin-top: 8px;
-  color: #667eea;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.about-link:hover {
-  text-decoration: underline;
-}
-
-.about-support-link {
-  display: block;
-  padding: 12px 16px;
-  border-radius: 8px;
   margin-bottom: 8px;
-  color: #667eea;
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-  background-color: var(--grid-color);
-  transition: opacity 0.2s ease;
-}
-
-.about-support-link:hover {
-  opacity: 0.8;
-}
-
-body.dark-mode .about-support-link {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .about-link {
-  color: #8b9eff;
-}
-
-body.dark-mode .theme-btn.active {
-  background-color: #667eea;
-}
-
-body.dark-mode .lang-btn {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .lang-btn.active {
-  background-color: #667eea;
-}
-
-/* Environment Switcher Styles */
-.env-btn {
-  flex: 1;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background-color: var(--grid-color);
-  color: var(--text-color);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 32px;
-}
-
-.env-btn:hover {
-  opacity: 0.8;
-}
-
-.env-btn.active {
-  background-color: #667eea;
-  color: white;
-}
-
-.env-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-body.dark-mode .env-btn {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .env-btn.active {
-  background-color: #667eea;
-}
-
-.settings-info {
-  margin-top: 8px;
-  font-size: 11px;
-  color: var(--text-secondary);
-  line-height: 1.4;
 }
 
 .settings-warning {
@@ -2350,22 +2200,6 @@ body.dark-mode .env-btn.active {
 body.dark-mode .settings-warning {
   background-color: rgba(255, 165, 0, 0.15);
   color: #ffa500;
-}
-
-/* Dark mode styles for settings buttons */
-body.dark-mode a.settings-btn.settings-btn-flex {
-  color: #8b9eff !important;
-  background-color: transparent !important;
-}
-
-body.dark-mode button.settings-btn.settings-btn-flex {
-  color: #8b9eff;
-  background-color: transparent;
-}
-
-body.dark-mode a.settings-btn.settings-btn-flex:hover,
-body.dark-mode button.settings-btn.settings-btn-flex:hover {
-  color: #a5b4ff !important;
 }
 
 /* Settings User Info */
@@ -2388,51 +2222,8 @@ body.dark-mode button.settings-btn.settings-btn-flex:hover {
   width: 100%;
 }
 
-/* Settings Action Buttons - Primary Style (like active language toggle) */
-.settings-export-btn,
-.settings-import-btn,
-.settings-signout-btn,
-#aboutBtn {
-  padding: 14px 20px;
-  background-color: #667eea;
-  color: white;
-  border: 2px solid #667eea;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-  min-height: auto;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-}
-
-/* Full-width variants (for standalone buttons) */
-.settings-signout-btn,
-#aboutBtn {
-  width: 100%;
-}
-
-/* Small variants (for side-by-side buttons) */
-.settings-export-btn-small,
-.settings-import-btn-small {
+.settings-data-buttons .btn {
   flex: 1;
-  width: auto;
-}
-
-.settings-export-btn:hover,
-.settings-import-btn:hover,
-.settings-signout-btn:hover,
-#aboutBtn:hover {
-  opacity: 0.8;
-}
-
-.settings-export-btn:active,
-.settings-signout-btn:active,
-#aboutBtn:active {
-  opacity: 0.6;
 }
 
 /* Undo Toast Notification */

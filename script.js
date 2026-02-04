@@ -79,7 +79,7 @@ import {
   setupDropZones,
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
-import { showUndoDelete, showUndoMove, showUndoToggle } from './js/modules/undo.js';
+import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
 import {
   KeyboardDragManager,
   announceDragStart,
@@ -285,20 +285,6 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
   } else {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
-  }
-
-  // Show undo notification
-  if (movedTask) {
-    showUndoMove(taskId, fromSegment, toSegment, getCurrentLanguage(), () => {
-      // After undo, the task has been moved back, so we need to get the updated task reference
-      const updatedTask = tasks[fromSegment].find((t) => t.id === taskId);
-      if (currentUser && db && !isGuestMode && updatedTask) {
-        updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
-      } else {
-        saveGuestTasks(tasks);
-      }
-      renderTasksWithCallbacks();
-    });
   }
 }
 
@@ -545,48 +531,6 @@ function setupEventListeners() {
         b.classList.add('active');
       }
     });
-  };
-
-  // Create a global switchEnvironment function for use by all modals
-  window.switchEnvironment = async (targetEnv, currentLang) => {
-    const lang = translations[currentLang];
-    const envName =
-      targetEnv === 'staging' ? lang.personalize.envStaging : lang.personalize.envProduction;
-
-    // Show confirmation dialog
-    const message = lang.personalize.envSwitchMessage.replace('{env}', envName);
-    const confirmed = confirm(`${lang.personalize.envSwitchTitle}\n\n${message}`);
-
-    if (!confirmed) {
-      return;
-    }
-
-    // Sign out if user is logged in
-    if (currentUser) {
-      try {
-        await signOut();
-      } catch (error) {
-        console.error('Error signing out:', error);
-      }
-    }
-
-    // Build target URL based on deployment paths
-    const { origin, pathname, search, hash } = window.location;
-
-    let newPathname = pathname;
-
-    if (targetEnv === 'staging') {
-      // Ensure we are under /Eisenhauer/staging/
-      newPathname = pathname.replace(/\/Eisenhauer\/?/, '/Eisenhauer/staging/');
-    } else {
-      // Ensure we are under /Eisenhauer/ (production)
-      newPathname = pathname.replace('/staging/', '/');
-    }
-
-    const targetUrl = origin + newPathname + search + hash;
-
-    // Redirect to target environment
-    window.location.href = targetUrl;
   };
 
   // Language toggle buttons in settings modal (legacy support)
@@ -860,6 +804,13 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
   currentUser = user;
   isGuestMode = guestMode;
+
+  // On logout: clear tasks from memory and DOM before showing login screen
+  if (!user && !guestMode) {
+    setAllTasks({ 1: [], 2: [], 3: [], 4: [], 5: [] });
+    renderTasksWithCallbacks();
+    return;
+  }
 
   // Only reload tasks if they haven't been loaded yet (prevents double-loading)
   const tasksAlreadyLoaded = getTasks().length > 0;
