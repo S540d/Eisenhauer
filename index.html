@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.9.2 (740d49d1) built at 1769838187963 -->
+<!-- Cache-Busting Info: v1.10.0 (7b3f0134) built at 1770235204497 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,10 +8,10 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="740d49d1" /><meta name="build-time" content="1769838187963" />
+    <meta name="build-hash" content="7b3f0134" /><meta name="build-time" content="1770235204497" />
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/Eisenhauer/assets/manifest-DH21xojI.json" />
+    <link rel="manifest" href="/Eisenhauer/assets/manifest-BVU6pIXm.json" />
 
     <!-- iOS Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -38,9 +38,9 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#667eea" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-bTl3jERy.js?v=740d49d1"></script>
-    <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-BdBQXiW1.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-DNBkvceg.css">
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-C5g19cU1.js?v=7b3f0134"></script>
+    <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-CLd3Dub8.js">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-DAbdZMEd.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
   <body>
     <!-- Staging Banner -->
@@ -270,8 +270,8 @@
         </div>
 
         <div class="modal-buttons">
-          <button id="quickAddSubmitBtn" class="submit-btn">Add</button>
-          <button id="quickAddCancelBtn" class="cancel-btn">Cancel</button>
+          <button id="quickAddSubmitBtn" class="btn submit-btn">Add</button>
+          <button id="quickAddCancelBtn" class="btn cancel-btn">Cancel</button>
         </div>
       </div>
     </div>
@@ -350,7 +350,7 @@
           </div>
         </div>
 
-        <button id="cancelBtn" class="cancel-btn">Cancel</button>
+        <button id="cancelBtn" class="btn cancel-btn">Cancel</button>
       </div>
     </div>
 
@@ -366,16 +366,14 @@
         <div id="accountSection" class="settings-section" style="display: none">
           <h4 class="settings-section-title">ACCOUNT</h4>
           <div id="userEmailDisplay" class="settings-user-info"></div>
-          <button id="signOutBtn" class="settings-signout-btn">Sign Out</button>
+          <button id="signOutBtn" class="btn">Sign Out</button>
         </div>
 
         <div id="accountSeparator" class="settings-separator" style="display: none"></div>
 
         <!-- Personalisieren Button -->
         <div class="settings-section">
-          <button id="personalizeBtn" class="settings-export-btn" style="width: 100%">
-            Personalisieren
-          </button>
+          <button id="personalizeBtn" class="btn">Personalisieren</button>
         </div>
 
         <div class="settings-separator"></div>
@@ -384,12 +382,8 @@
         <div class="settings-section">
           <h4 id="dataManagementTitle" class="settings-section-title">DATEN</h4>
           <div class="settings-data-buttons">
-            <button id="exportJsonBtn" class="settings-export-btn settings-export-btn-small">
-              Export
-            </button>
-            <button id="importGuestTasksBtn" class="settings-import-btn settings-import-btn-small">
-              Import Gast-Daten
-            </button>
+            <button id="exportJsonBtn" class="btn">Export</button>
+            <button id="importGuestTasksBtn" class="btn">Import</button>
           </div>
         </div>
 
@@ -397,30 +391,22 @@
 
         <!-- Cloud Backup (only visible when authenticated) -->
         <div id="backupSection" class="settings-section" style="display: none">
-          <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP</h4>
-          <button id="createBackupBtn" class="settings-export-btn" style="width: 100%">
-            Backup erstellen
-          </button>
+          <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP (BETA)</h4>
+          <button id="createBackupBtn" class="btn">Backup erstellen</button>
           <p id="lastBackupInfo" class="settings-info" style="margin-top: 8px"></p>
         </div>
 
         <div id="backupSeparator" class="settings-separator" style="display: none"></div>
 
-        <!-- Feedback, Support & About - Unified Row -->
+        <!-- Feedback, Support & About -->
         <div class="settings-section settings-row">
-          <a
-            href="mailto:devsven@posteo.de?subject=Eisenhauer Feedback"
-            class="settings-btn settings-btn-flex"
+          <a href="mailto:devsven@posteo.de?subject=Eisenhauer Feedback" class="btn"
             >Send Feedback</a
           >
-          <a
-            href="https://ko-fi.com/devsven"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="settings-btn settings-btn-flex"
+          <a href="https://ko-fi.com/devsven" target="_blank" rel="noopener noreferrer" class="btn"
             >Support Me</a
           >
-          <a href="#" id="aboutBtn" class="settings-btn settings-btn-flex">About</a>
+          <a href="#" id="aboutBtn" class="btn">About</a>
         </div>
 
         <div class="settings-separator"></div>
@@ -431,12 +417,41 @@
     <div id="aboutModal" class="modal">
       <div class="modal-content about-modal">
         <div class="settings-header">
-          <h3>About</h3>
+          <h3 id="aboutTitle">About</h3>
           <button id="aboutCancelBtn" class="close-btn" aria-label="Close">×</button>
         </div>
         <div class="about-content">
-          <p id="aboutVersion" class="about-item"></p>
-          <p id="aboutLicense" class="about-item" style="margin-top: 12px"></p>
+          <!-- App License -->
+          <div class="about-section">
+            <h4 id="aboutLicenseTitle" class="about-section-title">APP-LIZENZ</h4>
+            <p id="aboutLicenseInfo" class="about-item">Open Source • MIT License</p>
+            <p id="aboutNoCommercial" class="about-item about-item-hint">
+              Keine kommerzielle Nutzung ohne Genehmigung
+            </p>
+            <a
+              id="aboutRepositoryLink"
+              href="https://github.com/S540d/Eisenhauer"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn"
+              >GitHub Repository</a
+            >
+          </div>
+
+          <!-- Support -->
+          <div class="about-section">
+            <h4 id="aboutSupportTitle" class="about-section-title">UNTERSTÜTZUNG</h4>
+            <a
+              href="https://ko-fi.com/devsven"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn"
+              >☕ <span id="aboutSupportMe">Support me</span></a
+            >
+            <a href="mailto:devsven@posteo.de?subject=Eisenhauer%20-%20Bug%20Report" class="btn"
+              >🐛 <span id="aboutReportBug">Fehler melden</span></a
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -452,14 +467,13 @@
         <!-- Appearance Settings -->
         <div class="settings-section">
           <h4 class="settings-section-title" id="personalizeAppearanceTitle">ERSCHEINUNGSBILD</h4>
-          <div id="personalizeThemeToggleContainer" class="theme-toggle-container">
-            <button class="theme-btn" data-theme="dark" title="Dark Mode" id="personalizeThemeDark">
+          <div id="personalizeThemeToggleContainer" class="toggle-group">
+            <button class="btn btn-toggle theme-btn" data-theme="dark" id="personalizeThemeDark">
               Dark
             </button>
             <button
-              class="theme-btn"
+              class="btn btn-toggle theme-btn"
               data-theme="system"
-              title="System Mode"
               id="personalizeThemeSystem"
             >
               System
@@ -472,39 +486,13 @@
         <!-- Language Settings -->
         <div class="settings-section">
           <h4 class="settings-section-title" id="personalizeLanguageTitle">SPRACHE</h4>
-          <div id="personalizeLanguageToggleContainer" class="theme-toggle-container">
-            <button class="lang-btn" data-lang="en" title="English" id="personalizeLangEn">
+          <div id="personalizeLanguageToggleContainer" class="toggle-group">
+            <button class="btn btn-toggle lang-btn" data-lang="en" id="personalizeLangEn">
               English
             </button>
-            <button class="lang-btn" data-lang="de" title="Deutsch" id="personalizeLangDe">
+            <button class="btn btn-toggle lang-btn" data-lang="de" id="personalizeLangDe">
               Deutsch
             </button>
-          </div>
-        </div>
-
-        <div class="settings-separator"></div>
-
-        <!-- Environment Settings -->
-        <div class="settings-section">
-          <h4 class="settings-section-title" id="personalizeEnvironmentTitle">UMGEBUNG</h4>
-          <div id="personalizeEnvironmentToggleContainer" class="theme-toggle-container">
-            <button
-              class="env-btn"
-              data-env="production"
-              title="Standard"
-              id="personalizeEnvProduction"
-            >
-              Standard
-            </button>
-            <button class="env-btn" data-env="staging" title="Beta" id="personalizeEnvStaging">
-              Beta
-            </button>
-          </div>
-          <p class="settings-info" id="personalizeEnvDescription">
-            Wechsle zur Beta-Umgebung zum Testen neuer Features
-          </p>
-          <div id="personalizeEnvWarning" class="settings-warning" style="display: none">
-            ⚠️ Beta-Daten werden regelmäßig zurückgesetzt
           </div>
         </div>
 
@@ -627,7 +615,7 @@
             <canvas id="segmentDistributionChart"></canvas>
           </div>
         </div>
-        <button id="metricsCancelBtn" class="cancel-btn">Close</button>
+        <button id="metricsCancelBtn" class="btn cancel-btn">Close</button>
       </div>
     </div>
 
@@ -721,8 +709,8 @@
         </div>
 
         <div class="modal-buttons">
-          <button id="editRecurringCancelBtn" class="cancel-btn">Cancel</button>
-          <button id="editRecurringSaveBtn" class="submit-btn">Save</button>
+          <button id="editRecurringCancelBtn" class="btn cancel-btn">Cancel</button>
+          <button id="editRecurringSaveBtn" class="btn submit-btn">Save</button>
         </div>
       </div>
     </div>
