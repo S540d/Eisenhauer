@@ -1,6 +1,6 @@
 /**
  * Undo Module
- * Handles undo functionality for task operations (delete, move, complete)
+ * Handles undo functionality for task operations (delete, complete)
  */
 
 import { restoreTask, toggleTask } from './tasks.js';
