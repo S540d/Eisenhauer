@@ -692,14 +692,14 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     currentEnv = 'staging';
   }
 
-  // Disable all environment buttons (keep them visible but non-functional)
   envButtons.forEach((btn) => {
     btn.classList.remove('active');
     if (btn.dataset.env === currentEnv) {
       btn.classList.add('active');
+      btn.disabled = true;
+    } else {
+      btn.disabled = false;
     }
-    // Disable the button to make it non-functional
-    btn.disabled = true;
   });
 
   // Show/hide environment warning based on current environment
