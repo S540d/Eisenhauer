@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.0] - 2026-02-04 🚀 RELEASED
+
+### 🐛 Bug Fixes
+- **Logout Data Leak (kritisch)**
+  - Bei Logout werden jetzt alle Tasks aus dem Speicher und der DOM gelöscht
+  - Verhindert, dass ein folgender Nutzer die Daten des vorherigen Nutzers sieht
+  - `auth.js`: `onAuthStateChanged(null, false)` wird beim Logout aufgerufen
+  - `script.js`: Early-Return-Block leert Tasks via `setAllTasks()` + `renderTasksWithCallbacks()`
+- **Modal-Button-Layout**
+  - Cancel-Button im Task-Erstellungs-Modal überschrieb die Add-Button-Breite
+  - Fix: `.modal-buttons .btn { width: auto; }` verhindert `.btn`-Breitenüberschreibung innerhalb der Modal-Buttons
+
+### 🗑️ Removed
+- **Environment Switcher (Personalize Modal)**
+  - Standard/Beta-Buttons aus dem Personalize-Modal entfernt
+  - Buttons waren auf Production komplett deaktiviert und nur verwirrend
+  - Entfernt aus: `index.html`, `ui.js`, `translations.js` (9 Übersetzungsschlüssel), `script.js` (`switchEnvironment`)
+  - 152 Zeilen Code gelöscht
+
+### ✅ Testing
+- **showUndoMove Tests entfernt**
+  - `showUndoMove`-Funktion existiert nicht mehr → 3 Tests aus `undo.test.js` entfernt
+  - Aktuelle Testsuite: 150 Tests, 7/8 Suites grün
+  - `storage.test.js` bleibt pre-existing Failure (Firebase-Mock nicht vorhanden)
+
+### 📝 Commits
+- `c69eb33` — fix: modal-buttons layout and remove showUndoMove tests
+- `3677c9f` — fix: clear tasks in memory on logout to prevent data leakage
+- `e12cfd3` — feat: remove environment switcher from Personalize modal
+- `e482295` — docs: fix undo.js module comment per Copilot review suggestion
+
+### 📋 Issues
+- [Issue #166](https://github.com/S540d/Eisenhauer/issues/166) — ESLint cleanup (76 pre-existing Problems)
+
+---
+
 ## [1.9.2] - 2026-01-27 🚀 RELEASED
 
 ### 🐛 Bug Fixes
@@ -556,8 +592,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Production
 - **Branch:** `main`
 - **URL:** https://s540d.github.io/Eisenhauer/
-- **Status:** ⏸️ Awaiting testing approval
-- **Last Deploy:** (pending)
+- **Status:** ✅ Deployed
+- **Last Deploy:** 2026-02-04 (v1.10.0)
 
 ---
 
