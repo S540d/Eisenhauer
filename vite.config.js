@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
 
     build: {
       outDir: 'dist',
-      sourcemap: true, // Enable source maps for production debugging
+      sourcemap: environment !== 'production', // Source maps only for staging/testing (not exposed in production)
 
       rollupOptions: {
         output: {
