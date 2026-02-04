@@ -2,14 +2,14 @@
 
 **Projekt:** Eisenhauer Matrix - Android TWA für Google Play Store
 **Letzte Aktualisierung:** 2026-02-04
-**Status:** ✅ AAB gebaut und bereit für Play Store Upload (v1.10.0)
+**Status:** ✅ AAB gebaut und bereit für Play Store Upload (v1.10.1)
 
 ---
 
 ## ✅ Aktueller Status
 
 ### Build Information
-- **Version:** 1.10.0 (versionCode: 18)
+- **Version:** 1.10.1 (versionCode: 19)
 - **AAB Datei:** `Android/app/build/outputs/bundle/release/app-release.aab`
 - **Größe:** ~1.9 MB
 - **Signierung:** ✅ Signiert mit Release-Keystore
