@@ -79,7 +79,7 @@ import {
   setupDropZones,
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
-import { showUndoDelete, showUndoMove, showUndoToggle } from './js/modules/undo.js';
+import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
 import {
   KeyboardDragManager,
   announceDragStart,
@@ -285,20 +285,6 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
   } else {
     // Save to LocalForage (guest mode)
     saveGuestTasks(tasks);
-  }
-
-  // Show undo notification
-  if (movedTask) {
-    showUndoMove(taskId, fromSegment, toSegment, getCurrentLanguage(), () => {
-      // After undo, the task has been moved back, so we need to get the updated task reference
-      const updatedTask = tasks[fromSegment].find((t) => t.id === taskId);
-      if (currentUser && db && !isGuestMode && updatedTask) {
-        updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
-      } else {
-        saveGuestTasks(tasks);
-      }
-      renderTasksWithCallbacks();
-    });
   }
 }
 

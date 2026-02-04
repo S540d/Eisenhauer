@@ -3,7 +3,7 @@
  * Handles undo functionality for task operations (delete, move, complete)
  */
 
-import { restoreTask, moveTask, toggleTask } from './tasks.js';
+import { restoreTask, toggleTask } from './tasks.js';
 import { translations } from './translations.js';
 
 /**
@@ -22,7 +22,6 @@ let undoTimer = null;
  */
 export const UNDO_ACTIONS = {
   DELETE: 'delete',
-  MOVE: 'move',
   TOGGLE: 'toggle',
 };
 
@@ -149,39 +148,6 @@ export function showUndoDelete(task, currentLanguage = 'en', onSuccess) {
     () => {
       // Restore task with all original properties
       restoreTask(task);
-      if (onSuccess) {
-        onSuccess();
-      }
-    },
-    currentLanguage
-  );
-
-  showToast(toast);
-}
-
-/**
- * Show undo notification for move action
- * @param {string} taskId - Task ID
- * @param {number} fromSegment - Source segment
- * @param {number} toSegment - Target segment
- * @param {string} currentLanguage - Current language
- * @param {Function} onSuccess - Success callback after undo
- */
-export function showUndoMove(taskId, fromSegment, toSegment, currentLanguage = 'en', onSuccess) {
-  const message =
-    currentLanguage === 'de' ? translations.de.undo.taskMoved : translations.en.undo.taskMoved;
-
-  pushUndoStack(UNDO_ACTIONS.MOVE, {
-    taskId,
-    fromSegment,
-    toSegment,
-  });
-
-  const toast = createToast(
-    message,
-    () => {
-      // Move back to original segment (from toSegment back to fromSegment)
-      moveTask(taskId, toSegment, fromSegment);
       if (onSuccess) {
         onSuccess();
       }

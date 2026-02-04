@@ -51,7 +51,6 @@ export const translations = {
     undo: {
       button: 'Rückgängig',
       taskDeleted: 'Aufgabe gelöscht',
-      taskMoved: 'Aufgabe verschoben',
       taskCompleted: 'Als erledigt markiert',
       taskUncompleted: 'Als unerledigt markiert',
     },
@@ -156,7 +155,6 @@ export const translations = {
     undo: {
       button: 'Undo',
       taskDeleted: 'Task deleted',
-      taskMoved: 'Task moved',
       taskCompleted: 'Marked as complete',
       taskUncompleted: 'Marked as incomplete',
     },
