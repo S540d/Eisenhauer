@@ -8,7 +8,7 @@ import localforage from 'localforage';
 import { isGuestMode } from './auth.js';
 import { OfflineQueue } from './offline-queue.js';
 import { ErrorHandler } from './error-handler.js';
-import { showError, showSuccess, showInfo, showWarning } from './notifications.js';
+import { showError, showInfo, showWarning } from './notifications.js';
 import {
   collection,
   doc,
@@ -55,7 +55,6 @@ export function initStorage(onSyncStatusChange = null) {
   });
 
   offlineQueue.on('queueEmpty', () => {
-    showSuccess('All changes synced', 2000);
     updateSyncStatusUI();
   });
 
