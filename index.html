@@ -1,0 +1,856 @@
+<!-- Cache-Busting Info: v1.9.2 (740d49d1) built at 1769838187963 -->
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Eisenhauer Matrix</title>
+    <meta name="build-hash" content="740d49d1" /><meta name="build-time" content="1769838187963" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/Eisenhauer/assets/manifest-DH21xojI.json" />
+
+    <!-- iOS Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Eisenhauer" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="icons/icon-96x96.png" />
+
+    <!-- iOS Icons -->
+    <link rel="apple-touch-icon" href="icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="96x96" href="icons/icon-96x96.png" />
+    <link rel="apple-touch-icon" sizes="128x128" href="icons/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="384x384" href="icons/icon-384x384.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png" />
+
+    <!-- iOS Splash Screen Color -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="#667eea" />
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#667eea" />
+
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-bTl3jERy.js?v=740d49d1"></script>
+    <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-BdBQXiW1.js">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-DNBkvceg.css">
+  <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
+  <body>
+    <!-- Staging Banner -->
+    <div id="stagingBanner" class="staging-banner" style="display: none">
+      <div class="staging-banner-content">
+        <span class="staging-badge">⚠️ STAGING</span>
+        <span class="staging-text">Testing in Progress - Data may be reset</span>
+      </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+      <div class="login-container">
+        <img src="icons/icon-192x192.png" alt="Logo" class="login-logo" />
+        <h1>Eisenhauer Matrix</h1>
+        <p class="login-subtitle">Organize your tasks efficiently</p>
+
+        <div class="login-buttons">
+          <button id="googleSignInBtn" onclick="signInWithGoogle()" class="login-btn google-btn">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path
+                fill="#4285F4"
+                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+              />
+              <path
+                fill="#34A853"
+                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+              />
+              <path
+                fill="#FBBC05"
+                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+              />
+              <path
+                fill="#EA4335"
+                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+              />
+            </svg>
+            Sign in with Google
+          </button>
+
+          <button onclick="signInWithApple()" class="login-btn apple-btn" style="display: none">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path
+                fill="currentColor"
+                d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"
+              />
+            </svg>
+            Sign in with Apple
+          </button>
+
+          <button id="guestModeBtn" onclick="continueAsGuest()" class="login-btn guest-btn">
+            <svg viewBox="0 0 24 24" width="20" height="20">
+              <path
+                fill="currentColor"
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+              />
+            </svg>
+            Continue as guest
+          </button>
+        </div>
+
+        <p class="login-info">
+          Sign in to save your data to the cloud and sync across all devices. In guest mode, your
+          data is stored locally on this device.
+        </p>
+      </div>
+    </div>
+
+    <!-- App Screen -->
+    <div id="appScreen" class="container" style="display: none">
+      <header class="app-header">
+        <h1>Eisenhauer Matrix</h1>
+        <div id="userInfo" class="user-info"></div>
+        <button
+          id="settingsBtnHeader"
+          class="settings-btn-header"
+          title="Settings"
+          aria-label="Settings"
+        >
+          <span>⋮</span>
+        </button>
+      </header>
+
+      <!-- Drag & Drop Hint -->
+      <div id="dragHint" class="drag-hint" style="display: none">
+        <p>
+          💡 <strong>Tip:</strong> Drag tasks between categories to move them. Swipe left to delete.
+        </p>
+        <button id="closeDragHint" class="close-hint-btn">Got it</button>
+      </div>
+
+      <div class="add-task-section">
+        <input type="text" id="taskInput" placeholder="New task" maxlength="140" />
+      </div>
+
+      <div class="segments">
+        <!-- Segment 1: Do! -->
+        <div class="segment q1" data-segment="1">
+          <div class="segment-header">
+            <h2>Do!</h2>
+            <button class="segment-add-btn" data-segment="1" title="Add task">+</button>
+          </div>
+          <div class="task-list" id="segment1" data-segment="1"></div>
+        </div>
+
+        <!-- Segment 2: Schedule! -->
+        <div class="segment q2" data-segment="2">
+          <div class="segment-header">
+            <h2>Schedule!</h2>
+            <button class="segment-add-btn" data-segment="2" title="Add task">+</button>
+          </div>
+          <div class="task-list" id="segment2" data-segment="2"></div>
+        </div>
+
+        <!-- Segment 3: Delegate! -->
+        <div class="segment q3" data-segment="3">
+          <div class="segment-header">
+            <h2>Delegate!</h2>
+            <button class="segment-add-btn" data-segment="3" title="Add task">+</button>
+          </div>
+          <div class="task-list" id="segment3" data-segment="3"></div>
+        </div>
+
+        <!-- Segment 4: Ignore! -->
+        <div class="segment q4" data-segment="4">
+          <div class="segment-header">
+            <h2>Ignore!</h2>
+            <button class="segment-add-btn" data-segment="4" title="Add task">+</button>
+          </div>
+          <div class="task-list" id="segment4" data-segment="4"></div>
+        </div>
+
+        <!-- Segment 5: Done! -->
+        <div class="segment q5" data-segment="5">
+          <div class="segment-header">
+            <h2>Done!</h2>
+          </div>
+          <div class="task-list" id="segment5" data-segment="5"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Add Task Modal (v1.4.5+) -->
+    <div id="quickAddModal" class="modal">
+      <div class="modal-content quick-add-modal">
+        <h3 id="quickAddTitle">New Task</h3>
+        <p id="quickAddCategory" class="quick-add-category"></p>
+
+        <div class="quick-add-input-wrapper">
+          <input
+            type="text"
+            id="quickAddInput"
+            placeholder="What do you want to do?"
+            maxlength="140"
+            autocomplete="off"
+          />
+          <span id="quickAddCharCount" class="char-counter">0/140</span>
+        </div>
+
+        <!-- Recurring Task Configuration -->
+        <div class="recurring-config-quick">
+          <label class="recurring-enable">
+            <input type="checkbox" id="quickRecurringEnabled" />
+            <span id="quickRecurringEnableText">🔁 Make recurring</span>
+          </label>
+
+          <div id="quickRecurringOptions" class="recurring-options" style="display: none">
+            <div class="recurring-option">
+              <label>
+                <input type="radio" name="quickRecurringType" value="daily" checked />
+                <span id="quickRecurringDaily">Daily</span>
+              </label>
+            </div>
+            <div class="recurring-option">
+              <label>
+                <input type="radio" name="quickRecurringType" value="weekly" />
+                <span id="quickRecurringWeekly">Weekly</span>
+              </label>
+              <div id="quickWeekdaysContainer" class="weekdays-container" style="display: none">
+                <label
+                  ><input type="checkbox" class="weekday-check" value="1" />
+                  <span id="quickMon">Mon</span></label
+                >
+                <label
+                  ><input type="checkbox" class="weekday-check" value="2" />
+                  <span id="quickTue">Tue</span></label
+                >
+                <label
+                  ><input type="checkbox" class="weekday-check" value="3" />
+                  <span id="quickWed">Wed</span></label
+                >
+                <label
+                  ><input type="checkbox" class="weekday-check" value="4" />
+                  <span id="quickThu">Thu</span></label
+                >
+                <label
+                  ><input type="checkbox" class="weekday-check" value="5" />
+                  <span id="quickFri">Fri</span></label
+                >
+                <label
+                  ><input type="checkbox" class="weekday-check" value="6" />
+                  <span id="quickSat">Sat</span></label
+                >
+                <label
+                  ><input type="checkbox" class="weekday-check" value="0" />
+                  <span id="quickSun">Sun</span></label
+                >
+              </div>
+            </div>
+            <div class="recurring-option">
+              <label>
+                <input type="radio" name="quickRecurringType" value="monthly" />
+                <span id="quickRecurringMonthly">Monthly</span>
+              </label>
+              <div id="quickMonthDayContainer" style="display: none">
+                <input
+                  type="number"
+                  id="quickMonthDay"
+                  min="1"
+                  max="31"
+                  value="1"
+                  placeholder="Day (1-31)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-buttons">
+          <button id="quickAddSubmitBtn" class="submit-btn">Add</button>
+          <button id="quickAddCancelBtn" class="cancel-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal für Segment-Auswahl (legacy, kept for compatibility) -->
+    <div id="segmentModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Choose a segment</h3>
+        <div class="segment-buttons">
+          <button class="segment-btn q1-btn" data-segment="1">
+            <strong>Do!</strong>
+          </button>
+          <button class="segment-btn q2-btn" data-segment="2">
+            <strong>Schedule!</strong>
+          </button>
+          <button class="segment-btn q3-btn" data-segment="3">
+            <strong>Delegate!</strong>
+          </button>
+          <button class="segment-btn q4-btn" data-segment="4">
+            <strong>Ignore!</strong>
+          </button>
+        </div>
+
+        <!-- Recurring Task Configuration -->
+        <div class="recurring-config">
+          <label class="recurring-enable">
+            <input type="checkbox" id="recurringEnabled" />
+            <span id="recurringEnableText">🔁 Make recurring</span>
+          </label>
+
+          <div id="recurringOptions" class="recurring-options" style="display: none">
+            <label>
+              <span id="recurringIntervalLabel">Interval:</span>
+              <select id="recurringInterval">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </label>
+
+            <!-- Weekly: Day selection -->
+            <div id="weeklyOptions" class="interval-options" style="display: none">
+              <div class="weekday-selector">
+                <label
+                  ><input type="checkbox" value="1" /> <span id="weekday-monday">Mon</span></label
+                >
+                <label
+                  ><input type="checkbox" value="2" /> <span id="weekday-tuesday">Tue</span></label
+                >
+                <label
+                  ><input type="checkbox" value="3" />
+                  <span id="weekday-wednesday">Wed</span></label
+                >
+                <label
+                  ><input type="checkbox" value="4" /> <span id="weekday-thursday">Thu</span></label
+                >
+                <label
+                  ><input type="checkbox" value="5" /> <span id="weekday-friday">Fri</span></label
+                >
+                <label
+                  ><input type="checkbox" value="6" /> <span id="weekday-saturday">Sat</span></label
+                >
+                <label
+                  ><input type="checkbox" value="0" /> <span id="weekday-sunday">Sun</span></label
+                >
+              </div>
+            </div>
+
+            <!-- Monthly: Day of month -->
+            <div id="monthlyOptions" class="interval-options" style="display: none">
+              <label>
+                <span id="dayOfMonthLabel">Day of month:</span>
+                <input type="number" id="dayOfMonth" min="1" max="31" value="1" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button id="cancelBtn" class="cancel-btn">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Modal für Einstellungen -->
+    <div id="settingsModal" class="modal">
+      <div class="modal-content">
+        <div class="settings-header">
+          <h3>Settings</h3>
+          <button id="settingsCancelBtn" class="close-btn" aria-label="Close">×</button>
+        </div>
+
+        <!-- Account Management (only visible when user is authenticated) -->
+        <div id="accountSection" class="settings-section" style="display: none">
+          <h4 class="settings-section-title">ACCOUNT</h4>
+          <div id="userEmailDisplay" class="settings-user-info"></div>
+          <button id="signOutBtn" class="settings-signout-btn">Sign Out</button>
+        </div>
+
+        <div id="accountSeparator" class="settings-separator" style="display: none"></div>
+
+        <!-- Personalisieren Button -->
+        <div class="settings-section">
+          <button id="personalizeBtn" class="settings-export-btn" style="width: 100%">
+            Personalisieren
+          </button>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- JSON Export & Import -->
+        <div class="settings-section">
+          <h4 id="dataManagementTitle" class="settings-section-title">DATEN</h4>
+          <div class="settings-data-buttons">
+            <button id="exportJsonBtn" class="settings-export-btn settings-export-btn-small">
+              Export
+            </button>
+            <button id="importGuestTasksBtn" class="settings-import-btn settings-import-btn-small">
+              Import Gast-Daten
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Cloud Backup (only visible when authenticated) -->
+        <div id="backupSection" class="settings-section" style="display: none">
+          <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP</h4>
+          <button id="createBackupBtn" class="settings-export-btn" style="width: 100%">
+            Backup erstellen
+          </button>
+          <p id="lastBackupInfo" class="settings-info" style="margin-top: 8px"></p>
+        </div>
+
+        <div id="backupSeparator" class="settings-separator" style="display: none"></div>
+
+        <!-- Feedback, Support & About - Unified Row -->
+        <div class="settings-section settings-row">
+          <a
+            href="mailto:devsven@posteo.de?subject=Eisenhauer Feedback"
+            class="settings-btn settings-btn-flex"
+            >Send Feedback</a
+          >
+          <a
+            href="https://ko-fi.com/devsven"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="settings-btn settings-btn-flex"
+            >Support Me</a
+          >
+          <a href="#" id="aboutBtn" class="settings-btn settings-btn-flex">About</a>
+        </div>
+
+        <div class="settings-separator"></div>
+      </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="aboutModal" class="modal">
+      <div class="modal-content about-modal">
+        <div class="settings-header">
+          <h3>About</h3>
+          <button id="aboutCancelBtn" class="close-btn" aria-label="Close">×</button>
+        </div>
+        <div class="about-content">
+          <p id="aboutVersion" class="about-item"></p>
+          <p id="aboutLicense" class="about-item" style="margin-top: 12px"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personalisieren Modal -->
+    <div id="personalizeModal" class="modal">
+      <div class="modal-content">
+        <div class="settings-header">
+          <h3 id="personalizeTitle">Personalisieren</h3>
+          <button id="personalizeCancelBtn" class="close-btn" aria-label="Close">×</button>
+        </div>
+
+        <!-- Appearance Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeAppearanceTitle">ERSCHEINUNGSBILD</h4>
+          <div id="personalizeThemeToggleContainer" class="theme-toggle-container">
+            <button class="theme-btn" data-theme="dark" title="Dark Mode" id="personalizeThemeDark">
+              Dark
+            </button>
+            <button
+              class="theme-btn"
+              data-theme="system"
+              title="System Mode"
+              id="personalizeThemeSystem"
+            >
+              System
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Language Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeLanguageTitle">SPRACHE</h4>
+          <div id="personalizeLanguageToggleContainer" class="theme-toggle-container">
+            <button class="lang-btn" data-lang="en" title="English" id="personalizeLangEn">
+              English
+            </button>
+            <button class="lang-btn" data-lang="de" title="Deutsch" id="personalizeLangDe">
+              Deutsch
+            </button>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Environment Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeEnvironmentTitle">UMGEBUNG</h4>
+          <div id="personalizeEnvironmentToggleContainer" class="theme-toggle-container">
+            <button
+              class="env-btn"
+              data-env="production"
+              title="Standard"
+              id="personalizeEnvProduction"
+            >
+              Standard
+            </button>
+            <button class="env-btn" data-env="staging" title="Beta" id="personalizeEnvStaging">
+              Beta
+            </button>
+          </div>
+          <p class="settings-info" id="personalizeEnvDescription">
+            Wechsle zur Beta-Umgebung zum Testen neuer Features
+          </p>
+          <div id="personalizeEnvWarning" class="settings-warning" style="display: none">
+            ⚠️ Beta-Daten werden regelmäßig zurückgesetzt
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
+      </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="modal">
+      <div class="modal-content tutorial-modal">
+        <div class="tutorial-header">
+          <h3 id="tutorialTitle">Welcome!</h3>
+          <button id="tutorialSkipBtn" class="tutorial-skip-btn" aria-label="Skip tutorial">
+            Skip
+          </button>
+        </div>
+
+        <div class="tutorial-slides">
+          <!-- Slide 1: Drag & Drop -->
+          <div class="tutorial-slide active" data-slide="1">
+            <div class="tutorial-icon">🖱️</div>
+            <h4 id="tutorialSlide1Title">Drag & Drop</h4>
+            <p id="tutorialSlide1Text">
+              Drag tasks between segments to organize them according to the Eisenhower Matrix.
+            </p>
+            <div class="tutorial-animation">
+              <div class="tutorial-demo-task">Sample Task</div>
+              <div class="tutorial-demo-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Swipe Actions -->
+          <div class="tutorial-slide" data-slide="2">
+            <div class="tutorial-icon">👆</div>
+            <h4 id="tutorialSlide2Title">Swipe to Delete</h4>
+            <p id="tutorialSlide2Text">
+              Swipe left on any task to quickly delete it. Perfect for mobile!
+            </p>
+            <div class="tutorial-animation">
+              <div class="tutorial-demo-task">Sample Task</div>
+              <div class="tutorial-demo-swipe">←</div>
+            </div>
+          </div>
+
+          <!-- Slide 3: Quick Actions -->
+          <div class="tutorial-slide" data-slide="3">
+            <div class="tutorial-icon">⚡</div>
+            <h4 id="tutorialSlide3Title">Quick Actions</h4>
+            <p id="tutorialSlide3Text">
+              Tap the + button next to each segment to quickly add tasks. Check tasks to mark them
+              as done!
+            </p>
+          </div>
+        </div>
+
+        <div class="tutorial-progress">
+          <div class="tutorial-dot active" data-slide="1"></div>
+          <div class="tutorial-dot" data-slide="2"></div>
+          <div class="tutorial-dot" data-slide="3"></div>
+        </div>
+
+        <div class="tutorial-buttons">
+          <button id="tutorialBackBtn" class="tutorial-btn tutorial-btn-secondary" disabled>
+            Back
+          </button>
+          <button id="tutorialNextBtn" class="tutorial-btn tutorial-btn-primary">Next</button>
+        </div>
+
+        <div class="tutorial-footer">
+          <label class="tutorial-checkbox">
+            <input type="checkbox" id="tutorialDontShowAgain" />
+            <span id="tutorialDontShowText">Don't show this again</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal für Metriken -->
+    <div id="metricsModal" class="modal">
+      <div class="modal-content metrics-modal">
+        <h3 id="metricsTitle">📊 Productivity Statistics</h3>
+        <div class="metrics-container">
+          <!-- Overview Stats -->
+          <div class="metrics-section">
+            <h4 id="metricsOverviewTitle">Overview</h4>
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-value" id="metricTotalCompleted">0</div>
+                <div class="metric-label" id="metricTotalLabel">Total completed</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value" id="metricCurrentStreak">0</div>
+                <div class="metric-label" id="metricStreakLabel">Day streak</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value" id="metricAvgTime">-</div>
+                <div class="metric-label" id="metricAvgTimeLabel">Avg. processing time</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Tasks Chart -->
+          <div class="metrics-section">
+            <h4 id="metricsCompletedTitle">Completed Tasks</h4>
+            <div class="chart-controls">
+              <button class="chart-period-btn active" data-period="day" id="metricsDayBtn">
+                Day
+              </button>
+              <button class="chart-period-btn" data-period="week" id="metricsWeekBtn">Week</button>
+              <button class="chart-period-btn" data-period="month" id="metricsMonthBtn">
+                Month
+              </button>
+            </div>
+            <canvas id="completedTasksChart"></canvas>
+          </div>
+
+          <!-- Segment Distribution Chart -->
+          <div class="metrics-section">
+            <h4 id="metricsDistributionTitle">Distribution by segments</h4>
+            <canvas id="segmentDistributionChart"></canvas>
+          </div>
+        </div>
+        <button id="metricsCancelBtn" class="cancel-btn">Close</button>
+      </div>
+    </div>
+
+    <!-- Edit Recurring Task Modal -->
+    <div id="editRecurringModal" class="modal">
+      <div class="modal-content quick-add-modal">
+        <h3 id="editRecurringTitle">Edit Recurring Task</h3>
+        <p id="editRecurringTaskName" class="quick-add-category"></p>
+
+        <!-- Recurring Task Configuration -->
+        <div class="recurring-config-quick">
+          <div id="editRecurringOptions" class="recurring-options">
+            <div class="recurring-option">
+              <label>
+                <input type="radio" name="editRecurringType" value="daily" />
+                <span id="editRecurringDaily">Daily</span>
+              </label>
+            </div>
+            <div class="recurring-option">
+              <label>
+                <input type="radio" name="editRecurringType" value="weekly" />
+                <span id="editRecurringWeekly">Weekly</span>
+              </label>
+              <div id="editWeekdaysContainer" class="weekdays-container" style="display: none">
+                <label
+                  ><input type="checkbox" class="edit-weekday-check" value="1" />
+                  <span id="editMon">Mo</span></label
+                >
+                <label
+                  ><input type="checkbox" class="edit-weekday-check" value="2" />
+                  <span id="editTue">Tu</span></label
+                >
+                <label
+                  ><input type="checkbox" class="edit-weekday-check" value="3" />
+                  <span id="editWed">We</span></label
+                >
+                <label
+                  ><input type="checkbox" class="edit-weekday-check" value="4" />
+                  <span id="editThu">Th</span></label
+                >
+                <label
+                  ><input type="checkbox" class="edit-weekday-check" value="5" />
+                  <span id="editFri">Fr</span></label
+                >
+                <label
+                  ><input type="checkbox" class="edit-weekday-check" value="6" />
+                  <span id="editSat">Sa</span></label
+                >
+                <label
+                  ><input type="checkbox" class="edit-weekday-check" value="0" />
+                  <span id="editSun">Su</span></label
+                >
+              </div>
+            </div>
+            <div class="recurring-option">
+              <label>
+                <input type="radio" name="editRecurringType" value="monthly" />
+                <span id="editRecurringMonthly">Monthly</span>
+              </label>
+              <div id="editMonthDayContainer" style="display: none">
+                <input
+                  type="number"
+                  id="editMonthDay"
+                  min="1"
+                  max="31"
+                  value="1"
+                  placeholder="Day (1-31)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Option to disable recurring -->
+          <div
+            class="recurring-option"
+            style="margin-top: 16px; border-top: 1px solid var(--grid-color); padding-top: 16px"
+          >
+            <label>
+              <input type="checkbox" id="editDisableRecurring" />
+              <span id="editDisableRecurringText">Remove recurring (make one-time task)</span>
+            </label>
+          </div>
+
+          <!-- Option to delete task -->
+          <div class="recurring-option" style="margin-top: 8px">
+            <label>
+              <input type="checkbox" id="editDeleteTask" />
+              <span id="editDeleteTaskText">Delete this task permanently</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="modal-buttons">
+          <button id="editRecurringCancelBtn" class="cancel-btn">Cancel</button>
+          <button id="editRecurringSaveBtn" class="submit-btn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Functions will be bound by script.js after import -->
+    <!-- No global wrappers needed - script.js handles module initialization -->
+
+    <!-- Main App (ES6 Module with Firebase Modular SDK) -->
+    <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
+
+    <!-- Register Service Worker with Cache Busting -->
+    <script>
+      // Only register service worker in production builds (not in Vite dev mode)
+      const isProduction = !window.location.port || import.meta.env?.PROD;
+
+      if ('serviceWorker' in navigator && isProduction) {
+        let refreshing = false;
+
+        // Detect current environment from URL path using robust path matching
+        const currentPath = window.location.pathname;
+        const pathSegments = currentPath.split('/').filter(Boolean);
+        let currentEnvironment = 'production';
+
+        // Use lastIndexOf to find the rightmost occurrence of staging/testing
+        const stagingIndex = pathSegments.lastIndexOf('staging');
+        const testingIndex = pathSegments.lastIndexOf('testing');
+
+        if (stagingIndex !== -1 && stagingIndex > testingIndex) {
+          currentEnvironment = 'staging';
+        } else if (testingIndex !== -1) {
+          currentEnvironment = 'testing';
+        }
+
+        // Get build hash from meta tag (added by post-build.js)
+        const buildHashElement = document.querySelector('meta[name="build-hash"]');
+        const currentBuildHash = buildHashElement ? buildHashElement.content : Date.now().toString();
+
+        // Store current environment in localStorage
+        const cachedEnvironment = localStorage.getItem('sw-environment');
+        const environmentChanged =
+          cachedEnvironment !== null && cachedEnvironment !== currentEnvironment;
+        const isFirstVisit = cachedEnvironment === null;
+
+        // Store current build hash in localStorage (environment-specific key)
+        const buildHashKey = `sw-build-hash-${currentEnvironment}`;
+        const cachedBuildHash = localStorage.getItem(buildHashKey);
+        const buildHashChanged =
+          cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
+
+        // Clear caches if environment changed, build hash changed, or first visit
+        const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
+
+        if (shouldClearCache) {
+          const reason = environmentChanged
+            ? `Environment changed (${cachedEnvironment} → ${currentEnvironment})`
+            : buildHashChanged
+              ? `Build hash changed (${cachedBuildHash} → ${currentBuildHash})`
+              : 'First visit - establishing fresh cache';
+          console.log(`[Service Worker] ${reason}. Clearing caches...`);
+
+          // Clear all caches to force fresh content
+          if ('caches' in window) {
+            caches.keys().then((names) => {
+              names.forEach((name) => {
+                caches.delete(name);
+              });
+            });
+          }
+
+          // Always clear old build hashes from other environments (not just on environment change)
+          ['production', 'staging', 'testing'].forEach((env) => {
+            if (env !== currentEnvironment) {
+              localStorage.removeItem(`sw-build-hash-${env}`);
+            }
+          });
+        }
+
+        localStorage.setItem('sw-environment', currentEnvironment);
+        localStorage.setItem(buildHashKey, currentBuildHash);
+
+        // Reload page when new service worker takes over
+        // ONLY if it's not the first load to avoid reload loops
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (refreshing) return;
+
+          // Only reload if we already had a controller (i.e., this is an update, not first install)
+          // and if we haven't reloaded in this session yet
+          const hasController = !!navigator.serviceWorker.controller;
+          const sessionReloaded = sessionStorage.getItem('sw-reloaded');
+
+          if (hasController && !sessionReloaded) {
+            refreshing = true;
+            sessionStorage.setItem('sw-reloaded', 'true');
+            console.log('[Service Worker] Controller changed, reloading page...');
+            window.location.reload();
+          }
+        });
+
+        window.addEventListener('load', () => {
+          // Register with cache busting query parameter
+          const swUrl = `./service-worker.js?v=${currentBuildHash}`;
+
+          navigator.serviceWorker
+            .register(swUrl)
+            .then((registration) => {
+              console.log('[Service Worker] Registered:', swUrl);
+
+              // Check for updates on page load (less aggressive)
+              if (registration.active) {
+                registration.update();
+              }
+
+              // Check for updates every 60 seconds (less aggressive than 10s)
+              const updateInterval = setInterval(() => {
+                registration.update();
+              }, 60000);
+
+              // Listen for updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('[Service Worker] New version found, waiting for activation...');
+              });
+            })
+            .catch((error) => {
+              console.error('[Service Worker] Registration failed:', error);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

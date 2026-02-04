@@ -1,0 +1,39 @@
+{
+  "packageId": "com.sven4321.eisenhauer",
+  "host": "s540d.github.io",
+  "name": "Eisenhauer Matrix",
+  "launcherName": "Eisenhauer",
+  "display": "standalone",
+  "themeColor": "#667eea",
+  "navigationColor": "#667eea",
+  "backgroundColor": "#667eea",
+  "enableNotifications": false,
+  "startUrl": "/Eisenhauer/",
+  "iconUrl": "https://s540d.github.io/Eisenhauer/icons/icon-512x512.png",
+  "maskableIconUrl": "https://s540d.github.io/Eisenhauer/icons/icon-512x512.png",
+  "monochromeIconUrl": "https://s540d.github.io/Eisenhauer/icons/icon-512x512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "Android/keystore/eisenhauer-release.keystore",
+    "alias": "eisenhauer-release"
+  },
+  "appVersionName": "1.7.6",
+  "appVersionCode": 11,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://s540d.github.io/Eisenhauer/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "minSdkVersion": 21,
+  "targetSdkVersion": 35
+}
