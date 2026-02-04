@@ -221,6 +221,12 @@ export async function initAuth() {
         } else {
           // User is signed out and not in guest mode
           isGuestMode = false;
+
+          // Notify script.js to clear tasks before showing login
+          if (typeof window.onAuthStateChanged === 'function') {
+            await window.onAuthStateChanged(null, false);
+          }
+
           showLogin();
         }
       } catch (error) {

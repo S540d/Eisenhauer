@@ -847,6 +847,13 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
   currentUser = user;
   isGuestMode = guestMode;
 
+  // On logout: clear tasks from memory and DOM before showing login screen
+  if (!user && !guestMode) {
+    setAllTasks({ 1: [], 2: [], 3: [], 4: [], 5: [] });
+    renderTasksWithCallbacks();
+    return;
+  }
+
   // Only reload tasks if they haven't been loaded yet (prevents double-loading)
   const tasksAlreadyLoaded = getTasks().length > 0;
 
