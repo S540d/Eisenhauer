@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { showUndoDelete, showUndoMove, showUndoToggle } from '../../js/modules/undo.js';
+import { showUndoDelete, showUndoToggle } from '../../js/modules/undo.js';
 
 describe('Undo Module', () => {
   beforeEach(() => {
@@ -86,33 +86,6 @@ describe('Undo Module', () => {
       // Toast should be removed
       toast = document.querySelector('.undo-toast');
       expect(toast).toBeFalsy();
-    });
-  });
-
-  describe('showUndoMove', () => {
-    it('should display undo toast for move action', () => {
-      showUndoMove(1, 1, 2, 'en');
-
-      const toast = document.querySelector('.undo-toast');
-      expect(toast).toBeTruthy();
-      expect(toast.textContent).toContain('moved');
-    });
-
-    it('should display German text when language is de', () => {
-      showUndoMove(1, 1, 2, 'de');
-
-      const toast = document.querySelector('.undo-toast');
-      expect(toast.textContent).toContain('verschoben');
-    });
-
-    it('should call onSuccess callback when undo is triggered', () => {
-      const onSuccess = vi.fn();
-      showUndoMove(1, 1, 2, 'en', onSuccess);
-
-      const undoButton = document.querySelector('.undo-toast button');
-      undoButton.click();
-
-      expect(onSuccess).toHaveBeenCalled();
     });
   });
 

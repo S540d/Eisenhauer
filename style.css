@@ -1607,6 +1607,10 @@ body.dark-mode .search-highlight {
   justify-content: flex-end;
 }
 
+.modal-buttons .btn {
+  width: auto;
+}
+
 .submit-btn {
   flex: 1;
 }
