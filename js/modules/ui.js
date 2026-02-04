@@ -679,40 +679,6 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     }
   });
 
-  // Update environment toggle button active state
-  const envButtons = personalizeModal.querySelectorAll('.env-btn');
-  const pathname = window.location.pathname || '';
-  const isTestingEnv = pathname.includes('/Eisenhauer/testing/');
-
-  // Determine current environment from pathname
-  let currentEnv = 'production';
-  if (isTestingEnv) {
-    currentEnv = 'testing';
-  } else if (pathname.includes('/staging/')) {
-    currentEnv = 'staging';
-  }
-
-  envButtons.forEach((btn) => {
-    btn.classList.remove('active');
-    if (btn.dataset.env === currentEnv) {
-      btn.classList.add('active');
-      btn.disabled = true;
-    } else {
-      btn.disabled = false;
-    }
-  });
-
-  // Show/hide environment warning based on current environment
-  const envWarning = document.getElementById('personalizeEnvWarning');
-  if (envWarning) {
-    if (isTestingEnv) {
-      // Do not show a staging/production warning in testing
-      envWarning.style.display = 'none';
-    } else {
-      envWarning.style.display = currentEnv === 'staging' ? 'block' : 'none';
-    }
-  }
-
   // Use event delegation for all personalize modal buttons
   const existingHandler = personalizeModal._clickHandler;
   if (existingHandler) {
@@ -761,13 +727,6 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       if (window.changeLanguage) {
         window.changeLanguage(lang);
       }
-      return;
-    }
-
-    // Handle environment button clicks
-    const envBtn = target.closest('.env-btn');
-    if (envBtn) {
-      // Environment switching is disabled - do nothing
       return;
     }
 
