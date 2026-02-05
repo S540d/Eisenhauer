@@ -5,7 +5,7 @@
   "description": "Task Management nach der Eisenhauer-Matrix-Methode",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#667eea",
+  "background_color": "#000000",
   "theme_color": "#667eea",
   "orientation": "portrait",
   "icons": [

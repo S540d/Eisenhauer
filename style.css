@@ -44,120 +44,131 @@ body {
 }
 
 /* Splash Screen Styles */
+/* Splash Screen */
 .splash-screen {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+  inset: 0;
+  background: #000;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   opacity: 1;
-  transition: opacity 300ms ease-in-out;
+  transition: opacity 400ms ease-out;
 }
 
-/* Dark mode support for splash screen */
-@media (prefers-color-scheme: dark) {
-  .splash-screen {
-    background: linear-gradient(135deg, #4c51bf 0%, #553c9a 50%, #4c51bf 100%);
-  }
+.splash-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .splash-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
 }
 
-.splash-logo {
-  width: 192px;
-  height: 192px;
-  object-fit: contain;
-  animation: splashLogoScale 1000ms ease-in-out;
+/* SVG Icon */
+.splash-icon {
+  width: 160px;
+  height: 160px;
 }
 
-@keyframes splashLogoScale {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
+/* Kreuz-Linien: zeichnen sich ein */
+.splash-cross-h,
+.splash-cross-v {
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+  stroke-dasharray: 80;
+  stroke-dashoffset: 80;
+  animation: splashCrossDraw 400ms ease-out forwards;
+}
+
+.splash-cross-v {
+  animation-delay: 150ms;
+}
+
+@keyframes splashCrossDraw {
+  to {
+    stroke-dashoffset: 0;
   }
-  50% {
-    transform: scale(1.05);
+}
+
+/* Checkmarks: einzeln nach dem Kreuz einblenden */
+.splash-check {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  opacity: 0;
+  animation: splashCheckDraw 300ms ease-out forwards;
+}
+
+.splash-check-1 {
+  animation-delay: 350ms;
+}
+.splash-check-2 {
+  animation-delay: 500ms;
+}
+.splash-check-3 {
+  animation-delay: 650ms;
+}
+.splash-check-4 {
+  animation-delay: 800ms;
+}
+
+@keyframes splashCheckDraw {
+  0% {
+    opacity: 1;
+    stroke-dashoffset: 30;
   }
   100% {
-    transform: scale(1);
     opacity: 1;
+    stroke-dashoffset: 0;
   }
 }
 
+/* Titel: nach allen Checks einblenden */
 .splash-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: white;
-  text-align: center;
-  animation: splashTitleFade 1000ms ease-in-out;
-  animation-delay: 200ms;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: #fff;
   opacity: 0;
-  animation-fill-mode: forwards;
+  animation: splashTitleFade 400ms ease-out 950ms forwards;
 }
 
 @keyframes splashTitleFade {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  100% {
+  to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
-.splash-loader {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: splashLoaderSpin 800ms linear infinite;
-  animation-delay: 150ms;
-  opacity: 0;
-  animation-fill-mode: forwards;
-}
-
-@keyframes splashLoaderSpin {
-  0% {
-    opacity: 1;
-    transform: rotate(0deg);
-  }
-  100% {
-    opacity: 1;
-    transform: rotate(360deg);
-  }
-}
-
-/* Hide splash screen when app is ready */
-.splash-screen.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* Reduced motion support */
+/* Reduced motion: alles instant */
 @media (prefers-reduced-motion: reduce) {
-  .splash-logo,
-  .splash-title,
-  .splash-loader {
+  .splash-cross-h,
+  .splash-cross-v {
+    stroke-dashoffset: 0;
     animation: none;
+  }
+  .splash-check {
     opacity: 1;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .splash-title {
+    opacity: 1;
+    animation: none;
   }
   .splash-screen {
     transition: opacity 0.2s ease;
-  }
-  .splash-screen.hidden {
-    opacity: 0;
   }
 }
 
