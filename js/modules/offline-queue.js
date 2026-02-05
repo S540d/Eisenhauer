@@ -50,7 +50,9 @@ export class OfflineQueue {
           this.queue = stored;
         }
       }
-    } catch (error) {}
+    } catch (_error) {
+      // Queue load failure is non-fatal; start with empty queue
+    }
   }
 
   /**
@@ -62,7 +64,9 @@ export class OfflineQueue {
       if (this.store) {
         await this.store.setItem('queue', this.queue);
       }
-    } catch (error) {}
+    } catch (_error) {
+      // Queue persist failure is non-fatal; queue continues in memory
+    }
   }
 
   /**

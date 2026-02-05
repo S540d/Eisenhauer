@@ -7,7 +7,7 @@
  */
 
 // Import environment config
-import { isStaging, isTesting, getEnvironmentLabel } from './js/modules/env-config.js';
+import { isStaging, isTesting } from './js/modules/env-config.js';
 
 // Import npm packages for local storage and charting
 import localforage from 'localforage';
@@ -80,11 +80,7 @@ import {
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
-import {
-  KeyboardDragManager,
-  announceDragStart,
-  announceDragEnd,
-} from './js/modules/accessibility.js';
+import { KeyboardDragManager } from './js/modules/accessibility.js';
 import { uploadBackup, shouldAutoBackup, markAutoBackupCompleted } from './js/modules/backup.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
 // import {
@@ -244,7 +240,7 @@ function deleteAllRecurringInstances(taskText, segmentId, recurringConfig) {
 /**
  * Helper function to sync task deletion to storage
  */
-function syncDelete(taskId, segment) {
+function syncDelete(taskId) {
   if (currentUser && db && !isGuestMode) {
     // Delete from Firestore
     deleteTaskFromFirestore(taskId, currentUser.uid, db);
@@ -381,7 +377,6 @@ function handleEditRecurring(task) {
         if (taskIndex !== -1) {
           if (newRecurringConfig === 'DELETE') {
             // Delete task permanently
-            const deletedTask = tasks[segment][taskIndex];
             deleteTask(taskId, segment, async (task) => {
               // Delete from Firestore if logged in
               if (currentUser && db && !isGuestMode) {
@@ -755,7 +750,6 @@ function setupEventListeners() {
     logoutBtn.addEventListener('click', async () => {
       if (typeof window.signOut === 'function') {
         await window.signOut();
-      } else {
       }
     });
   }
@@ -800,8 +794,6 @@ function setupEventListeners() {
  * This is called from auth.js with (user, isGuestMode)
  */
 window.onAuthStateChanged = async function (user, guestMode = false) {
-  const callbackStart = performance.now();
-
   currentUser = user;
   isGuestMode = guestMode;
 
@@ -817,7 +809,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
   if (!tasksAlreadyLoaded) {
     // First load: load tasks and setup UI
-    const loadTasksStart = performance.now();
     if (user && !isGuestMode) {
       await loadAllTasks();
     } else {
@@ -826,7 +817,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
     // Wait for DOM to be fully visible after showApp()
     setTimeout(() => {
-      const setupStart = performance.now();
       // Setup event listeners (after showApp() has been called by auth.js)
       setupEventListeners();
 
@@ -837,7 +827,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
       // Render tasks with callbacks (after DOM is ready)
       // DragManager and drop zones are now setup in renderTasksWithCallbacks()
-      const renderStart = performance.now();
       renderTasksWithCallbacks();
     }, 100);
 
@@ -868,7 +857,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     }
   } else {
     // Tasks already loaded: just re-sync with Firebase in background
-    const resyncStart = performance.now();
     await loadAllTasks();
     renderTasksWithCallbacks();
   }

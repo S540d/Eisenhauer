@@ -13,6 +13,7 @@ export default defineConfig(({ mode }) => {
   const environment = env.VITE_ENV || mode;
   const base = getBaseUrl(environment);
 
+  // eslint-disable-next-line no-console
   console.log(`Building for environment: ${environment}, Base URL: ${base}`);
 
   return {

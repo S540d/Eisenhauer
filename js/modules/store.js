@@ -85,10 +85,6 @@ class Store {
 
     // Setup network status listeners
     this.#setupNetworkListeners();
-
-    // Log initialization in dev mode
-    if (this.#isDevelopment()) {
-    }
   }
 
   /**
@@ -139,7 +135,7 @@ class Store {
 
     const cloned = {};
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         cloned[key] = this.#deepClone(obj[key]);
       }
     }
@@ -152,7 +148,7 @@ class Store {
    * @param {Partial<AppState>} updates - Partial state updates
    * @param {string} [source] - Optional source identifier for debugging
    */
-  setState(updates, source = 'unknown') {
+  setState(updates) {
     const prevState = { ...this.state };
 
     // Merge updates into state
@@ -160,10 +156,6 @@ class Store {
       ...this.state,
       ...updates,
     };
-
-    // Log state changes in dev mode
-    if (this.#isDevelopment()) {
-    }
 
     // Notify all listeners
     this.#notifyListeners(this.state, prevState);
@@ -175,7 +167,7 @@ class Store {
    * @param {*} value - New value
    * @param {string} [source] - Optional source identifier
    */
-  setNestedState(path, value, source = 'unknown') {
+  setNestedState(path, value) {
     const prevState = { ...this.state };
     const keys = path.split('.');
     const newState = { ...this.state };
@@ -190,9 +182,6 @@ class Store {
     current[keys[keys.length - 1]] = value;
 
     this.state = newState;
-
-    if (this.#isDevelopment()) {
-    }
 
     this.#notifyListeners(this.state, prevState);
   }
@@ -286,9 +275,6 @@ class Store {
       dragTarget: null,
     };
 
-    if (this.#isDevelopment()) {
-    }
-
     this.#notifyListeners(this.state, prevState);
   }
 
@@ -359,7 +345,9 @@ class Store {
     this.listeners.forEach((listener) => {
       try {
         listener(newState, prevState);
-      } catch (error) {}
+      } catch (_error) {
+        // Individual listener errors must not prevent other listeners from firing
+      }
     });
   }
 

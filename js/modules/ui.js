@@ -5,7 +5,7 @@
 
 import localforage from 'localforage';
 import { COLORS, SEGMENTS } from './config.js';
-import { getTasks, getRecurringDescription } from './tasks.js';
+import { getRecurringDescription } from './tasks.js';
 import { DragManager } from './drag-manager.js';
 import { announceDragStart, announceDragEnd } from './accessibility.js';
 import { translations } from './translations.js';
@@ -135,14 +135,14 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
       element: div,
       data: task,
 
-      onDragStart: (event) => {
+      onDragStart: () => {
         div.classList.add('dragging');
 
         // Announce to screen readers
         announceDragStart(task.text);
       },
 
-      onDragMove: (event) => {
+      onDragMove: () => {
         // Optional: Update UI during drag
       },
 
@@ -375,12 +375,13 @@ export function getRecurringConfig() {
         config.weekdays = Array.from(weekdayCheckboxes).map((cb) => parseInt(cb.value));
       }
       break;
-    case 'monthly':
+    case 'monthly': {
       const dayOfMonth = document.getElementById('dayOfMonth');
       if (dayOfMonth) {
         config.dayOfMonth = parseInt(dayOfMonth.value);
       }
       break;
+    }
   }
 
   return config;
@@ -784,7 +785,6 @@ export function openMetricsModal(calculateMetrics) {
     newCancelBtn.addEventListener('click', () => {
       closeMetricsModal();
     });
-  } else {
   }
 }
 
@@ -1175,8 +1175,6 @@ export function setupDropZones(onDrop) {
     const taskLists = document.querySelectorAll('.task-list');
 
     taskLists.forEach((taskList) => {
-      const segment = parseInt(taskList.dataset.segment);
-
       setupDropZone(taskList, (data, dropZone) => {
         const toSegment = parseInt(dropZone.dataset.segment);
         const fromSegment = data.segment;
@@ -1210,7 +1208,6 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
   }
 
   // Set task name and title
-  const lang = translations[currentLanguage];
   taskNameElement.textContent = task.text;
   titleElement.textContent =
     currentLanguage === 'de' ? 'Wiederholung bearbeiten' : 'Edit Recurring Task';
