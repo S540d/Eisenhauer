@@ -1,20 +1,20 @@
 # Android TWA Status - Eisenhauer Matrix
 
 **Projekt:** Eisenhauer Matrix - Android TWA für Google Play Store
-**Letzte Aktualisierung:** 2026-01-06
-**Status:** ✅ AAB gebaut und bereit für Play Store Upload (v1.7.7 mit Popup-Auth Fix)
+**Letzte Aktualisierung:** 2026-02-04
+**Status:** ✅ AAB gebaut und bereit für Play Store Upload (v1.10.1)
 
 ---
 
 ## ✅ Aktueller Status
 
 ### Build Information
-- **Version:** 1.7.7 (versionCode: 11)
+- **Version:** 1.10.1 (versionCode: 19)
 - **AAB Datei:** `Android/app/build/outputs/bundle/release/app-release.aab`
 - **Größe:** ~1.9 MB
 - **Signierung:** ✅ Signiert mit Release-Keystore
 - **Status:** ✅ **Bereit für Play Store Upload**
-- **Fix:** ✅ **Authentication Stability** (Switched to Popup-Only to prevent Login Loops)
+- **Fix:** ✅ **Logout Data Leak** (Tasks werden beim Logout aus dem Speicher gelöscht)
 
 ### Technische Spezifikationen
 - **Package Name:** `com.sven4321.eisenhauer`
@@ -502,4 +502,4 @@ Bei Problemen oder Fragen:
 
 ---
 
-**Last Updated:** 2025-11-13
+**Last Updated:** 2026-02-04
