@@ -206,7 +206,7 @@ export function getCurrentLanguage() {
   return currentLanguage;
 }
 
-export function getTranslation(key) {
+export function getTranslation() {
   return translations[currentLanguage];
 }
 

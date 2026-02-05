@@ -31,14 +31,42 @@
     <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png" />
 
     <!-- iOS Splash Screen Color -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="#667eea" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#000000" />
 
     <!-- Theme Color -->
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#000000" />
 
     <link rel="stylesheet" href="style.css?v=1770233944160" />
   </head>
   <body>
+    <!-- Splash Screen -->
+    <div
+      id="splashScreen"
+      class="splash-screen"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading application"
+    >
+      <div class="splash-content">
+        <svg
+          class="splash-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <!-- Kreuz -->
+          <line class="splash-cross-h" x1="10" y1="50" x2="90" y2="50" />
+          <line class="splash-cross-v" x1="50" y1="10" x2="50" y2="90" />
+          <!-- Checkmarks: oben-links, oben-rechts, unten-links, unten-rechts -->
+          <polyline class="splash-check splash-check-1" points="20,28 28,36 40,20" />
+          <polyline class="splash-check splash-check-2" points="60,28 68,36 80,20" />
+          <polyline class="splash-check splash-check-3" points="20,68 28,76 40,60" />
+          <polyline class="splash-check splash-check-4" points="60,68 68,76 80,60" />
+        </svg>
+        <span class="splash-title">Eisenhauer</span>
+      </div>
+    </div>
+
     <!-- Staging Banner -->
     <div id="stagingBanner" class="staging-banner" style="display: none">
       <div class="staging-banner-content">

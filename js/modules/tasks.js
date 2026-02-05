@@ -85,7 +85,7 @@ function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
       }
       break;
 
-    case 'monthly':
+    case 'monthly': {
       // Next month, same day
       const targetDay = recurringConfig.dayOfMonth || 1;
       nextDate.setMonth(nextDate.getMonth() + 1);
@@ -93,12 +93,14 @@ function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
         Math.min(targetDay, new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate())
       );
       break;
+    }
 
-    case 'custom':
+    case 'custom': {
       // Custom days from now
       const customDays = recurringConfig.customDays || 1;
       nextDate.setDate(nextDate.getDate() + customDays - 1); // -1 because we already added +1
       break;
+    }
 
     default:
       // Default to daily
@@ -235,7 +237,7 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
   if (!Number.isInteger(toSegment) || toSegment < 1 || toSegment > 5) {
     throw new RangeError('Target segment ID must be an integer between 1 and 5');
   }
-  if (taskId == null) {
+  if (taskId === null || taskId === undefined) {
     throw new Error('Task ID cannot be null or undefined');
   }
 
@@ -290,7 +292,7 @@ export function reorderTask(taskId, segment, newIndex, saveCallback = null) {
   if (!Number.isInteger(segment) || segment < 1 || segment > 5) {
     throw new RangeError('Segment ID must be an integer between 1 and 5');
   }
-  if (taskId == null) {
+  if (taskId === null || taskId === undefined) {
     throw new Error('Task ID cannot be null or undefined');
   }
   if (!Number.isInteger(newIndex) || newIndex < 0) {

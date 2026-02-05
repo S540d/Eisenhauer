@@ -18,8 +18,7 @@
  */
 
 import { store } from './store.js';
-import { ErrorHandler, TaskMoveError } from './error-handler.js';
-import { showSuccess, showError } from './notifications.js';
+import { ErrorHandler } from './error-handler.js';
 
 /**
  * @typedef {Object} DragConfig
@@ -281,7 +280,7 @@ export class DragManager {
    * @private
    * @param {TouchEvent} e
    */
-  #handleTouchEnd(e) {
+  #handleTouchEnd(_e) {
     // Cancel long press if still waiting
     this.#cancelLongPress();
 
@@ -309,7 +308,7 @@ export class DragManager {
    * @private
    * @param {TouchEvent} e
    */
-  #handleTouchCancel(e) {
+  #handleTouchCancel(_e) {
     this.#cancelLongPress();
     this.#cancelDrag();
     this.#resetState();
@@ -361,7 +360,7 @@ export class DragManager {
    * @private
    * @param {DragEvent} e
    */
-  #handleDragEnd(e) {
+  #handleDragEnd(_e) {
     // Reset visual state
     this.element.style.opacity = this.state.originalOpacity;
 

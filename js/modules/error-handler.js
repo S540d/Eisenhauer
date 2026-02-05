@@ -110,7 +110,9 @@ export class ErrorHandler {
     if (context.rollback) {
       try {
         context.rollback();
-      } catch (rollbackError) {}
+      } catch (_rollbackError) {
+        // Rollback failure is non-fatal; swallow silently
+      }
     }
 
     // Show user notification (unless silent)
@@ -320,7 +322,7 @@ export class ErrorHandler {
           duration: 5000,
         });
       })
-      .catch((err) => {
+      .catch(() => {
         // Fallback if notifications module not available
         alert(context.userMessage || error.message);
       });
@@ -378,7 +380,9 @@ export class ErrorHandler {
           userAgent: navigator.userAgent,
           url: window.location.href,
         });
-      } catch (trackingError) {}
+      } catch (_trackingError) {
+        // Tracking failure must not interrupt application flow
+      }
     }
 
     // Optional: Send to custom analytics
@@ -390,7 +394,9 @@ export class ErrorHandler {
           operation: context.operation,
           timestamp: new Date().toISOString(),
         });
-      } catch (analyticsError) {}
+      } catch (_analyticsError) {
+        // Analytics failure must not interrupt application flow
+      }
     }
   }
 }
