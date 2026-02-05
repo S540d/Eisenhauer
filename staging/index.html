@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.10.1 (aec880c3) built at 1770269529483 -->
+<!-- Cache-Busting Info: v1.10.1 (4ffbcafc) built at 1770271210633 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,10 +8,10 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="aec880c3" /><meta name="build-time" content="1770269529483" />
+    <meta name="build-hash" content="4ffbcafc" /><meta name="build-time" content="1770271210633" />
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/Eisenhauer/staging/assets/manifest-BVU6pIXm.json" />
+    <link rel="manifest" href="/Eisenhauer/staging/assets/manifest-BQSiU1UM.json" />
 
     <!-- iOS Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,16 +33,44 @@
     <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png" />
 
     <!-- iOS Splash Screen Color -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="#667eea" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#000000" />
 
     <!-- Theme Color -->
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#000000" />
 
-    <script type="module" crossorigin src="/Eisenhauer/staging/assets/index-DfouRVDv.js"></script>
+    <script type="module" crossorigin src="/Eisenhauer/staging/assets/index-CWafSWCQ.js"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/staging/assets/firebase-CLd3Dub8.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/staging/assets/index-DAbdZMEd.css">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/staging/assets/index-s98lI41s.css">
   <link rel="manifest" href="/Eisenhauer/staging/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/staging/registerSW.js"></script></head>
   <body>
+    <!-- Splash Screen -->
+    <div
+      id="splashScreen"
+      class="splash-screen"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading application"
+    >
+      <div class="splash-content">
+        <svg
+          class="splash-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <!-- Kreuz -->
+          <line class="splash-cross-h" x1="10" y1="50" x2="90" y2="50" />
+          <line class="splash-cross-v" x1="50" y1="10" x2="50" y2="90" />
+          <!-- Checkmarks: oben-links, oben-rechts, unten-links, unten-rechts -->
+          <polyline class="splash-check splash-check-1" points="20,28 28,36 40,20" />
+          <polyline class="splash-check splash-check-2" points="60,28 68,36 80,20" />
+          <polyline class="splash-check splash-check-3" points="20,68 28,76 40,60" />
+          <polyline class="splash-check splash-check-4" points="60,68 68,76 80,60" />
+        </svg>
+        <span class="splash-title">Eisenhauer</span>
+      </div>
+    </div>
+
     <!-- Staging Banner -->
     <div id="stagingBanner" class="staging-banner" style="display: none">
       <div class="staging-banner-content">
