@@ -43,7 +43,6 @@ body {
   flex-direction: column;
 }
 
-/* Splash Screen Styles */
 /* Splash Screen */
 .splash-screen {
   position: fixed;
@@ -54,7 +53,7 @@ body {
   justify-content: center;
   z-index: 9999;
   opacity: 1;
-  transition: opacity 400ms ease-out;
+  transition: opacity 300ms ease-out;
 }
 
 .splash-screen.hidden {
