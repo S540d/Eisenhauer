@@ -235,4 +235,20 @@ export function shouldAutoBackup() {
  */
 export function markAutoBackupCompleted() {
   localStorage.setItem('lastAutoBackup', Date.now().toString());
+  // Reset failure count on success
+  localStorage.removeItem('autoBackupFailureCount');
+}
+
+/**
+ * Track backup failure and check if user should be notified
+ * Only notify after 3 consecutive failures
+ * @returns {boolean} True if user should be notified
+ */
+export function trackBackupFailure() {
+  const failureCount = parseInt(localStorage.getItem('autoBackupFailureCount') || '0');
+  const newCount = failureCount + 1;
+  localStorage.setItem('autoBackupFailureCount', newCount.toString());
+
+  // Notify user only after 3 consecutive failures
+  return newCount >= 3;
 }
