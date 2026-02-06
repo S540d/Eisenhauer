@@ -871,7 +871,7 @@ header h1,
   background: var(--card-bg);
   padding: 25px;
   border-radius: 12px;
-  max-width: 400px;
+  max-width: 360px;
   width: 90%;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   color: var(--text-color);
@@ -2074,14 +2074,14 @@ body.dark-mode .segment.keyboard-target::before {
   align-items: center;
   justify-content: center;
   width: 100%;
-  padding: 10px 16px;
+  padding: 8px 14px;
   background: transparent;
   color: #667eea;
   border: 1.5px solid #667eea;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  min-height: 36px;
+  min-height: 32px;
   cursor: pointer;
   text-decoration: none;
   transition: background 0.2s ease;
