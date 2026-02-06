@@ -81,7 +81,12 @@ import {
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
 import { KeyboardDragManager } from './js/modules/accessibility.js';
-import { uploadBackup, shouldAutoBackup, markAutoBackupCompleted } from './js/modules/backup.js';
+import {
+  uploadBackup,
+  shouldAutoBackup,
+  markAutoBackupCompleted,
+  trackBackupFailure,
+} from './js/modules/backup.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
 // import {
 // setupDragAndDrop,
@@ -852,7 +857,15 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
         markAutoBackupCompleted();
       } catch (error) {
         console.error('Auto-backup failed:', error);
-        // Fail silently - don't interrupt user experience
+        // Track failure and notify only after 3 consecutive failures
+        const shouldNotify = trackBackupFailure();
+        if (shouldNotify) {
+          const message =
+            getCurrentLanguage() === 'de'
+              ? 'Automatische Backups schlagen wiederholt fehl. Bitte prüfen Sie Ihre Internetverbindung.'
+              : 'Automatic backups are repeatedly failing. Please check your internet connection.';
+          showError(message);
+        }
       }
     }
   } else {
