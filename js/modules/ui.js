@@ -112,27 +112,26 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
   if (task.dueDate && task.segment !== SEGMENTS.DONE) {
     const dueDateSpan = document.createElement('span');
     dueDateSpan.className = 'task-due-date';
-    
+
     // Parse and format the date according to the current language
     const dueDate = new Date(task.dueDate);
-    let formattedDueDate;
-    
-    if (currentLanguage === 'de') {
-      // Format as DD.MM.YYYY for German
+
+    // Validate the date is valid
+    if (!isNaN(dueDate.getTime())) {
+      // Extract date components
       const day = dueDate.getDate().toString().padStart(2, '0');
       const month = (dueDate.getMonth() + 1).toString().padStart(2, '0');
       const year = dueDate.getFullYear();
-      formattedDueDate = `${day}.${month}.${year}`;
-    } else {
-      // Format as MM/DD/YYYY for English
-      const day = dueDate.getDate().toString().padStart(2, '0');
-      const month = (dueDate.getMonth() + 1).toString().padStart(2, '0');
-      const year = dueDate.getFullYear();
-      formattedDueDate = `${month}/${day}/${year}`;
+
+      // Format based on language
+      const formattedDueDate =
+        currentLanguage === 'de'
+          ? `${day}.${month}.${year}` // DD.MM.YYYY for German
+          : `${month}/${day}/${year}`; // MM/DD/YYYY for English
+
+      dueDateSpan.textContent = `📅 ${formattedDueDate}`;
+      content.appendChild(dueDateSpan);
     }
-    
-    dueDateSpan.textContent = `📅 ${formattedDueDate}`;
-    content.appendChild(dueDateSpan);
   }
 
   // Add completion timestamp for Done! segment

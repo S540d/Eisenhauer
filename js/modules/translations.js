@@ -98,7 +98,6 @@ export const translations = {
       },
       dayOfMonth: 'Tag des Monats:',
       indicator: '',
-      dueDate: 'Fällig am',
     },
   },
   en: {
@@ -195,7 +194,6 @@ export const translations = {
       },
       dayOfMonth: 'Day of month:',
       indicator: '',
-      dueDate: 'Due Date',
     },
   },
 };
