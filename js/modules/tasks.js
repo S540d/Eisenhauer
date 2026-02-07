@@ -111,7 +111,7 @@ function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
 /**
  * Create a new task object
  */
-function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt = null) {
+function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt = null, dueDate = null) {
   const task = {
     id: Date.now() + Math.random(), // Add random to avoid ID collisions
     text: taskText,
@@ -120,6 +120,11 @@ function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt
     createdAt: createdAt || Date.now(),
     completedAt: null,
   };
+
+  // Add due date if provided
+  if (dueDate) {
+    task.dueDate = dueDate;
+  }
 
   // Add recurring configuration if enabled
   if (recurringConfig && recurringConfig.enabled) {
@@ -141,9 +146,10 @@ function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt
  * @param {number} segmentId - Target segment ID (1-5)
  * @param {object} recurringConfig - Optional recurring configuration
  * @param {function} saveCallback - Callback to save tasks (Firebase or LocalStorage)
+ * @param {string} dueDate - Optional due date (string or timestamp)
  * @returns {object} The created task
  */
-export function addTaskToSegment(taskText, segmentId, recurringConfig = null, saveCallback = null) {
+export function addTaskToSegment(taskText, segmentId, recurringConfig = null, saveCallback = null, dueDate = null) {
   // Input validation
   if (typeof taskText !== 'string') {
     throw new TypeError('Task text must be a string');
@@ -158,7 +164,7 @@ export function addTaskToSegment(taskText, segmentId, recurringConfig = null, sa
     throw new RangeError('Segment ID must be an integer between 1 and 5');
   }
 
-  const task = createTaskObject(taskText, segmentId, recurringConfig);
+  const task = createTaskObject(taskText, segmentId, recurringConfig, null, dueDate);
   tasks[segmentId].push(task);
 
   // Call save callback if provided
@@ -255,6 +261,11 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
     checked: false,
     createdAt: task.createdAt,
   };
+
+  // Preserve due date if exists
+  if (task.dueDate) {
+    movedTask.dueDate = task.dueDate;
+  }
 
   // Preserve recurring config if exists
   if (task.recurring) {

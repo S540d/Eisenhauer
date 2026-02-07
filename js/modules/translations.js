@@ -69,6 +69,7 @@ export const translations = {
       title: 'Neue Aufgabe',
       inputPlaceholder: 'Was möchtest du tun?',
       monthDayLabel: 'Tag (1-31)',
+      dueDate: 'Fällig am',
     },
     segments: {
       1: { title: 'Sofort!', subtitle: 'wichtig & dringend' },
@@ -97,6 +98,7 @@ export const translations = {
       },
       dayOfMonth: 'Tag des Monats:',
       indicator: '',
+      dueDate: 'Fällig am',
     },
   },
   en: {
@@ -164,6 +166,7 @@ export const translations = {
       title: 'New Task',
       inputPlaceholder: 'What do you want to do?',
       monthDayLabel: 'Day (1-31)',
+      dueDate: 'Due Date',
     },
     segments: {
       1: { title: 'Do!', subtitle: '' },
@@ -192,6 +195,7 @@ export const translations = {
       },
       dayOfMonth: 'Day of month:',
       indicator: '',
+      dueDate: 'Due Date',
     },
   },
 };

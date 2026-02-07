@@ -108,6 +108,33 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
 
   content.appendChild(textSpan);
 
+  // Add due date if present (for non-completed tasks)
+  if (task.dueDate && task.segment !== SEGMENTS.DONE) {
+    const dueDateSpan = document.createElement('span');
+    dueDateSpan.className = 'task-due-date';
+    
+    // Parse and format the date according to the current language
+    const dueDate = new Date(task.dueDate);
+    let formattedDueDate;
+    
+    if (currentLanguage === 'de') {
+      // Format as DD.MM.YYYY for German
+      const day = dueDate.getDate().toString().padStart(2, '0');
+      const month = (dueDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = dueDate.getFullYear();
+      formattedDueDate = `${day}.${month}.${year}`;
+    } else {
+      // Format as MM/DD/YYYY for English
+      const day = dueDate.getDate().toString().padStart(2, '0');
+      const month = (dueDate.getMonth() + 1).toString().padStart(2, '0');
+      const year = dueDate.getFullYear();
+      formattedDueDate = `${month}/${day}/${year}`;
+    }
+    
+    dueDateSpan.textContent = `📅 ${formattedDueDate}`;
+    content.appendChild(dueDateSpan);
+  }
+
   // Add completion timestamp for Done! segment
   if (task.segment === SEGMENTS.DONE && task.completedAt) {
     const timestampSpan = document.createElement('span');
@@ -1052,6 +1079,8 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   const quickAddCancelBtn = document.getElementById('quickAddCancelBtn');
   const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
   const quickRecurringOptions = document.getElementById('quickRecurringOptions');
+  const quickAddDueDate = document.getElementById('quickAddDueDate');
+  const quickAddDueDateLabel = document.getElementById('quickAddDueDateLabel');
 
   if (!quickAddModal || !quickAddInput) {
     return;
@@ -1061,6 +1090,9 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   quickAddInput.value = '';
   quickRecurringEnabled.checked = false;
   quickRecurringOptions.style.display = 'none';
+  if (quickAddDueDate) {
+    quickAddDueDate.value = '';
+  }
 
   // Segment names
   const segmentNames = {
@@ -1082,6 +1114,11 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
 
   // Update input placeholder
   quickAddInput.placeholder = lang.taskInputPlaceholder;
+
+  // Update due date label
+  if (quickAddDueDateLabel) {
+    quickAddDueDateLabel.textContent = lang.quickAddModal.dueDate;
+  }
 
   // Update recurring label
   const quickRecurringEnableText = document.getElementById('quickRecurringEnableText');
@@ -1133,9 +1170,12 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
       }
     }
 
+    // Get due date if provided
+    const dueDate = quickAddDueDate && quickAddDueDate.value ? quickAddDueDate.value : null;
+
     // Call callback
     if (onAddTask) {
-      onAddTask(text, segmentId, recurringConfig);
+      onAddTask(text, segmentId, recurringConfig, dueDate);
     }
 
     // Close modal

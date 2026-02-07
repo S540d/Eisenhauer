@@ -158,10 +158,10 @@ async function loadAllTasks() {
 /**
  * Add task handler
  */
-function handleAddTask(taskText, segment, recurringConfig = null) {
+function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null) {
   if (!taskText || taskText.trim() === '') return;
 
-  const task = addTaskToSegment(taskText, segment, recurringConfig);
+  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate);
 
   // Save to storage based on mode
   if (currentUser && db && !isGuestMode) {
@@ -483,8 +483,8 @@ function setupEventListeners() {
       const segment = parseInt(e.target.dataset.segment);
       openQuickAddModal(
         segment,
-        (text, selectedSegment, recurring) => {
-          handleAddTask(text, selectedSegment || segment, recurring);
+        (text, selectedSegment, recurring, dueDate) => {
+          handleAddTask(text, selectedSegment || segment, recurring, dueDate);
         },
         translations,
         getCurrentLanguage()
