@@ -1528,7 +1528,7 @@ body.dark-mode .search-highlight {
   margin-bottom: 4px;
 }
 
-.due-date-wrapper input[type="date"] {
+.due-date-wrapper input[type='date'] {
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--border-color);
@@ -1539,7 +1539,7 @@ body.dark-mode .search-highlight {
   transition: border-color 0.2s;
 }
 
-.due-date-wrapper input[type="date"]:focus {
+.due-date-wrapper input[type='date']:focus {
   outline: none;
   border-color: var(--text-primary);
 }

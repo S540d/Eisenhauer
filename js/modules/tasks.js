@@ -111,7 +111,13 @@ function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
 /**
  * Create a new task object
  */
-function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt = null, dueDate = null) {
+function createTaskObject(
+  taskText,
+  segmentId,
+  recurringConfig = null,
+  createdAt = null,
+  dueDate = null
+) {
   const task = {
     id: Date.now() + Math.random(), // Add random to avoid ID collisions
     text: taskText,
@@ -149,7 +155,13 @@ function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt
  * @param {string} dueDate - Optional due date (string or timestamp)
  * @returns {object} The created task
  */
-export function addTaskToSegment(taskText, segmentId, recurringConfig = null, saveCallback = null, dueDate = null) {
+export function addTaskToSegment(
+  taskText,
+  segmentId,
+  recurringConfig = null,
+  saveCallback = null,
+  dueDate = null
+) {
   // Input validation
   if (typeof taskText !== 'string') {
     throw new TypeError('Task text must be a string');
