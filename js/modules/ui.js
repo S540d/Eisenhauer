@@ -118,12 +118,12 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     const dueDateSpan = document.createElement('span');
     dueDateSpan.className = 'task-due-date';
 
-    // Format date based on locale
+    // Format date based on locale - use numeric format as specified
     const dueDate = new Date(task.dueDate);
     const formattedDate = dueDate.toLocaleDateString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
       year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
     });
 
     dueDateSpan.textContent = formattedDate;

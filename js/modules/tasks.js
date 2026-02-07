@@ -621,9 +621,9 @@ export function applySmartRules(
       const dueDate =
         typeof task.dueDate === 'string' ? new Date(task.dueDate).getTime() : task.dueDate;
 
-      // Check if due date is within threshold
+      // Check if due date is within threshold or overdue
       const timeUntilDue = dueDate - now;
-      const shouldBeUrgent = timeUntilDue >= 0 && timeUntilDue <= thresholdMs;
+      const shouldBeUrgent = timeUntilDue <= thresholdMs;
 
       if (shouldBeUrgent) {
         return { ...task, isUrgent: true };
