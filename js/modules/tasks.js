@@ -111,7 +111,13 @@ function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
 /**
  * Create a new task object
  */
-function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt = null) {
+function createTaskObject(
+  taskText,
+  segmentId,
+  recurringConfig = null,
+  createdAt = null,
+  dueDate = null
+) {
   const task = {
     id: Date.now() + Math.random(), // Add random to avoid ID collisions
     text: taskText,
@@ -120,6 +126,11 @@ function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt
     createdAt: createdAt || Date.now(),
     completedAt: null,
   };
+
+  // Add due date if provided
+  if (dueDate) {
+    task.dueDate = dueDate;
+  }
 
   // Add recurring configuration if enabled
   if (recurringConfig && recurringConfig.enabled) {
@@ -141,9 +152,16 @@ function createTaskObject(taskText, segmentId, recurringConfig = null, createdAt
  * @param {number} segmentId - Target segment ID (1-5)
  * @param {object} recurringConfig - Optional recurring configuration
  * @param {function} saveCallback - Callback to save tasks (Firebase or LocalStorage)
+ * @param {string} dueDate - Optional due date (ISO string or timestamp)
  * @returns {object} The created task
  */
-export function addTaskToSegment(taskText, segmentId, recurringConfig = null, saveCallback = null) {
+export function addTaskToSegment(
+  taskText,
+  segmentId,
+  recurringConfig = null,
+  saveCallback = null,
+  dueDate = null
+) {
   // Input validation
   if (typeof taskText !== 'string') {
     throw new TypeError('Task text must be a string');
@@ -158,7 +176,7 @@ export function addTaskToSegment(taskText, segmentId, recurringConfig = null, sa
     throw new RangeError('Segment ID must be an integer between 1 and 5');
   }
 
-  const task = createTaskObject(taskText, segmentId, recurringConfig);
+  const task = createTaskObject(taskText, segmentId, recurringConfig, null, dueDate);
   tasks[segmentId].push(task);
 
   // Call save callback if provided
@@ -256,6 +274,11 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
     createdAt: task.createdAt,
   };
 
+  // Preserve due date if exists
+  if (task.dueDate) {
+    movedTask.dueDate = task.dueDate;
+  }
+
   // Preserve recurring config if exists
   if (task.recurring) {
     movedTask.recurring = { ...task.recurring };
@@ -349,7 +372,8 @@ export function toggleTask(taskId, segmentId, saveCallback = null) {
           enabled: true,
           ...task.recurring,
         },
-        nextOccurrence // Set createdAt to future timestamp
+        nextOccurrence, // Set createdAt to future timestamp
+        task.dueDate // Preserve due date for recurring tasks
       );
 
       // Add the new task to the same segment
@@ -552,4 +576,61 @@ export function getRecurringDescription(recurring, translations) {
     default:
       return '';
   }
+}
+
+/**
+ * Apply smart rules to tasks (e.g., mark as urgent if due date is near)
+ * @param {object} tasksToProcess - Tasks object grouped by segment
+ * @param {boolean} smartFunctionsEnabled - Whether smart functions are enabled
+ * @param {number} urgentThresholdDays - Number of days before due date to mark as urgent
+ * @returns {object} Tasks with smart rules applied
+ */
+export function applySmartRules(
+  tasksToProcess,
+  smartFunctionsEnabled = false,
+  urgentThresholdDays = 3
+) {
+  if (!smartFunctionsEnabled) {
+    // If smart functions are disabled, clear any isUrgent flags
+    const clearedTasks = {};
+    for (let segmentId = 1; segmentId <= 5; segmentId++) {
+      clearedTasks[segmentId] = (tasksToProcess[segmentId] || []).map((task) => {
+        const { isUrgent, ...taskWithoutUrgent } = task;
+        return taskWithoutUrgent;
+      });
+    }
+    return clearedTasks;
+  }
+
+  const now = Date.now();
+  const thresholdMs = urgentThresholdDays * 24 * 60 * 60 * 1000;
+  const processedTasks = {};
+
+  for (let segmentId = 1; segmentId <= 5; segmentId++) {
+    const segmentTasks = tasksToProcess[segmentId] || [];
+    processedTasks[segmentId] = segmentTasks.map((task) => {
+      // Skip if no due date or task is already completed (segment 5)
+      if (!task.dueDate || task.segment === SEGMENTS.DONE) {
+        const { isUrgent, ...taskWithoutUrgent } = task;
+        return taskWithoutUrgent;
+      }
+
+      // Parse due date (support both ISO string and timestamp)
+      const dueDate =
+        typeof task.dueDate === 'string' ? new Date(task.dueDate).getTime() : task.dueDate;
+
+      // Check if due date is within threshold
+      const timeUntilDue = dueDate - now;
+      const isUrgent = timeUntilDue >= 0 && timeUntilDue <= thresholdMs;
+
+      if (isUrgent) {
+        return { ...task, isUrgent: true };
+      } else {
+        const { isUrgent: _, ...taskWithoutUrgent } = task;
+        return taskWithoutUrgent;
+      }
+    });
+  }
+
+  return processedTasks;
 }

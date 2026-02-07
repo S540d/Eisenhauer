@@ -28,6 +28,10 @@ export const translations = {
       themeSystem: 'System',
       langEn: 'English',
       langDe: 'Deutsch',
+      smartFunctions: 'SMARTE FUNKTIONEN',
+      smartFunctionsLabel: 'Smarte Funktionen aktivieren',
+      smartFunctionsDesc:
+        'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind',
     },
     about: {
       title: 'Über',
@@ -69,6 +73,7 @@ export const translations = {
       title: 'Neue Aufgabe',
       inputPlaceholder: 'Was möchtest du tun?',
       monthDayLabel: 'Tag (1-31)',
+      dueDate: 'Fällig am',
     },
     segments: {
       1: { title: 'Sofort!', subtitle: 'wichtig & dringend' },
@@ -123,6 +128,9 @@ export const translations = {
       themeSystem: 'System',
       langEn: 'English',
       langDe: 'Deutsch',
+      smartFunctions: 'SMART FUNCTIONS',
+      smartFunctionsLabel: 'Enable Smart Functions',
+      smartFunctionsDesc: 'Automatically mark tasks as urgent when due within 3 days',
     },
     about: {
       title: 'About',
@@ -164,6 +172,7 @@ export const translations = {
       title: 'New Task',
       inputPlaceholder: 'What do you want to do?',
       monthDayLabel: 'Day (1-31)',
+      dueDate: 'Due Date',
     },
     segments: {
       1: { title: 'Do!', subtitle: '' },
