@@ -595,6 +595,7 @@ export function applySmartRules(
     const clearedTasks = {};
     for (let segmentId = 1; segmentId <= 5; segmentId++) {
       clearedTasks[segmentId] = (tasksToProcess[segmentId] || []).map((task) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { isUrgent, ...taskWithoutUrgent } = task;
         return taskWithoutUrgent;
       });
@@ -611,6 +612,7 @@ export function applySmartRules(
     processedTasks[segmentId] = segmentTasks.map((task) => {
       // Skip if no due date or task is already completed (segment 5)
       if (!task.dueDate || task.segment === SEGMENTS.DONE) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { isUrgent, ...taskWithoutUrgent } = task;
         return taskWithoutUrgent;
       }
@@ -621,12 +623,13 @@ export function applySmartRules(
 
       // Check if due date is within threshold
       const timeUntilDue = dueDate - now;
-      const isUrgent = timeUntilDue >= 0 && timeUntilDue <= thresholdMs;
+      const shouldBeUrgent = timeUntilDue >= 0 && timeUntilDue <= thresholdMs;
 
-      if (isUrgent) {
+      if (shouldBeUrgent) {
         return { ...task, isUrgent: true };
       } else {
-        const { isUrgent: _, ...taskWithoutUrgent } = task;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { isUrgent, ...taskWithoutUrgent } = task;
         return taskWithoutUrgent;
       }
     });

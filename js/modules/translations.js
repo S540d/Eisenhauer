@@ -363,6 +363,12 @@ export function updateLanguageUI(renderAllTasksCallback) {
     quickAddCancelBtn.textContent = lang.buttons.cancel;
   }
 
+  // Update Quick Add Due Date label
+  const quickAddDueDateLabel = document.getElementById('quickAddDueDateLabel');
+  if (quickAddDueDateLabel) {
+    quickAddDueDateLabel.textContent = lang.quickAddModal.dueDate;
+  }
+
   // Update Quick Add Recurring texts
   const quickRecurringEnableText = document.getElementById('quickRecurringEnableText');
   if (quickRecurringEnableText) {
@@ -459,6 +465,21 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const personalizeLanguageTitle = document.getElementById('personalizeLanguageTitle');
   if (personalizeLanguageTitle) {
     personalizeLanguageTitle.textContent = lang.personalize.language;
+  }
+
+  const personalizeSmartFunctionsTitle = document.getElementById('personalizeSmartFunctionsTitle');
+  if (personalizeSmartFunctionsTitle) {
+    personalizeSmartFunctionsTitle.textContent = lang.personalize.smartFunctions;
+  }
+
+  const smartFunctionsLabel = document.getElementById('smartFunctionsLabel');
+  if (smartFunctionsLabel) {
+    smartFunctionsLabel.textContent = lang.personalize.smartFunctionsLabel;
+  }
+
+  const smartFunctionsDesc = document.getElementById('smartFunctionsDesc');
+  if (smartFunctionsDesc) {
+    smartFunctionsDesc.textContent = lang.personalize.smartFunctionsDesc;
   }
 
   const personalizeThemeDark = document.getElementById('personalizeThemeDark');
