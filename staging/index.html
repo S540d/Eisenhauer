@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.10.1 (a480c585) built at 1770362244377 -->
+<!-- Cache-Busting Info: v1.10.1 (88816787) built at 1770578555668 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,10 +8,10 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="a480c585" /><meta name="build-time" content="1770362244377" />
+    <meta name="build-hash" content="88816787" /><meta name="build-time" content="1770578555668" />
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/Eisenhauer/staging/assets/manifest-BQSiU1UM.json" />
+    <link rel="manifest" href="/Eisenhauer/staging/assets/manifest-BsPr_CvW.json" />
 
     <!-- iOS Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -38,9 +38,9 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <script type="module" crossorigin src="/Eisenhauer/staging/assets/index-zUuct-MB.js"></script>
+    <script type="module" crossorigin src="/Eisenhauer/staging/assets/index-A6vXho4r.js"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/staging/assets/firebase-CLd3Dub8.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/staging/assets/index-D95ZpUOc.css">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/staging/assets/index-BMiVNvLM.css">
   <link rel="manifest" href="/Eisenhauer/staging/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/staging/registerSW.js"></script></head>
   <body>
     <!-- Splash Screen -->
@@ -297,6 +297,14 @@
           </div>
         </div>
 
+        <!-- Due Date Configuration -->
+        <div class="due-date-config">
+          <label for="quickAddDueDate" class="due-date-label">
+            <span id="quickAddDueDateLabel">Due Date</span>
+          </label>
+          <input type="date" id="quickAddDueDate" class="due-date-input" />
+        </div>
+
         <div class="modal-buttons">
           <button id="quickAddSubmitBtn" class="btn submit-btn">Add</button>
           <button id="quickAddCancelBtn" class="btn cancel-btn">Cancel</button>
@@ -522,6 +530,22 @@
               Deutsch
             </button>
           </div>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Smart Functions Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeSmartFunctionsTitle">
+            SMARTE FUNKTIONEN
+          </h4>
+          <label class="smart-functions-toggle">
+            <input type="checkbox" id="smartFunctionsToggle" />
+            <span id="smartFunctionsLabel">Smarte Funktionen aktivieren</span>
+          </label>
+          <p class="settings-info" id="smartFunctionsDesc">
+            Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind
+          </p>
         </div>
 
         <div class="settings-separator"></div>
