@@ -30,7 +30,7 @@ import {
 } from './js/modules/auth.js';
 
 // Import all modules
-import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js';
+import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH, SMART_RULES } from './js/modules/config.js';
 import { APP_VERSION, initVersion } from './js/modules/version.js';
 import {
   translations,
@@ -48,6 +48,7 @@ import {
   getTasks,
   setAllTasks,
   reorderTask,
+  applySmartRules,
 } from './js/modules/tasks.js';
 import {
   initStorage,
@@ -159,10 +160,10 @@ async function loadAllTasks() {
 /**
  * Add task handler
  */
-function handleAddTask(taskText, segment, recurringConfig = null) {
+function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null) {
   if (!taskText || taskText.trim() === '') return;
 
-  const task = addTaskToSegment(taskText, segment, recurringConfig);
+  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate);
 
   // Save to storage based on mode
   if (currentUser && db && !isGuestMode) {
@@ -438,7 +439,13 @@ function renderTasksWithCallbacks() {
     onReorder: handleReorderTask,
   };
 
-  renderAllTasks(tasks, translations, getCurrentLanguage(), callbacks);
+  // Apply smart rules if enabled
+  const smartFunctionsEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
+  const tasksToRender = smartFunctionsEnabled
+    ? applySmartRules(tasks, true, SMART_RULES.urgentThresholdDays)
+    : tasks;
+
+  renderAllTasks(tasksToRender, translations, getCurrentLanguage(), callbacks);
 
   // Setup drop zones for desktop drag & drop
   setupDropZones(handleMoveTask);
@@ -483,8 +490,8 @@ function setupEventListeners() {
       const segment = parseInt(e.target.dataset.segment);
       openQuickAddModal(
         segment,
-        (text, selectedSegment, recurring) => {
-          handleAddTask(text, selectedSegment || segment, recurring);
+        (text, selectedSegment, recurring, dueDate) => {
+          handleAddTask(text, selectedSegment || segment, recurring, dueDate);
         },
         translations,
         getCurrentLanguage()
@@ -532,6 +539,9 @@ function setupEventListeners() {
       }
     });
   };
+
+  // Expose renderTasksWithCallbacks for UI to trigger re-render
+  window.renderTasksCallback = renderTasksWithCallbacks;
 
   // Language toggle buttons in settings modal (legacy support)
   const langButtons = document.querySelectorAll('.lang-btn');

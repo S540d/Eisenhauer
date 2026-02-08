@@ -36,7 +36,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <link rel="stylesheet" href="style.css?v=1770233944160" />
+    <link rel="stylesheet" href="style.css?v=1770496024276" />
   </head>
   <body>
     <!-- Splash Screen -->
@@ -293,6 +293,14 @@
           </div>
         </div>
 
+        <!-- Due Date Configuration -->
+        <div class="due-date-config">
+          <label for="quickAddDueDate" class="due-date-label">
+            <span id="quickAddDueDateLabel">Due Date</span>
+          </label>
+          <input type="date" id="quickAddDueDate" class="due-date-input" />
+        </div>
+
         <div class="modal-buttons">
           <button id="quickAddSubmitBtn" class="btn submit-btn">Add</button>
           <button id="quickAddCancelBtn" class="btn cancel-btn">Cancel</button>
@@ -521,6 +529,22 @@
         </div>
 
         <div class="settings-separator"></div>
+
+        <!-- Smart Functions Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeSmartFunctionsTitle">
+            SMARTE FUNKTIONEN
+          </h4>
+          <label class="smart-functions-toggle">
+            <input type="checkbox" id="smartFunctionsToggle" />
+            <span id="smartFunctionsLabel">Smarte Funktionen aktivieren</span>
+          </label>
+          <p class="settings-info" id="smartFunctionsDesc">
+            Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind
+          </p>
+        </div>
+
+        <div class="settings-separator"></div>
       </div>
     </div>
 
@@ -744,7 +768,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1770233944160"></script>
+    <script type="module" src="script.js?v=1770496024276"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>
