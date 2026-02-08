@@ -367,15 +367,32 @@ class Store {
 
   /**
    * Get initial language from localStorage or browser
+   * Auto-detects browser language on first visit
    * @private
-   * @returns {string}
+   * @returns {string} Language code ('de' or 'en')
    */
   #getInitialLanguage() {
-    const stored = localStorage.getItem('language');
-    if (stored) return stored;
+    try {
+      // 1. Check for saved language preference
+      const stored = localStorage.getItem('language');
+      if (stored === 'de' || stored === 'en') {
+        return stored;
+      }
 
-    const browserLang = navigator.language.split('-')[0];
-    return ['de', 'en'].includes(browserLang) ? browserLang : 'de';
+      // 2. Auto-detect from browser language
+      if (typeof navigator !== 'undefined' && navigator.language) {
+        const browserLang = navigator.language.toLowerCase().split('-')[0];
+        if (browserLang === 'de') {
+          return 'de';
+        }
+      }
+
+      // 3. Default fallback to English
+      return 'en';
+    } catch (_error) {
+      // Fallback on any error
+      return 'en';
+    }
   }
 
   /**
