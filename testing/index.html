@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.10.1 (1e78e34e) built at 1770664933269 -->
+<!-- Cache-Busting Info: v1.10.1 (5a9b39b5) built at 1770664972959 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="1e78e34e" /><meta name="build-time" content="1770664933269" />
+    <meta name="build-hash" content="5a9b39b5" /><meta name="build-time" content="1770664972959" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/Eisenhauer/testing/assets/manifest-BsPr_CvW.json" />
@@ -38,7 +38,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-5_smw97Y.js"></script>
+    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-CeAdXDeu.js"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/testing/assets/firebase-CLd3Dub8.js">
     <link rel="stylesheet" crossorigin href="/Eisenhauer/testing/assets/index-BMiVNvLM.css">
   <link rel="manifest" href="/Eisenhauer/testing/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/testing/registerSW.js"></script></head>
@@ -434,14 +434,6 @@
 
         <div id="backupSeparator" class="settings-separator" style="display: none"></div>
 
-        <!-- Q4 Detox -->
-        <div class="settings-section">
-          <h4 id="q4DetoxTitle" class="settings-section-title">Q4-DETOX</h4>
-          <button id="q4DetoxBtn" class="btn">Q4 aufräumen</button>
-        </div>
-
-        <div class="settings-separator"></div>
-
         <!-- Feedback, Support & About -->
         <div class="settings-section settings-row">
           <a href="mailto:devsven@posteo.de?subject=Eisenhauer Feedback" class="btn"
@@ -784,8 +776,7 @@
     <!-- Register Service Worker with Cache Busting -->
     <script>
       // Only register service worker in production builds (not in Vite dev mode)
-      // Dev mode check: Vite runs on localhost with a port
-      const isProduction = !window.location.port;
+      const isProduction = !window.location.port || import.meta.env?.PROD;
 
       if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
@@ -807,9 +798,7 @@
 
         // Get build hash from meta tag (added by post-build.js)
         const buildHashElement = document.querySelector('meta[name="build-hash"]');
-        const currentBuildHash = buildHashElement
-          ? buildHashElement.content
-          : Date.now().toString();
+        const currentBuildHash = buildHashElement ? buildHashElement.content : Date.now().toString();
 
         // Store current environment in localStorage
         const cachedEnvironment = localStorage.getItem('sw-environment');
@@ -820,7 +809,8 @@
         // Store current build hash in localStorage (environment-specific key)
         const buildHashKey = `sw-build-hash-${currentEnvironment}`;
         const cachedBuildHash = localStorage.getItem(buildHashKey);
-        const buildHashChanged = cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
+        const buildHashChanged =
+          cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
 
         // Clear caches if environment changed, build hash changed, or first visit
         const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
