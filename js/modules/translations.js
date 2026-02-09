@@ -6,6 +6,11 @@
 export const translations = {
   de: {
     taskInputPlaceholder: 'Neue Aufgabe',
+    focusMode: {
+      label: '🎯 Heute fokussieren',
+      tooltip: 'Nur wichtige Aufgaben anzeigen (Q1 + Q2)',
+      active: 'Fokus-Modus aktiv',
+    },
     buttons: {
       add: 'Hinzufügen',
       cancel: 'Abbrechen',
@@ -106,6 +111,11 @@ export const translations = {
   },
   en: {
     taskInputPlaceholder: 'New task',
+    focusMode: {
+      label: '🎯 Focus Today',
+      tooltip: 'Show only important tasks (Q1 + Q2)',
+      active: 'Focus mode active',
+    },
     buttons: {
       add: 'Add',
       cancel: 'Cancel',
