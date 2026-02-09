@@ -773,7 +773,8 @@
     <!-- Register Service Worker with Cache Busting -->
     <script>
       // Only register service worker in production builds (not in Vite dev mode)
-      const isProduction = !window.location.port || import.meta.env?.PROD;
+      // Dev mode check: Vite runs on localhost with a port
+      const isProduction = !window.location.port;
 
       if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
@@ -795,7 +796,9 @@
 
         // Get build hash from meta tag (added by post-build.js)
         const buildHashElement = document.querySelector('meta[name="build-hash"]');
-        const currentBuildHash = buildHashElement ? buildHashElement.content : Date.now().toString();
+        const currentBuildHash = buildHashElement
+          ? buildHashElement.content
+          : Date.now().toString();
 
         // Store current environment in localStorage
         const cachedEnvironment = localStorage.getItem('sw-environment');
@@ -806,8 +809,7 @@
         // Store current build hash in localStorage (environment-specific key)
         const buildHashKey = `sw-build-hash-${currentEnvironment}`;
         const cachedBuildHash = localStorage.getItem(buildHashKey);
-        const buildHashChanged =
-          cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
+        const buildHashChanged = cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
 
         // Clear caches if environment changed, build hash changed, or first visit
         const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
