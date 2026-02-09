@@ -469,7 +469,7 @@ function setupEventListeners() {
   // Task input - Enter key opens Quick Add Modal with Q1 pre-selected
   const taskInput = document.getElementById('taskInput');
   if (taskInput) {
-    taskInput.addEventListener('keypress', (e) => {
+    taskInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
         const taskText = taskInput.value.trim();
@@ -482,12 +482,14 @@ function setupEventListeners() {
           getCurrentLanguage
         );
 
-        // If user had entered text, pre-fill it in the modal
+        // Clear main input immediately after opening the modal
+        taskInput.value = '';
+
+        // If user had entered text, pre-fill it in the modal (if available)
         if (taskText) {
           const quickAddInput = document.getElementById('quickAddInput');
           if (quickAddInput) {
             quickAddInput.value = taskText;
-            taskInput.value = ''; // Clear main input
           }
         }
       }
