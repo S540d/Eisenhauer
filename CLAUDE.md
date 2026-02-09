@@ -32,12 +32,13 @@ main (production) ← staging ← testing
 - Tests: 150 passing, 7/8 Suites grün
 - `storage.test.js`: pre-existing Failure (Firebase nicht gemockt) — nicht angehen
 
+## Neue Features (auf testing)
+- **Due Dates:** Optionale Fälligkeitsdaten für Aufgaben
+- **Smart Urgency Rules:** Automatische Dringend-Markierung bei Fälligkeit in 3 Tagen
+- **Verbesserte Spracherkennung:** Robustere Auto-Detection mit English-Fallback
+
 ## Offene Arbeit
-- **PR #170:** Splash Screen (schwarz/weiß) + ESLint cleanup → staging (noch nicht gemergt)
-- **Issue #166:** wird durch PR #170 geschlossen
 - **Issue #155:** Major Dep Updates (Firebase 12, Vite 7) — breaking changes, separat behandeln
-- **Issue #162:** GitHub Actions Cache-Optimierung
-- **Issue #147:** Backup Fehlerbehandlung
 
 ## Splash Screen
 - Inline SVG in `index.html` (`id="splashScreen"`) — Kreuz + 4 Checkmarks
