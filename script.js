@@ -468,16 +468,30 @@ function setupEventListeners() {
   if (eventListenersSetup) {
     return;
   }
-  // Task input (if exists - v1.4.5 uses modal instead)
+  // Task input - Enter key opens Quick Add Modal with Q1 pre-selected
   const taskInput = document.getElementById('taskInput');
   if (taskInput) {
     taskInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && taskInput.value.trim()) {
-        openModal((text, segment, recurring) => {
-          handleAddTask(text, segment, recurring);
-          closeModal();
-          taskInput.value = '';
-        });
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const taskText = taskInput.value.trim();
+
+        // Open Quick Add Modal with Q1 (Do!) pre-selected
+        openQuickAddModal(
+          1, // Segment 1 (Do!)
+          handleAddTask,
+          renderTasksWithCallbacks,
+          getCurrentLanguage
+        );
+
+        // If user had entered text, pre-fill it in the modal
+        if (taskText) {
+          const quickAddInput = document.getElementById('quickAddInput');
+          if (quickAddInput) {
+            quickAddInput.value = taskText;
+            taskInput.value = ''; // Clear main input
+          }
+        }
       }
     });
 
