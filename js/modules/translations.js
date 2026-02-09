@@ -15,6 +15,11 @@ export const translations = {
       guestInfo:
         'Melde dich an, um deine Daten in der Cloud zu speichern und auf allen Geräten zu synchronisieren. Im Gast-Modus werden deine Daten lokal auf diesem Gerät gespeichert.',
     },
+    focusMode: {
+      label: '🎯 Heute fokussieren',
+      tooltip: 'Nur wichtige Aufgaben anzeigen (Q1 + Q2)',
+      active: 'Fokus-Modus aktiv',
+    },
     buttons: {
       add: 'Hinzufügen',
       cancel: 'Abbrechen',
@@ -139,6 +144,7 @@ export const translations = {
   },
   en: {
     taskInputPlaceholder: 'New task',
+<<<<<<< HEAD
     login: {
       title: 'Eisenhauer Matrix',
       subtitle: 'Organize your tasks efficiently',
@@ -147,6 +153,12 @@ export const translations = {
       continueGuest: 'Continue as guest',
       guestInfo:
         'Sign in to save your data to the cloud and sync across all devices. In guest mode, your data is stored locally on this device.',
+=======
+    focusMode: {
+      label: '🎯 Focus Today',
+      tooltip: 'Show only important tasks (Q1 + Q2)',
+      active: 'Focus mode active',
+>>>>>>> fc03cd4 (feat: Add Focus Mode toggle to hide Q3/Q4 segments)
     },
     buttons: {
       add: 'Add',

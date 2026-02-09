@@ -501,6 +501,33 @@ function setupEventListeners() {
     });
   });
 
+  // Focus Mode Toggle
+  const focusModeToggle = document.getElementById('focusModeToggle');
+  if (focusModeToggle) {
+    // Load focus mode state from localStorage
+    const focusModeEnabled = localStorage.getItem('focusMode') === 'true';
+    if (focusModeEnabled) {
+      document.body.classList.add('focus-mode');
+      focusModeToggle.classList.add('active');
+    }
+
+    focusModeToggle.addEventListener('click', () => {
+      const isActive = document.body.classList.toggle('focus-mode');
+      focusModeToggle.classList.toggle('active', isActive);
+
+      // Save state to localStorage
+      localStorage.setItem('focusMode', isActive);
+
+      // Update tooltip based on state
+      const lang = getTranslation();
+      focusModeToggle.title = isActive ? lang.focusMode.active : lang.focusMode.tooltip;
+    });
+
+    // Set initial tooltip
+    const lang = getTranslation();
+    focusModeToggle.title = focusModeEnabled ? lang.focusMode.active : lang.focusMode.tooltip;
+  }
+
   // Settings button (header)
   const settingsBtn = document.getElementById('settingsBtnHeader');
   if (settingsBtn) {
