@@ -19,6 +19,11 @@ export const translations = {
       createBackupBtn: 'Backup erstellen',
       lastBackup: 'Letztes Backup',
       never: 'Nie',
+      q4Detox: 'Q4-DETOX',
+      q4DetoxBtn: 'Q4 aufräumen',
+      q4DetoxConfirm: 'Alle Aufgaben aus "Später!" archivieren?',
+      q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
+      q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
     },
     personalize: {
       title: 'Personalisieren',
@@ -119,6 +124,11 @@ export const translations = {
       createBackupBtn: 'Create Backup',
       lastBackup: 'Last backup',
       never: 'Never',
+      q4Detox: 'Q4 DETOX',
+      q4DetoxBtn: 'Clear Q4',
+      q4DetoxConfirm: 'Archive all tasks from "Ignore!"?',
+      q4DetoxSuccess: 'Q4 tasks archived!',
+      q4DetoxEmpty: 'No Q4 tasks to archive',
     },
     personalize: {
       title: 'Personalize',
@@ -449,6 +459,17 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const personalizeBtn = document.getElementById('personalizeBtn');
   if (personalizeBtn) {
     personalizeBtn.textContent = lang.settings.personalizeBtn;
+  }
+
+  // Update Q4 Detox section
+  const q4DetoxTitle = document.getElementById('q4DetoxTitle');
+  if (q4DetoxTitle) {
+    q4DetoxTitle.textContent = lang.settings.q4Detox;
+  }
+
+  const q4DetoxBtn = document.getElementById('q4DetoxBtn');
+  if (q4DetoxBtn) {
+    q4DetoxBtn.textContent = lang.settings.q4DetoxBtn;
   }
 
   // Update Personalize Modal texts
