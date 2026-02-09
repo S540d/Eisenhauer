@@ -38,6 +38,8 @@ import {
   setLanguage,
   getTranslation,
   updateLanguageUI,
+  detectBrowserLanguage,
+  initLoginTranslations,
 } from './js/modules/translations.js';
 import {
   tasks,
@@ -466,16 +468,32 @@ function setupEventListeners() {
   if (eventListenersSetup) {
     return;
   }
-  // Task input (if exists - v1.4.5 uses modal instead)
+  // Task input - Enter key opens Quick Add Modal with Q1 pre-selected
   const taskInput = document.getElementById('taskInput');
   if (taskInput) {
-    taskInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && taskInput.value.trim()) {
-        openModal((text, segment, recurring) => {
-          handleAddTask(text, segment, recurring);
-          closeModal();
-          taskInput.value = '';
-        });
+    taskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const taskText = taskInput.value.trim();
+
+        // Open Quick Add Modal with Q1 (Do!) pre-selected
+        openQuickAddModal(
+          1, // Segment 1 (Do!)
+          handleAddTask,
+          renderTasksWithCallbacks,
+          getCurrentLanguage
+        );
+
+        // Clear main input immediately after opening the modal
+        taskInput.value = '';
+
+        // If user had entered text, pre-fill it in the modal (if available)
+        if (taskText) {
+          const quickAddInput = document.getElementById('quickAddInput');
+          if (quickAddInput) {
+            quickAddInput.value = taskText;
+          }
+        }
       }
     });
 
@@ -498,6 +516,33 @@ function setupEventListeners() {
       );
     });
   });
+
+  // Focus Mode Toggle
+  const focusModeToggle = document.getElementById('focusModeToggle');
+  if (focusModeToggle) {
+    // Load focus mode state from localStorage
+    const focusModeEnabled = localStorage.getItem('focusMode') === 'true';
+    if (focusModeEnabled) {
+      document.body.classList.add('focus-mode');
+      focusModeToggle.classList.add('active');
+    }
+
+    focusModeToggle.addEventListener('click', () => {
+      const isActive = document.body.classList.toggle('focus-mode');
+      focusModeToggle.classList.toggle('active', isActive);
+
+      // Save state to localStorage
+      localStorage.setItem('focusMode', isActive);
+
+      // Update tooltip based on state
+      const lang = getTranslation();
+      focusModeToggle.title = isActive ? lang.focusMode.active : lang.focusMode.tooltip;
+    });
+
+    // Set initial tooltip
+    const lang = getTranslation();
+    focusModeToggle.title = focusModeEnabled ? lang.focusMode.active : lang.focusMode.tooltip;
+  }
 
   // Settings button (header)
   const settingsBtn = document.getElementById('settingsBtnHeader');
@@ -529,6 +574,9 @@ function setupEventListeners() {
     // Update language
     setLanguage(lang);
     updateLanguageUI(() => renderTasksWithCallbacks());
+
+    // Persist language preference in localStorage (manual override)
+    localStorage.setItem(STORAGE_KEYS.LANGUAGE, lang);
 
     // Update active state for all language buttons
     const allLangButtons = document.querySelectorAll('.lang-btn');
@@ -958,11 +1006,20 @@ async function initApp() {
     }
   }
 
-  // Initialize language from localStorage
+  // Initialize language: 1) localStorage (manual override), 2) Browser language (auto-detect), 3) Fallback to 'en'
   const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
   if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
+    // User has manually selected a language - use it
     setLanguage(savedLanguage);
+  } else {
+    // Auto-detect browser language
+    const detectedLanguage = detectBrowserLanguage();
+    setLanguage(detectedLanguage);
+    // Don't persist auto-detected language - only persist when user manually changes it
   }
+
+  // Update login screen with detected/saved language
+  initLoginTranslations();
 
   // Update UI with correct language (including Quick Add Modal)
   updateLanguageUI();

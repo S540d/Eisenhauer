@@ -81,3 +81,4 @@ playwright/.cache/
 twa-manifest.json
 *.zip
 coverage/
+.env.development

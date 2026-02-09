@@ -137,6 +137,14 @@
     <div id="appScreen" class="container" style="display: none">
       <header class="app-header">
         <h1>Eisenhauer Matrix</h1>
+        <button
+          id="focusModeToggle"
+          class="focus-mode-toggle"
+          title="🎯 Heute fokussieren"
+          aria-label="Focus mode toggle"
+        >
+          <span>🎯</span>
+        </button>
         <div id="userInfo" class="user-info"></div>
         <button
           id="settingsBtnHeader"
@@ -429,14 +437,6 @@
         </div>
 
         <div id="backupSeparator" class="settings-separator" style="display: none"></div>
-
-        <!-- Q4 Detox -->
-        <div class="settings-section">
-          <h4 id="q4DetoxTitle" class="settings-section-title">Q4-DETOX</h4>
-          <button id="q4DetoxBtn" class="btn">Q4 aufräumen</button>
-        </div>
-
-        <div class="settings-separator"></div>
 
         <!-- Feedback, Support & About -->
         <div class="settings-section settings-row">
@@ -781,8 +781,9 @@
     <!-- Register Service Worker with Cache Busting -->
     <script>
       // Only register service worker in production builds (not in Vite dev mode)
-      // Dev mode check: Vite runs on localhost with a port
-      const isProduction = !window.location.port;
+      // Dev mode check: explicit localhost-style hosts instead of relying on port
+      const devHosts = ['localhost', '127.0.0.1', '[::1]'];
+      const isProduction = !devHosts.includes(window.location.hostname);
 
       if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
