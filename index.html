@@ -781,8 +781,9 @@
     <!-- Register Service Worker with Cache Busting -->
     <script>
       // Only register service worker in production builds (not in Vite dev mode)
-      // Dev mode check: Vite runs on localhost with a port
-      const isProduction = !window.location.port;
+      // Dev mode check: explicit localhost-style hosts instead of relying on port
+      const devHosts = ['localhost', '127.0.0.1', '[::1]'];
+      const isProduction = !devHosts.includes(window.location.hostname);
 
       if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
