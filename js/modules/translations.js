@@ -6,19 +6,35 @@
 export const translations = {
   de: {
     taskInputPlaceholder: 'Neue Aufgabe',
+    login: {
+      title: 'Eisenhauer Matrix',
+      subtitle: 'Organisiere deine Aufgaben effizient',
+      signInGoogle: 'Mit Google anmelden',
+      signInApple: 'Mit Apple anmelden',
+      continueGuest: 'Als Gast fortfahren',
+      guestInfo:
+        'Melde dich an, um deine Daten in der Cloud zu speichern und auf allen Geräten zu synchronisieren. Im Gast-Modus werden deine Daten lokal auf diesem Gerät gespeichert.',
+    },
     buttons: {
       add: 'Hinzufügen',
       cancel: 'Abbrechen',
+      close: 'Schließen',
     },
     settings: {
+      title: 'Einstellungen',
+      account: 'KONTO',
+      signOut: 'Abmelden',
       dataManagement: 'DATEN',
       exportBtn: 'Export',
-      importGuestBtn: 'Import Gast-Daten',
+      importGuestBtn: 'Import',
       personalizeBtn: 'Personalisieren',
       backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Backup erstellen',
       lastBackup: 'Letztes Backup',
       never: 'Nie',
+      sendFeedback: 'Feedback senden',
+      supportMe: 'Unterstütze mich',
+      about: 'Über',
     },
     personalize: {
       title: 'Personalisieren',
@@ -75,6 +91,23 @@ export const translations = {
       monthDayLabel: 'Tag (1-31)',
       dueDate: 'Fällig am',
     },
+    segmentModal: {
+      title: 'Wähle ein Segment',
+    },
+    editRecurring: {
+      title: 'Wiederkehrende Aufgabe bearbeiten',
+      disableRecurring: 'Wiederholung entfernen (Aufgabe einmalig machen)',
+      deleteTask: 'Diese Aufgabe dauerhaft löschen',
+      save: 'Speichern',
+    },
+    metrics: {
+      title: '📊 Produktivitäts-Statistiken',
+      close: 'Schließen',
+    },
+    dragHint: {
+      tip: 'Ziehe Aufgaben zwischen Kategorien, um sie zu verschieben. Wische nach links, um zu löschen.',
+      gotIt: 'Verstanden',
+    },
     segments: {
       1: { title: 'Sofort!', subtitle: 'wichtig & dringend' },
       2: { title: 'Planen!', subtitle: 'wichtig' },
@@ -106,19 +139,35 @@ export const translations = {
   },
   en: {
     taskInputPlaceholder: 'New task',
+    login: {
+      title: 'Eisenhauer Matrix',
+      subtitle: 'Organize your tasks efficiently',
+      signInGoogle: 'Sign in with Google',
+      signInApple: 'Sign in with Apple',
+      continueGuest: 'Continue as guest',
+      guestInfo:
+        'Sign in to save your data to the cloud and sync across all devices. In guest mode, your data is stored locally on this device.',
+    },
     buttons: {
       add: 'Add',
       cancel: 'Cancel',
+      close: 'Close',
     },
     settings: {
-      dataManagement: 'DATA MANAGEMENT',
+      title: 'Settings',
+      account: 'ACCOUNT',
+      signOut: 'Sign Out',
+      dataManagement: 'DATA',
       exportBtn: 'Export',
-      importGuestBtn: 'Import Guest Data',
+      importGuestBtn: 'Import',
       personalizeBtn: 'Personalize',
       backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Create Backup',
       lastBackup: 'Last backup',
       never: 'Never',
+      sendFeedback: 'Send Feedback',
+      supportMe: 'Support Me',
+      about: 'About',
     },
     personalize: {
       title: 'Personalize',
@@ -174,6 +223,23 @@ export const translations = {
       monthDayLabel: 'Day (1-31)',
       dueDate: 'Due Date',
     },
+    segmentModal: {
+      title: 'Choose a segment',
+    },
+    editRecurring: {
+      title: 'Edit Recurring Task',
+      disableRecurring: 'Remove recurring (make one-time task)',
+      deleteTask: 'Delete this task permanently',
+      save: 'Save',
+    },
+    metrics: {
+      title: '📊 Productivity Statistics',
+      close: 'Close',
+    },
+    dragHint: {
+      tip: 'Drag tasks between categories to move them. Swipe left to delete.',
+      gotIt: 'Got it',
+    },
     segments: {
       1: { title: 'Do!', subtitle: '' },
       2: { title: 'Schedule!', subtitle: '' },
@@ -206,6 +272,15 @@ export const translations = {
 };
 
 export let currentLanguage = 'en';
+
+/**
+ * Detect browser language automatically
+ * @returns {string} 'en' or 'de' (fallback to 'en')
+ */
+export function detectBrowserLanguage() {
+  const browserLang = navigator.language.split('-')[0]; // 'de-DE' -> 'de'
+  return ['en', 'de'].includes(browserLang) ? browserLang : 'en';
+}
 
 export function setLanguage(lang) {
   currentLanguage = lang;
@@ -248,6 +323,58 @@ export function getRecurringDescription(recurring) {
       return `${currentLanguage === 'de' ? 'Alle' : 'Every'} ${recurring.customDays} ${currentLanguage === 'de' ? 'Tage' : 'days'}`;
     default:
       return recurring.interval;
+  }
+}
+
+/**
+ * Initialize login screen translations (called once on app load)
+ */
+export function initLoginTranslations() {
+  const lang = translations[currentLanguage];
+
+  // Update login screen title
+  const loginTitle = document.querySelector('#loginScreen h1');
+  if (loginTitle) {
+    loginTitle.textContent = lang.login.title;
+  }
+
+  // Update login subtitle
+  const loginSubtitle = document.querySelector('.login-subtitle');
+  if (loginSubtitle) {
+    loginSubtitle.textContent = lang.login.subtitle;
+  }
+
+  // Update Google Sign In button
+  const googleSignInBtn = document.querySelector('#googleSignInBtn');
+  if (googleSignInBtn) {
+    const btnText = googleSignInBtn.childNodes[googleSignInBtn.childNodes.length - 1];
+    if (btnText && btnText.nodeType === Node.TEXT_NODE) {
+      btnText.textContent = lang.login.signInGoogle;
+    }
+  }
+
+  // Update Apple Sign In button (if visible)
+  const appleSignInBtn = document.querySelector('button[onclick="signInWithApple()"]');
+  if (appleSignInBtn) {
+    const btnText = appleSignInBtn.childNodes[appleSignInBtn.childNodes.length - 1];
+    if (btnText && btnText.nodeType === Node.TEXT_NODE) {
+      btnText.textContent = lang.login.signInApple;
+    }
+  }
+
+  // Update Guest Mode button
+  const guestModeBtn = document.querySelector('#guestModeBtn');
+  if (guestModeBtn) {
+    const btnText = guestModeBtn.childNodes[guestModeBtn.childNodes.length - 1];
+    if (btnText && btnText.nodeType === Node.TEXT_NODE) {
+      btnText.textContent = lang.login.continueGuest;
+    }
+  }
+
+  // Update login info text
+  const loginInfo = document.querySelector('.login-info');
+  if (loginInfo) {
+    loginInfo.textContent = lang.login.guestInfo;
   }
 }
 
@@ -522,6 +649,102 @@ export function updateLanguageUI(renderAllTasksCallback) {
     lastBackupInfo.textContent = suffix
       ? `${lang.settings.lastBackup}: ${suffix}`
       : lang.settings.lastBackup;
+  }
+
+  // Update About Modal texts
+  const aboutTitle = document.getElementById('aboutTitle');
+  if (aboutTitle) {
+    aboutTitle.textContent = lang.about.title;
+  }
+
+  const aboutLicenseTitle = document.getElementById('aboutLicenseTitle');
+  if (aboutLicenseTitle) {
+    aboutLicenseTitle.textContent = lang.about.licenseTitle;
+  }
+
+  const aboutLicenseInfo = document.getElementById('aboutLicenseInfo');
+  if (aboutLicenseInfo) {
+    aboutLicenseInfo.textContent = lang.about.licenseInfo;
+  }
+
+  const aboutNoCommercial = document.getElementById('aboutNoCommercial');
+  if (aboutNoCommercial) {
+    aboutNoCommercial.textContent = lang.about.noCommercial;
+  }
+
+  const aboutRepositoryLink = document.getElementById('aboutRepositoryLink');
+  if (aboutRepositoryLink) {
+    aboutRepositoryLink.textContent = lang.about.repository;
+  }
+
+  const aboutSupportTitle = document.getElementById('aboutSupportTitle');
+  if (aboutSupportTitle) {
+    aboutSupportTitle.textContent = lang.about.supportTitle;
+  }
+
+  const aboutSupportMe = document.getElementById('aboutSupportMe');
+  if (aboutSupportMe) {
+    aboutSupportMe.textContent = lang.about.supportMe;
+  }
+
+  const aboutReportBug = document.getElementById('aboutReportBug');
+  if (aboutReportBug) {
+    aboutReportBug.textContent = lang.about.reportBug;
+  }
+
+  // Update Settings Modal header
+  const settingsHeader = document.querySelector('#settingsModal .settings-header h3');
+  if (settingsHeader) {
+    settingsHeader.textContent = lang.settings.title;
+  }
+
+  // Update Sign Out button
+  const signOutBtn = document.getElementById('signOutBtn');
+  if (signOutBtn) {
+    signOutBtn.textContent = lang.settings.signOut;
+  }
+
+  // Update Segment Modal
+  const segmentModalTitle = document.querySelector('#segmentModal h3');
+  if (segmentModalTitle) {
+    segmentModalTitle.textContent = lang.segmentModal.title;
+  }
+
+  // Update Edit Recurring Modal
+  const editRecurringTitle = document.getElementById('editRecurringTitle');
+  if (editRecurringTitle) {
+    editRecurringTitle.textContent = lang.editRecurring.title;
+  }
+
+  const editDisableRecurringText = document.getElementById('editDisableRecurringText');
+  if (editDisableRecurringText) {
+    editDisableRecurringText.textContent = lang.editRecurring.disableRecurring;
+  }
+
+  const editDeleteTaskText = document.getElementById('editDeleteTaskText');
+  if (editDeleteTaskText) {
+    editDeleteTaskText.textContent = lang.editRecurring.deleteTask;
+  }
+
+  const editRecurringSaveBtn = document.getElementById('editRecurringSaveBtn');
+  if (editRecurringSaveBtn) {
+    editRecurringSaveBtn.textContent = lang.editRecurring.save;
+  }
+
+  const editRecurringCancelBtn = document.getElementById('editRecurringCancelBtn');
+  if (editRecurringCancelBtn) {
+    editRecurringCancelBtn.textContent = lang.buttons.cancel;
+  }
+
+  // Update Metrics Modal
+  const metricsTitle = document.getElementById('metricsTitle');
+  if (metricsTitle) {
+    metricsTitle.textContent = lang.metrics.title;
+  }
+
+  const metricsCancelBtn = document.getElementById('metricsCancelBtn');
+  if (metricsCancelBtn) {
+    metricsCancelBtn.textContent = lang.metrics.close;
   }
 
   // Re-render all tasks to update recurring indicators

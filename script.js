@@ -38,6 +38,8 @@ import {
   setLanguage,
   getTranslation,
   updateLanguageUI,
+  detectBrowserLanguage,
+  initLoginTranslations,
 } from './js/modules/translations.js';
 import {
   tasks,
@@ -530,6 +532,9 @@ function setupEventListeners() {
     setLanguage(lang);
     updateLanguageUI(() => renderTasksWithCallbacks());
 
+    // Persist language preference in localStorage (manual override)
+    localStorage.setItem(STORAGE_KEYS.LANGUAGE, lang);
+
     // Update active state for all language buttons
     const allLangButtons = document.querySelectorAll('.lang-btn');
     allLangButtons.forEach((b) => {
@@ -924,11 +929,20 @@ async function initApp() {
     }
   }
 
-  // Initialize language from localStorage
+  // Initialize language: 1) localStorage (manual override), 2) Browser language (auto-detect), 3) Fallback to 'en'
   const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
   if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
+    // User has manually selected a language - use it
     setLanguage(savedLanguage);
+  } else {
+    // Auto-detect browser language
+    const detectedLanguage = detectBrowserLanguage();
+    setLanguage(detectedLanguage);
+    // Don't persist auto-detected language - only persist when user manually changes it
   }
+
+  // Update login screen with detected/saved language
+  initLoginTranslations();
 
   // Update UI with correct language (including Quick Add Modal)
   updateLanguageUI();
