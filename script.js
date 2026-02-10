@@ -663,38 +663,35 @@ function setupEventListeners() {
   }
 
   // Q4 Detox button - Archive all Q4 tasks
-  // Wrapped in DOMContentLoaded to ensure element exists
-  document.addEventListener('DOMContentLoaded', () => {
-    const q4DetoxBtn = document.getElementById('q4DetoxBtn');
-    if (q4DetoxBtn) {
-      q4DetoxBtn.addEventListener('click', async () => {
-        const lang = getTranslation();
+  const q4DetoxBtn = document.getElementById('q4DetoxBtn');
+  if (q4DetoxBtn) {
+    q4DetoxBtn.addEventListener('click', async () => {
+      const lang = getTranslation();
 
-        // Get all Q4 tasks (Segment 4)
-        const q4Tasks = tasks['4'] || [];
+      // Get all Q4 tasks (Segment 4)
+      const q4Tasks = getTasks(SEGMENTS.IGNORE);
 
-        if (q4Tasks.length === 0) {
-          showWarning(lang.settings.q4DetoxEmpty);
-          return;
-        }
+      if (q4Tasks.length === 0) {
+        showWarning(lang.settings.q4DetoxEmpty);
+        return;
+      }
 
-        // Confirm action
-        const confirmed = confirm(lang.settings.q4DetoxConfirm);
-        if (!confirmed) return;
+      // Confirm action
+      const confirmed = confirm(lang.settings.q4DetoxConfirm);
+      if (!confirmed) return;
 
-        // Move all Q4 tasks to Q5 (Done)
-        for (const task of q4Tasks) {
-          handleMoveTask(task.id, '4', '5');
-        }
+      // Move all Q4 tasks to Q5 (Done)
+      for (const task of q4Tasks) {
+        handleMoveTask(task.id, SEGMENTS.IGNORE, SEGMENTS.DONE);
+      }
 
-        // Show success message
-        showSuccess(lang.settings.q4DetoxSuccess);
+      // Show success message
+      showSuccess(lang.settings.q4DetoxSuccess);
 
-        // Re-render tasks
-        renderTasksWithCallbacks();
-      });
-    }
-  });
+      // Re-render tasks
+      renderTasksWithCallbacks();
+    });
+  }
 
   // Import guest tasks button
   const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
