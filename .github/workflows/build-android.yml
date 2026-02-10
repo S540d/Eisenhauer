@@ -128,7 +128,7 @@ jobs:
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
           echo "| Flavor | \`${{ matrix.flavor }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Version | $(cat version.json | grep version | head -1 | cut -d'"' -f4) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Version | $(grep versionName Android/app/build.gradle | head -1 | cut -d'"' -f2) |" >> $GITHUB_STEP_SUMMARY
 
           AAB_PATH="Android/app/build/outputs/bundle/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.aab"
           APK_PATH="Android/app/build/outputs/apk/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.apk"
