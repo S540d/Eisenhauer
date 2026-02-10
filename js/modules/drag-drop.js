@@ -3,8 +3,6 @@
  * Handles drag & drop functionality for desktop and mobile (touch)
  */
 
-import { SEGMENTS } from './config.js';
-
 // Dragged element reference
 let draggedElement = null;
 
@@ -108,11 +106,6 @@ function handleDrop(e, onTaskMove) {
 
     // Call the move callback - this will trigger re-render
     onTaskMove(taskId, fromSegment, toSegment);
-  } else {
-    if (fromSegment === toSegment) {
-    }
-    if (!onTaskMove) {
-    }
   }
 
   return false;
@@ -305,7 +298,7 @@ export function setupTouchDrag(element, task, onTaskMove, onTaskDelete) {
  * @param {HTMLElement} element - Task element
  * @param {object} task - Task object
  */
-export function setupSwipeToDelete(element, task) {
+export function setupSwipeToDelete() {
   // Functionality now handled in setupTouchDrag
   // This function is kept for backward compatibility but does nothing
 }

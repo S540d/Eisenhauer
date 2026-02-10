@@ -28,3 +28,13 @@ export const STORAGE_KEYS = {
 
 export const UPDATE_CHECK_INTERVAL = 10000; // 10 seconds
 export const MAX_TASK_LENGTH = 140;
+
+// Smart Rules Configuration
+export const SMART_RULES = {
+  urgentThresholdDays: 3, // Tasks become urgent if due date is within 3 days
+};
+
+export const STORAGE_KEYS_EXTENDED = {
+  ...STORAGE_KEYS,
+  SMART_FUNCTIONS_ENABLED: 'smartFunctionsEnabled',
+};

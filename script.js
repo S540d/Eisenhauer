@@ -7,7 +7,7 @@
  */
 
 // Import environment config
-import { isStaging, isTesting, getEnvironmentLabel } from './js/modules/env-config.js';
+import { isStaging, isTesting } from './js/modules/env-config.js';
 
 // Import npm packages for local storage and charting
 import localforage from 'localforage';
@@ -30,7 +30,7 @@ import {
 } from './js/modules/auth.js';
 
 // Import all modules
-import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH } from './js/modules/config.js';
+import { SEGMENTS, STORAGE_KEYS, MAX_TASK_LENGTH, SMART_RULES } from './js/modules/config.js';
 import { APP_VERSION, initVersion } from './js/modules/version.js';
 import {
   translations,
@@ -38,6 +38,8 @@ import {
   setLanguage,
   getTranslation,
   updateLanguageUI,
+  detectBrowserLanguage,
+  initLoginTranslations,
 } from './js/modules/translations.js';
 import {
   tasks,
@@ -48,6 +50,7 @@ import {
   getTasks,
   setAllTasks,
   reorderTask,
+  applySmartRules,
 } from './js/modules/tasks.js';
 import {
   initStorage,
@@ -80,12 +83,13 @@ import {
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
+import { KeyboardDragManager } from './js/modules/accessibility.js';
 import {
-  KeyboardDragManager,
-  announceDragStart,
-  announceDragEnd,
-} from './js/modules/accessibility.js';
-import { uploadBackup, shouldAutoBackup, markAutoBackupCompleted } from './js/modules/backup.js';
+  uploadBackup,
+  shouldAutoBackup,
+  markAutoBackupCompleted,
+  trackBackupFailure,
+} from './js/modules/backup.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
 // import {
 // setupDragAndDrop,
@@ -158,10 +162,10 @@ async function loadAllTasks() {
 /**
  * Add task handler
  */
-function handleAddTask(taskText, segment, recurringConfig = null) {
+function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null) {
   if (!taskText || taskText.trim() === '') return;
 
-  const task = addTaskToSegment(taskText, segment, recurringConfig);
+  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate);
 
   // Save to storage based on mode
   if (currentUser && db && !isGuestMode) {
@@ -244,7 +248,7 @@ function deleteAllRecurringInstances(taskText, segmentId, recurringConfig) {
 /**
  * Helper function to sync task deletion to storage
  */
-function syncDelete(taskId, segment) {
+function syncDelete(taskId) {
   if (currentUser && db && !isGuestMode) {
     // Delete from Firestore
     deleteTaskFromFirestore(taskId, currentUser.uid, db);
@@ -381,7 +385,6 @@ function handleEditRecurring(task) {
         if (taskIndex !== -1) {
           if (newRecurringConfig === 'DELETE') {
             // Delete task permanently
-            const deletedTask = tasks[segment][taskIndex];
             deleteTask(taskId, segment, async (task) => {
               // Delete from Firestore if logged in
               if (currentUser && db && !isGuestMode) {
@@ -438,7 +441,13 @@ function renderTasksWithCallbacks() {
     onReorder: handleReorderTask,
   };
 
-  renderAllTasks(tasks, translations, getCurrentLanguage(), callbacks);
+  // Apply smart rules if enabled
+  const smartFunctionsEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
+  const tasksToRender = smartFunctionsEnabled
+    ? applySmartRules(tasks, true, SMART_RULES.urgentThresholdDays)
+    : tasks;
+
+  renderAllTasks(tasksToRender, translations, getCurrentLanguage(), callbacks);
 
   // Setup drop zones for desktop drag & drop
   setupDropZones(handleMoveTask);
@@ -459,16 +468,32 @@ function setupEventListeners() {
   if (eventListenersSetup) {
     return;
   }
-  // Task input (if exists - v1.4.5 uses modal instead)
+  // Task input - Enter key opens Quick Add Modal with Q1 pre-selected
   const taskInput = document.getElementById('taskInput');
   if (taskInput) {
-    taskInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && taskInput.value.trim()) {
-        openModal((text, segment, recurring) => {
-          handleAddTask(text, segment, recurring);
-          closeModal();
-          taskInput.value = '';
-        });
+    taskInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const taskText = taskInput.value.trim();
+
+        // Open Quick Add Modal with Q1 (Do!) pre-selected
+        openQuickAddModal(
+          1, // Segment 1 (Do!)
+          handleAddTask,
+          renderTasksWithCallbacks,
+          getCurrentLanguage
+        );
+
+        // Clear main input immediately after opening the modal
+        taskInput.value = '';
+
+        // If user had entered text, pre-fill it in the modal (if available)
+        if (taskText) {
+          const quickAddInput = document.getElementById('quickAddInput');
+          if (quickAddInput) {
+            quickAddInput.value = taskText;
+          }
+        }
       }
     });
 
@@ -483,14 +508,41 @@ function setupEventListeners() {
       const segment = parseInt(e.target.dataset.segment);
       openQuickAddModal(
         segment,
-        (text, selectedSegment, recurring) => {
-          handleAddTask(text, selectedSegment || segment, recurring);
+        (text, selectedSegment, recurring, dueDate) => {
+          handleAddTask(text, selectedSegment || segment, recurring, dueDate);
         },
         translations,
         getCurrentLanguage()
       );
     });
   });
+
+  // Focus Mode Toggle
+  const focusModeToggle = document.getElementById('focusModeToggle');
+  if (focusModeToggle) {
+    // Load focus mode state from localStorage
+    const focusModeEnabled = localStorage.getItem('focusMode') === 'true';
+    if (focusModeEnabled) {
+      document.body.classList.add('focus-mode');
+      focusModeToggle.classList.add('active');
+    }
+
+    focusModeToggle.addEventListener('click', () => {
+      const isActive = document.body.classList.toggle('focus-mode');
+      focusModeToggle.classList.toggle('active', isActive);
+
+      // Save state to localStorage
+      localStorage.setItem('focusMode', isActive);
+
+      // Update tooltip based on state
+      const lang = getTranslation();
+      focusModeToggle.title = isActive ? lang.focusMode.active : lang.focusMode.tooltip;
+    });
+
+    // Set initial tooltip
+    const lang = getTranslation();
+    focusModeToggle.title = focusModeEnabled ? lang.focusMode.active : lang.focusMode.tooltip;
+  }
 
   // Settings button (header)
   const settingsBtn = document.getElementById('settingsBtnHeader');
@@ -523,6 +575,9 @@ function setupEventListeners() {
     setLanguage(lang);
     updateLanguageUI(() => renderTasksWithCallbacks());
 
+    // Persist language preference in localStorage (manual override)
+    localStorage.setItem(STORAGE_KEYS.LANGUAGE, lang);
+
     // Update active state for all language buttons
     const allLangButtons = document.querySelectorAll('.lang-btn');
     allLangButtons.forEach((b) => {
@@ -532,6 +587,9 @@ function setupEventListeners() {
       }
     });
   };
+
+  // Expose renderTasksWithCallbacks for UI to trigger re-render
+  window.renderTasksCallback = renderTasksWithCallbacks;
 
   // Language toggle buttons in settings modal (legacy support)
   const langButtons = document.querySelectorAll('.lang-btn');
@@ -601,6 +659,37 @@ function setupEventListeners() {
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', () => {
       exportData(tasks, APP_VERSION);
+    });
+  }
+
+  // Q4 Detox button - Archive all Q4 tasks
+  const q4DetoxBtn = document.getElementById('q4DetoxBtn');
+  if (q4DetoxBtn) {
+    q4DetoxBtn.addEventListener('click', async () => {
+      const lang = getTranslation();
+
+      // Get all Q4 tasks (Segment 4)
+      const q4Tasks = getTasks(SEGMENTS.IGNORE);
+
+      if (q4Tasks.length === 0) {
+        showWarning(lang.settings.q4DetoxEmpty);
+        return;
+      }
+
+      // Confirm action
+      const confirmed = confirm(lang.settings.q4DetoxConfirm);
+      if (!confirmed) return;
+
+      // Move all Q4 tasks to Q5 (Done)
+      for (const task of q4Tasks) {
+        handleMoveTask(task.id, SEGMENTS.IGNORE, SEGMENTS.DONE);
+      }
+
+      // Show success message
+      showSuccess(lang.settings.q4DetoxSuccess);
+
+      // Re-render tasks
+      renderTasksWithCallbacks();
     });
   }
 
@@ -755,7 +844,6 @@ function setupEventListeners() {
     logoutBtn.addEventListener('click', async () => {
       if (typeof window.signOut === 'function') {
         await window.signOut();
-      } else {
       }
     });
   }
@@ -800,8 +888,6 @@ function setupEventListeners() {
  * This is called from auth.js with (user, isGuestMode)
  */
 window.onAuthStateChanged = async function (user, guestMode = false) {
-  const callbackStart = performance.now();
-
   currentUser = user;
   isGuestMode = guestMode;
 
@@ -817,7 +903,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
   if (!tasksAlreadyLoaded) {
     // First load: load tasks and setup UI
-    const loadTasksStart = performance.now();
     if (user && !isGuestMode) {
       await loadAllTasks();
     } else {
@@ -826,7 +911,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
     // Wait for DOM to be fully visible after showApp()
     setTimeout(() => {
-      const setupStart = performance.now();
       // Setup event listeners (after showApp() has been called by auth.js)
       setupEventListeners();
 
@@ -837,7 +921,6 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
 
       // Render tasks with callbacks (after DOM is ready)
       // DragManager and drop zones are now setup in renderTasksWithCallbacks()
-      const renderStart = performance.now();
       renderTasksWithCallbacks();
     }, 100);
 
@@ -863,12 +946,19 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
         markAutoBackupCompleted();
       } catch (error) {
         console.error('Auto-backup failed:', error);
-        // Fail silently - don't interrupt user experience
+        // Track failure and notify only after 3 consecutive failures
+        const shouldNotify = trackBackupFailure();
+        if (shouldNotify) {
+          const message =
+            getCurrentLanguage() === 'de'
+              ? 'Automatische Backups schlagen wiederholt fehl. Bitte prüfen Sie Ihre Internetverbindung.'
+              : 'Automatic backups are repeatedly failing. Please check your internet connection.';
+          showError(message);
+        }
       }
     }
   } else {
     // Tasks already loaded: just re-sync with Firebase in background
-    const resyncStart = performance.now();
     await loadAllTasks();
     renderTasksWithCallbacks();
   }
@@ -913,11 +1003,20 @@ async function initApp() {
     }
   }
 
-  // Initialize language from localStorage
+  // Initialize language: 1) localStorage (manual override), 2) Browser language (auto-detect), 3) Fallback to 'en'
   const savedLanguage = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
   if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'de')) {
+    // User has manually selected a language - use it
     setLanguage(savedLanguage);
+  } else {
+    // Auto-detect browser language
+    const detectedLanguage = detectBrowserLanguage();
+    setLanguage(detectedLanguage);
+    // Don't persist auto-detected language - only persist when user manually changes it
   }
+
+  // Update login screen with detected/saved language
+  initLoginTranslations();
 
   // Update UI with correct language (including Quick Add Modal)
   updateLanguageUI();

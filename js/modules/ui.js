@@ -5,7 +5,7 @@
 
 import localforage from 'localforage';
 import { COLORS, SEGMENTS } from './config.js';
-import { getTasks, getRecurringDescription } from './tasks.js';
+import { getRecurringDescription } from './tasks.js';
 import { DragManager } from './drag-manager.js';
 import { announceDragStart, announceDragEnd } from './accessibility.js';
 import { translations } from './translations.js';
@@ -26,6 +26,11 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
   div.className = 'task-item';
   div.dataset.taskId = task.id;
   div.dataset.segmentId = task.segment;
+
+  // Add urgent class if task is marked as urgent
+  if (task.isUrgent) {
+    div.classList.add('urgent-task');
+  }
 
   // Accessibility: Make task items keyboard focusable
   div.setAttribute('tabindex', '0');
@@ -108,6 +113,23 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
 
   content.appendChild(textSpan);
 
+  // Add due date display if present
+  if (task.dueDate && task.segment !== SEGMENTS.DONE) {
+    const dueDateSpan = document.createElement('span');
+    dueDateSpan.className = 'task-due-date';
+
+    // Format date based on locale - use numeric format as specified
+    const dueDate = new Date(task.dueDate);
+    const formattedDate = dueDate.toLocaleDateString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+
+    dueDateSpan.textContent = formattedDate;
+    content.appendChild(dueDateSpan);
+  }
+
   // Add completion timestamp for Done! segment
   if (task.segment === SEGMENTS.DONE && task.completedAt) {
     const timestampSpan = document.createElement('span');
@@ -135,14 +157,14 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
       element: div,
       data: task,
 
-      onDragStart: (event) => {
+      onDragStart: () => {
         div.classList.add('dragging');
 
         // Announce to screen readers
         announceDragStart(task.text);
       },
 
-      onDragMove: (event) => {
+      onDragMove: () => {
         // Optional: Update UI during drag
       },
 
@@ -375,12 +397,13 @@ export function getRecurringConfig() {
         config.weekdays = Array.from(weekdayCheckboxes).map((cb) => parseInt(cb.value));
       }
       break;
-    case 'monthly':
+    case 'monthly': {
       const dayOfMonth = document.getElementById('dayOfMonth');
       if (dayOfMonth) {
         config.dayOfMonth = parseInt(dayOfMonth.value);
       }
       break;
+    }
   }
 
   return config;
@@ -679,6 +702,12 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     }
   });
 
+  // Update smart functions toggle state
+  const smartFunctionsToggle = document.getElementById('smartFunctionsToggle');
+  if (smartFunctionsToggle) {
+    smartFunctionsToggle.checked = localStorage.getItem('smartFunctionsEnabled') === 'true';
+  }
+
   // Use event delegation for all personalize modal buttons
   const existingHandler = personalizeModal._clickHandler;
   if (existingHandler) {
@@ -726,6 +755,18 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       // Trigger language change (will be handled by script.js)
       if (window.changeLanguage) {
         window.changeLanguage(lang);
+      }
+      return;
+    }
+
+    // Handle smart functions toggle
+    if (target.id === 'smartFunctionsToggle') {
+      const isEnabled = target.checked;
+      localStorage.setItem('smartFunctionsEnabled', isEnabled.toString());
+
+      // Trigger re-render if callback is provided
+      if (window.renderTasksCallback) {
+        window.renderTasksCallback();
       }
       return;
     }
@@ -784,7 +825,6 @@ export function openMetricsModal(calculateMetrics) {
     newCancelBtn.addEventListener('click', () => {
       closeMetricsModal();
     });
-  } else {
   }
 }
 
@@ -1062,6 +1102,12 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   quickRecurringEnabled.checked = false;
   quickRecurringOptions.style.display = 'none';
 
+  // Reset due date
+  const dueDateInput = document.getElementById('quickAddDueDate');
+  if (dueDateInput) {
+    dueDateInput.value = '';
+  }
+
   // Segment names
   const segmentNames = {
     1: { de: 'Do! (Wichtig & Dringend)', en: 'Do! (Important & Urgent)' },
@@ -1106,6 +1152,10 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     const text = quickAddInput.value.trim();
     if (!text) return;
 
+    // Get due date if provided
+    const dueDateInput = document.getElementById('quickAddDueDate');
+    const dueDate = dueDateInput && dueDateInput.value ? dueDateInput.value : null;
+
     // Get recurring config if enabled
     let recurringConfig = null;
     if (quickRecurringEnabled.checked) {
@@ -1133,9 +1183,9 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
       }
     }
 
-    // Call callback
+    // Call callback with due date
     if (onAddTask) {
-      onAddTask(text, segmentId, recurringConfig);
+      onAddTask(text, segmentId, recurringConfig, dueDate);
     }
 
     // Close modal
@@ -1175,8 +1225,6 @@ export function setupDropZones(onDrop) {
     const taskLists = document.querySelectorAll('.task-list');
 
     taskLists.forEach((taskList) => {
-      const segment = parseInt(taskList.dataset.segment);
-
       setupDropZone(taskList, (data, dropZone) => {
         const toSegment = parseInt(dropZone.dataset.segment);
         const fromSegment = data.segment;
@@ -1210,7 +1258,6 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
   }
 
   // Set task name and title
-  const lang = translations[currentLanguage];
   taskNameElement.textContent = task.text;
   titleElement.textContent =
     currentLanguage === 'de' ? 'Wiederholung bearbeiten' : 'Edit Recurring Task';

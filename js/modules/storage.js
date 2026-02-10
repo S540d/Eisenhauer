@@ -37,11 +37,11 @@ export function initStorage(onSyncStatusChange = null) {
   window.addEventListener('offline', handleOffline);
 
   // Setup queue event listeners
-  offlineQueue.on('itemProcessed', (item) => {
+  offlineQueue.on('itemProcessed', () => {
     updateSyncStatusUI();
   });
 
-  offlineQueue.on('itemFailed', (item, error) => {
+  offlineQueue.on('itemFailed', (item) => {
     showError(`Sync failed: ${item.operation}`, {
       duration: 5000,
       actions: [
@@ -119,7 +119,9 @@ export async function saveTasks(tasks) {
 export async function saveGuestTasks(tasks) {
   try {
     await localforage.setItem('eisenhauerTasks', tasks);
-  } catch (error) {}
+  } catch (_error) {
+    // Guest task save failure is non-fatal; data remains in memory
+  }
 }
 
 /**
@@ -160,8 +162,6 @@ export async function loadGuestTasks() {
  * @returns {Promise<object>} Tasks object
  */
 export async function loadUserTasks(userId, db) {
-  const loadStart = performance.now();
-
   if (!userId || !db) {
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
   }
@@ -199,7 +199,7 @@ export async function loadUserTasks(userId, db) {
  * @param {object} db - Firestore database instance
  * @param {object} firebase - Firebase instance
  */
-export async function saveTaskToFirestore(task, userId, db, firebase) {
+export async function saveTaskToFirestore(task, userId, db) {
   if (!userId || !db) return;
 
   // Validate task data
@@ -259,7 +259,7 @@ export async function saveTaskToFirestore(task, userId, db, firebase) {
  * @param {object} db - Firestore database instance
  * @param {object} firebase - Firebase instance
  */
-export async function updateTaskInFirestore(task, userId, db, firebase) {
+export async function updateTaskInFirestore(task, userId, db) {
   if (!userId || !db) return;
 
   const updateData = {

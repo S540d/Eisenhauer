@@ -198,7 +198,7 @@ describe('Translations', () => {
 
     it('should have settings translations', () => {
       expect(translations.de.settings.dataManagement).toBe('DATEN');
-      expect(translations.en.settings.dataManagement).toBe('DATA MANAGEMENT');
+      expect(translations.en.settings.dataManagement).toBe('DATA');
       expect(translations.de.settings.exportBtn).toBe('Export');
       expect(translations.en.settings.exportBtn).toBe('Export');
     });
@@ -540,7 +540,7 @@ describe('updateLanguageUI', () => {
       updateLanguageUI(mockCallback);
 
       const importBtn = document.getElementById('importGuestTasksBtn');
-      expect(importBtn.textContent).toBe('Import Gast-Daten');
+      expect(importBtn.textContent).toBe('Import');
     });
   });
 

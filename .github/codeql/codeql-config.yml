@@ -1,0 +1,23 @@
+# CodeQL Configuration
+# Optimiert Cache-Nutzung durch Fokus auf JavaScript
+
+name: "CodeQL Config"
+
+# Nur JavaScript/TypeScript scannen (keine Java/Python)
+queries:
+  - uses: security-and-quality
+
+# Paths zu ignorieren
+paths-ignore:
+  - node_modules/**
+  - dist/**
+  - Android/**
+  - .archive/**
+  - tests/**/*.spec.js
+  - tests/**/*.test.js
+
+# Nur relevante Dateien scannen
+paths:
+  - js/**
+  - script.js
+  - "*.js"

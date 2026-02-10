@@ -69,8 +69,6 @@ const updates = [
 ];
 
 // Perform updates
-let updatedCount = 0;
-
 updates.forEach(({ file, replacements }) => {
   const filePath = path.join(__dirname, file);
 
@@ -90,6 +88,5 @@ updates.forEach(({ file, replacements }) => {
 
   if (modified) {
     fs.writeFileSync(filePath, content, 'utf8');
-    updatedCount++;
   }
 });

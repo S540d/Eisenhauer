@@ -75,7 +75,9 @@ function updateManifest() {
     manifest.build_date = buildDate;
 
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-  } catch (error) {}
+  } catch (_error) {
+    // Manifest update failure is non-fatal; other updates continue
+  }
 }
 
 // 4. Create version info file
