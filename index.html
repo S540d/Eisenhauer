@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.10.1 (2458a071) built at 1770485370528 -->
+<!-- Cache-Busting Info: v1.10.1 (90e382bd) built at 1770706135629 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,10 +8,10 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="2458a071" /><meta name="build-time" content="1770485370528" />
+    <meta name="build-hash" content="90e382bd" /><meta name="build-time" content="1770706135629" />
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/Eisenhauer/assets/manifest-BVU6pIXm.json" />
+    <link rel="manifest" href="/Eisenhauer/assets/manifest-BsPr_CvW.json" />
 
     <!-- iOS Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -33,16 +33,44 @@
     <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512x512.png" />
 
     <!-- iOS Splash Screen Color -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="#667eea" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="#000000" />
 
     <!-- Theme Color -->
-    <meta name="theme-color" content="#667eea" />
+    <meta name="theme-color" content="#000000" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-C5g19cU1.js?v=2458a071"></script>
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-Dp9X25yr.js?v=90e382bd"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-CLd3Dub8.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-DAbdZMEd.css">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-0HrCkLy8.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
   <body>
+    <!-- Splash Screen -->
+    <div
+      id="splashScreen"
+      class="splash-screen"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading application"
+    >
+      <div class="splash-content">
+        <svg
+          class="splash-icon"
+          viewBox="0 0 100 100"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          <!-- Kreuz -->
+          <line class="splash-cross-h" x1="10" y1="50" x2="90" y2="50" />
+          <line class="splash-cross-v" x1="50" y1="10" x2="50" y2="90" />
+          <!-- Checkmarks: oben-links, oben-rechts, unten-links, unten-rechts -->
+          <polyline class="splash-check splash-check-1" points="20,28 28,36 40,20" />
+          <polyline class="splash-check splash-check-2" points="60,28 68,36 80,20" />
+          <polyline class="splash-check splash-check-3" points="20,68 28,76 40,60" />
+          <polyline class="splash-check splash-check-4" points="60,68 68,76 80,60" />
+        </svg>
+        <span class="splash-title">Eisenhauer</span>
+      </div>
+    </div>
+
     <!-- Staging Banner -->
     <div id="stagingBanner" class="staging-banner" style="display: none">
       <div class="staging-banner-content">
@@ -114,6 +142,26 @@
       <header class="app-header">
         <h1>Eisenhauer Matrix</h1>
         <div id="userInfo" class="user-info"></div>
+        <button
+          id="focusModeToggle"
+          class="focus-mode-toggle"
+          title="Fokus-Modus"
+          aria-label="Focus mode toggle"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
         <button
           id="settingsBtnHeader"
           class="settings-btn-header"
@@ -269,6 +317,14 @@
           </div>
         </div>
 
+        <!-- Due Date Configuration -->
+        <div class="due-date-config">
+          <label for="quickAddDueDate" class="due-date-label">
+            <span id="quickAddDueDateLabel">Due Date</span>
+          </label>
+          <input type="date" id="quickAddDueDate" class="due-date-input" />
+        </div>
+
         <div class="modal-buttons">
           <button id="quickAddSubmitBtn" class="btn submit-btn">Add</button>
           <button id="quickAddCancelBtn" class="btn cancel-btn">Cancel</button>
@@ -398,6 +454,14 @@
 
         <div id="backupSeparator" class="settings-separator" style="display: none"></div>
 
+        <!-- Q4 Detox -->
+        <div class="settings-section">
+          <h4 id="q4DetoxTitle" class="settings-section-title">Q4-DETOX</h4>
+          <button id="q4DetoxBtn" class="btn">Q4 aufräumen</button>
+        </div>
+
+        <div class="settings-separator"></div>
+
         <!-- Feedback, Support & About -->
         <div class="settings-section settings-row">
           <a href="mailto:devsven@posteo.de?subject=Eisenhauer Feedback" class="btn"
@@ -494,6 +558,22 @@
               Deutsch
             </button>
           </div>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Smart Functions Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeSmartFunctionsTitle">
+            SMARTE FUNKTIONEN
+          </h4>
+          <label class="smart-functions-toggle">
+            <input type="checkbox" id="smartFunctionsToggle" />
+            <span id="smartFunctionsLabel">Smarte Funktionen aktivieren</span>
+          </label>
+          <p class="settings-info" id="smartFunctionsDesc">
+            Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind
+          </p>
         </div>
 
         <div class="settings-separator"></div>
@@ -724,7 +804,9 @@
     <!-- Register Service Worker with Cache Busting -->
     <script>
       // Only register service worker in production builds (not in Vite dev mode)
-      const isProduction = !window.location.port || import.meta.env?.PROD;
+      // Dev mode check: explicit localhost-style hosts instead of relying on port
+      const devHosts = ['localhost', '127.0.0.1', '[::1]'];
+      const isProduction = !devHosts.includes(window.location.hostname);
 
       if ('serviceWorker' in navigator && isProduction) {
         let refreshing = false;
@@ -746,7 +828,9 @@
 
         // Get build hash from meta tag (added by post-build.js)
         const buildHashElement = document.querySelector('meta[name="build-hash"]');
-        const currentBuildHash = buildHashElement ? buildHashElement.content : Date.now().toString();
+        const currentBuildHash = buildHashElement
+          ? buildHashElement.content
+          : Date.now().toString();
 
         // Store current environment in localStorage
         const cachedEnvironment = localStorage.getItem('sw-environment');
@@ -757,8 +841,7 @@
         // Store current build hash in localStorage (environment-specific key)
         const buildHashKey = `sw-build-hash-${currentEnvironment}`;
         const cachedBuildHash = localStorage.getItem(buildHashKey);
-        const buildHashChanged =
-          cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
+        const buildHashChanged = cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
 
         // Clear caches if environment changed, build hash changed, or first visit
         const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
