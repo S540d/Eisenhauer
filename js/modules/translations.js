@@ -16,7 +16,7 @@ export const translations = {
         'Melde dich an, um deine Daten in der Cloud zu speichern und auf allen Geräten zu synchronisieren. Im Gast-Modus werden deine Daten lokal auf diesem Gerät gespeichert.',
     },
     focusMode: {
-      label: '🎯 Heute fokussieren',
+      label: 'Fokus-Modus',
       tooltip: 'Nur wichtige Aufgaben anzeigen (Q1 + Q2)',
       active: 'Fokus-Modus aktiv',
     },
@@ -40,6 +40,11 @@ export const translations = {
       sendFeedback: 'Feedback senden',
       supportMe: 'Unterstütze mich',
       about: 'Über',
+      q4Detox: 'Q4-DETOX',
+      q4DetoxBtn: 'Q4 aufräumen',
+      q4DetoxConfirm: 'Alle Aufgaben aus "Später!" archivieren?',
+      q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
+      q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
     },
     personalize: {
       title: 'Personalisieren',
@@ -154,7 +159,7 @@ export const translations = {
         'Sign in to save your data to the cloud and sync across all devices. In guest mode, your data is stored locally on this device.',
     },
     focusMode: {
-      label: '🎯 Focus Today',
+      label: 'Focus Mode',
       tooltip: 'Show only important tasks (Q1 + Q2)',
       active: 'Focus mode active',
     },
@@ -178,6 +183,11 @@ export const translations = {
       sendFeedback: 'Send Feedback',
       supportMe: 'Support Me',
       about: 'About',
+      q4Detox: 'Q4 DETOX',
+      q4DetoxBtn: 'Clear Q4',
+      q4DetoxConfirm: 'Archive all tasks from "Ignore!"?',
+      q4DetoxSuccess: 'Q4 tasks archived!',
+      q4DetoxEmpty: 'No Q4 tasks to archive',
     },
     personalize: {
       title: 'Personalize',
