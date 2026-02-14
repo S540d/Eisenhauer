@@ -406,15 +406,6 @@ class Store {
 
     return 'system';
   }
-
-  /**
-   * Check if in development mode
-   * @private
-   * @returns {boolean}
-   */
-  #isDevelopment() {
-    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  }
 }
 
 // Create singleton instance
