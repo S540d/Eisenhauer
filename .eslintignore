@@ -1,8 +1,0 @@
-node_modules/
-dist/
-Android/
-tests/
-script.legacy.js
-auth.js
-firebase-config.js
-firebase-config.example.js
