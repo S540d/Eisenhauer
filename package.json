@@ -4,6 +4,9 @@
   "description": "Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.",
   "main": "index.html",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "start": "vite",
@@ -51,7 +54,7 @@
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "dependencies": {
     "chart.js": "^4.5.1",
-    "firebase": "^10.13.2",
+    "firebase": "^12.9.0",
     "localforage": "^1.10.0"
   },
   "devDependencies": {
