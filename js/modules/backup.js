@@ -216,6 +216,10 @@ async function cleanupOldBackups(storage, userId) {
  * @returns {boolean} True if backup should run
  */
 export function shouldAutoBackup() {
+  // Stop retrying after 3 consecutive failures until user does manual backup
+  const failureCount = parseInt(localStorage.getItem('autoBackupFailureCount') || '0');
+  if (failureCount >= 3) return false;
+
   const lastBackup = localStorage.getItem('lastAutoBackup');
   if (!lastBackup) return true;
 
@@ -248,6 +252,9 @@ export function trackBackupFailure() {
   const failureCount = parseInt(localStorage.getItem('autoBackupFailureCount') || '0');
   const newCount = failureCount + 1;
   localStorage.setItem('autoBackupFailureCount', newCount.toString());
+
+  // Set last attempt timestamp so shouldAutoBackup() respects weekly interval even on failure
+  localStorage.setItem('lastAutoBackup', Date.now().toString());
 
   // Notify user only after 3 consecutive failures
   return newCount >= 3;
