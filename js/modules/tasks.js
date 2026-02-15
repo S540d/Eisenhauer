@@ -556,7 +556,7 @@ export function filterByCategory(tasksToFilter, categoryFilter) {
   const filtered = {};
   for (let segmentId = 1; segmentId <= 5; segmentId++) {
     filtered[segmentId] = (tasksToFilter[segmentId] || []).filter(
-      (task) => !task.category || task.category === categoryFilter
+      (task) => (task.category || 'private') === categoryFilter
     );
   }
   return filtered;
