@@ -10,8 +10,8 @@ android {
         applicationId "com.sven4321.eisenhauer"
         minSdk 21  // Android 5.0 Lollipop (per project-templates requirement)
         targetSdk 35
-        versionCode 21
-        versionName "1.11.0"  // Match PWA version
+        versionCode 22
+        versionName "1.11.1"  // Match PWA version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
