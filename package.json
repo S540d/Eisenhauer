@@ -1,9 +1,12 @@
 {
   "name": "eisenhauer-matrix",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "description": "Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.",
   "main": "index.html",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "vite",
     "start": "vite",
@@ -17,8 +20,8 @@
     "version:update": "node update-version.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint . --ext .js,.ts,.jsx,.tsx 2>/dev/null || true",
-    "lint:fix": "eslint . --ext .js,.ts,.jsx,.tsx --fix 2>/dev/null || true",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
@@ -51,21 +54,22 @@
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "dependencies": {
     "chart.js": "^4.5.1",
-    "firebase": "^10.13.2",
+    "firebase": "^12.9.0",
     "localforage": "^1.10.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.1",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@vitest/coverage-v8": "^4.0.16",
-    "@vitest/ui": "^4.0.16",
-    "eslint": "^8.0.0",
-    "happy-dom": "^20.0.11",
+    "@playwright/test": "^1.58.2",
+    "@typescript-eslint/eslint-plugin": "^8.55.0",
+    "@typescript-eslint/parser": "^8.55.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
+    "eslint": "^9.39.2",
+    "globals": "^17.3.0",
+    "happy-dom": "^20.6.1",
     "husky": "^9.1.7",
-    "prettier": "^3.0.0",
-    "vite": "^5.4.21",
-    "vite-plugin-pwa": "^0.17.5",
-    "vitest": "^4.0.16"
+    "prettier": "^3.8.1",
+    "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.0.18"
   }
 }
