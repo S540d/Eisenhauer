@@ -580,7 +580,11 @@ function setupEventListeners() {
       categoryPrivateToggle.classList.toggle('active', !isActive);
       categoryBusinessToggle.classList.remove('active');
 
-      localStorage.setItem('categoryFilter', isActive ? '' : 'private');
+      if (isActive) {
+        localStorage.removeItem('categoryFilter');
+      } else {
+        localStorage.setItem('categoryFilter', 'private');
+      }
 
       const lang = getTranslation();
       categoryPrivateToggle.title = !isActive
@@ -603,7 +607,11 @@ function setupEventListeners() {
       categoryBusinessToggle.classList.toggle('active', !isActive);
       categoryPrivateToggle.classList.remove('active');
 
-      localStorage.setItem('categoryFilter', isActive ? '' : 'business');
+      if (isActive) {
+        localStorage.removeItem('categoryFilter');
+      } else {
+        localStorage.setItem('categoryFilter', 'business');
+      }
 
       const lang = getTranslation();
       categoryBusinessToggle.title = !isActive
