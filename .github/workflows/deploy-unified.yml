@@ -1,11 +1,11 @@
 name: Deploy to GitHub Pages (Unified)
 
 on:
-  push:
-    branches:
-      - main
-      - staging
-      - testing
+  # Deploy only after CI/CD quality checks pass
+  workflow_run:
+    workflows: ["CI/CD - Automated Quality Checks"]
+    types: [completed]
+    branches: [main, staging, testing]
   workflow_dispatch:
     inputs:
       environment:
@@ -29,11 +29,17 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Only deploy if CI passed (or manual trigger)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          # For workflow_run: checkout the branch that triggered CI
+          ref: ${{ github.event.workflow_run.head_branch || github.ref }}
           fetch-depth: 0
 
       - name: Determine environment
@@ -42,16 +48,19 @@ jobs:
           # Manual trigger with specific environment
           if [ "${{ github.event.inputs.environment }}" != "" ] && [ "${{ github.event.inputs.environment }}" != "auto" ]; then
             ENV="${{ github.event.inputs.environment }}"
-          # Auto-detect from branch
-          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            ENV="production"
-          elif [ "${{ github.ref }}" = "refs/heads/staging" ]; then
-            ENV="staging"
-          elif [ "${{ github.ref }}" = "refs/heads/testing" ]; then
-            ENV="testing"
+          # Auto-detect from branch (workflow_run uses head_branch, fallback to ref)
           else
-            echo "Unknown branch: ${{ github.ref }}"
-            exit 1
+            BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+            if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "refs/heads/main" ]; then
+              ENV="production"
+            elif [ "$BRANCH" = "staging" ] || [ "$BRANCH" = "refs/heads/staging" ]; then
+              ENV="staging"
+            elif [ "$BRANCH" = "testing" ] || [ "$BRANCH" = "refs/heads/testing" ]; then
+              ENV="testing"
+            else
+              echo "Unknown branch: $BRANCH"
+              exit 1
+            fi
           fi
 
           echo "environment=$ENV" >> $GITHUB_OUTPUT
