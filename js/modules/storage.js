@@ -225,6 +225,14 @@ export async function saveTaskToFirestore(task, userId, db) {
     taskData.recurring = task.recurring;
   }
 
+  if (task.dueDate) {
+    taskData.dueDate = task.dueDate;
+  }
+
+  if (task.category) {
+    taskData.category = task.category;
+  }
+
   // Add to offline queue with retry logic and error handling
   try {
     await offlineQueue.add(
@@ -276,6 +284,14 @@ export async function updateTaskInFirestore(task, userId, db) {
 
   if (task.recurring) {
     updateData.recurring = task.recurring;
+  }
+
+  if (task.dueDate) {
+    updateData.dueDate = task.dueDate;
+  }
+
+  if (task.category) {
+    updateData.category = task.category;
   }
 
   // Add to offline queue with retry logic
@@ -384,6 +400,14 @@ export async function importGuestTasksToFirestore(userId, db) {
 
         if (task.recurring) {
           taskData.recurring = task.recurring;
+        }
+
+        if (task.dueDate) {
+          taskData.dueDate = task.dueDate;
+        }
+
+        if (task.category) {
+          taskData.category = task.category;
         }
 
         batch.set(docRef, taskData);

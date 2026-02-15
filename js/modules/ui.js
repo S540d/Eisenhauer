@@ -708,6 +708,12 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     smartFunctionsToggle.checked = localStorage.getItem('smartFunctionsEnabled') === 'true';
   }
 
+  // Update category filter toggle state
+  const categoryFilterToggle = document.getElementById('categoryFilterToggle');
+  if (categoryFilterToggle) {
+    categoryFilterToggle.checked = localStorage.getItem('categoryFilterEnabled') === 'true';
+  }
+
   // Use event delegation for all personalize modal buttons
   const existingHandler = personalizeModal._clickHandler;
   if (existingHandler) {
@@ -765,6 +771,30 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       localStorage.setItem('smartFunctionsEnabled', isEnabled.toString());
 
       // Trigger re-render if callback is provided
+      if (window.renderTasksCallback) {
+        window.renderTasksCallback();
+      }
+      return;
+    }
+
+    // Handle category filter toggle
+    if (target.id === 'categoryFilterToggle') {
+      const isEnabled = target.checked;
+      localStorage.setItem('categoryFilterEnabled', isEnabled.toString());
+
+      // Show/hide header buttons
+      const privateBtn = document.getElementById('categoryPrivateToggle');
+      const businessBtn = document.getElementById('categoryBusinessToggle');
+      if (privateBtn) privateBtn.style.display = isEnabled ? '' : 'none';
+      if (businessBtn) businessBtn.style.display = isEnabled ? '' : 'none';
+
+      // Clear filter when disabling
+      if (!isEnabled) {
+        localStorage.removeItem('categoryFilter');
+        if (privateBtn) privateBtn.classList.remove('active');
+        if (businessBtn) businessBtn.classList.remove('active');
+      }
+
       if (window.renderTasksCallback) {
         window.renderTasksCallback();
       }
@@ -1108,6 +1138,24 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     dueDateInput.value = '';
   }
 
+  // Show/hide and reset category selector
+  const categoryConfig = document.getElementById('quickAddCategoryConfig');
+  const categoryEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
+  if (categoryConfig) {
+    categoryConfig.style.display = categoryEnabled ? '' : 'none';
+    const categoryBtns = categoryConfig.querySelectorAll('.category-select-btn');
+    categoryBtns.forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.category === '');
+    });
+    // Setup category button click handlers
+    categoryBtns.forEach((btn) => {
+      btn.onclick = () => {
+        categoryBtns.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+      };
+    });
+  }
+
   // Segment names
   const segmentNames = {
     1: { de: 'Do! (Wichtig & Dringend)', en: 'Do! (Important & Urgent)' },
@@ -1183,9 +1231,17 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
       }
     }
 
-    // Call callback with due date
+    // Get selected category if feature enabled
+    const categoryConfig = document.getElementById('quickAddCategoryConfig');
+    let category = null;
+    if (categoryConfig && categoryConfig.style.display !== 'none') {
+      const activeBtn = categoryConfig.querySelector('.category-select-btn.active');
+      category = activeBtn?.dataset.category || null;
+    }
+
+    // Call callback with due date and category
     if (onAddTask) {
-      onAddTask(text, segmentId, recurringConfig, dueDate);
+      onAddTask(text, segmentId, recurringConfig, dueDate, category);
     }
 
     // Close modal
