@@ -1644,6 +1644,31 @@ body.dark-mode .search-highlight {
   border-color: var(--primary);
 }
 
+/* Category Filter Styles */
+.category-config {
+  background: var(--task-bg);
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.category-toggle-group {
+  display: flex;
+  gap: 8px;
+}
+
+.category-select-btn {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.85em;
+}
+
+.category-select-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
 /* Task Due Date Display */
 .task-due-date {
   font-size: 0.75rem;

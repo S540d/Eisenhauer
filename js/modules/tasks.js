@@ -118,7 +118,8 @@ function createTaskObject(
   segmentId,
   recurringConfig = null,
   createdAt = null,
-  dueDate = null
+  dueDate = null,
+  category = null
 ) {
   const task = {
     id: Date.now() + Math.random(), // Add random to avoid ID collisions
@@ -132,6 +133,11 @@ function createTaskObject(
   // Add due date if provided
   if (dueDate) {
     task.dueDate = dueDate;
+  }
+
+  // Add category if provided
+  if (category) {
+    task.category = category;
   }
 
   // Add recurring configuration if enabled
@@ -162,7 +168,8 @@ export function addTaskToSegment(
   segmentId,
   recurringConfig = null,
   saveCallback = null,
-  dueDate = null
+  dueDate = null,
+  category = null
 ) {
   // Input validation
   if (typeof taskText !== 'string') {
@@ -178,7 +185,7 @@ export function addTaskToSegment(
     throw new RangeError('Segment ID must be an integer between 1 and 5');
   }
 
-  const task = createTaskObject(taskText, segmentId, recurringConfig, null, dueDate);
+  const task = createTaskObject(taskText, segmentId, recurringConfig, null, dueDate, category);
   tasks[segmentId].push(task);
 
   // Call save callback if provided
@@ -281,6 +288,11 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
     movedTask.dueDate = task.dueDate;
   }
 
+  // Preserve category if exists
+  if (task.category) {
+    movedTask.category = task.category;
+  }
+
   // Preserve recurring config if exists
   if (task.recurring) {
     movedTask.recurring = { ...task.recurring };
@@ -375,7 +387,8 @@ export function toggleTask(taskId, segmentId, saveCallback = null) {
           ...task.recurring,
         },
         nextOccurrence, // Set createdAt to future timestamp
-        task.dueDate // Preserve due date for recurring tasks
+        task.dueDate, // Preserve due date for recurring tasks
+        task.category // Preserve category for recurring tasks
       );
 
       // Add the new task to the same segment
@@ -528,6 +541,24 @@ export function filterTasks(searchTerm) {
     );
   }
 
+  return filtered;
+}
+
+/**
+ * Filter tasks by category
+ * @param {object} tasksToFilter - Tasks object grouped by segment
+ * @param {string|null} categoryFilter - 'private', 'business', or null (all)
+ * @returns {object} Filtered tasks
+ */
+export function filterByCategory(tasksToFilter, categoryFilter) {
+  if (!categoryFilter) return tasksToFilter;
+
+  const filtered = {};
+  for (let segmentId = 1; segmentId <= 5; segmentId++) {
+    filtered[segmentId] = (tasksToFilter[segmentId] || []).filter(
+      (task) => !task.category || task.category === categoryFilter
+    );
+  }
   return filtered;
 }
 
