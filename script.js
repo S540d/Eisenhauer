@@ -51,6 +51,7 @@ import {
   setAllTasks,
   reorderTask,
   applySmartRules,
+  filterByCategory,
 } from './js/modules/tasks.js';
 import {
   initStorage,
@@ -162,10 +163,10 @@ async function loadAllTasks() {
 /**
  * Add task handler
  */
-function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null) {
+function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null, category = null) {
   if (!taskText || taskText.trim() === '') return;
 
-  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate);
+  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate, category);
 
   // Save to storage based on mode
   if (currentUser && db && !isGuestMode) {
@@ -443,9 +444,16 @@ function renderTasksWithCallbacks() {
 
   // Apply smart rules if enabled
   const smartFunctionsEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
-  const tasksToRender = smartFunctionsEnabled
+  let tasksToRender = smartFunctionsEnabled
     ? applySmartRules(tasks, true, SMART_RULES.urgentThresholdDays)
     : tasks;
+
+  // Apply category filter if active
+  const categoryFilterEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
+  const categoryFilter = categoryFilterEnabled ? localStorage.getItem('categoryFilter') : null;
+  if (categoryFilter) {
+    tasksToRender = filterByCategory(tasksToRender, categoryFilter);
+  }
 
   renderAllTasks(tasksToRender, translations, getCurrentLanguage(), callbacks);
 
@@ -479,9 +487,11 @@ function setupEventListeners() {
         // Open Quick Add Modal with Q1 (Do!) pre-selected
         openQuickAddModal(
           1, // Segment 1 (Do!)
-          handleAddTask,
-          renderTasksWithCallbacks,
-          getCurrentLanguage
+          (text, selectedSegment, recurring, dueDate, category) => {
+            handleAddTask(text, selectedSegment || 1, recurring, dueDate, category);
+          },
+          translations,
+          getCurrentLanguage()
         );
 
         // Clear main input immediately after opening the modal
@@ -508,8 +518,8 @@ function setupEventListeners() {
       const segment = parseInt(e.target.dataset.segment);
       openQuickAddModal(
         segment,
-        (text, selectedSegment, recurring, dueDate) => {
-          handleAddTask(text, selectedSegment || segment, recurring, dueDate);
+        (text, selectedSegment, recurring, dueDate, category) => {
+          handleAddTask(text, selectedSegment || segment, recurring, dueDate, category);
         },
         translations,
         getCurrentLanguage()
@@ -542,6 +552,71 @@ function setupEventListeners() {
     // Set initial tooltip
     const lang = getTranslation();
     focusModeToggle.title = focusModeEnabled ? lang.focusMode.active : lang.focusMode.tooltip;
+  }
+
+  // Category Filter Buttons
+  const categoryPrivateToggle = document.getElementById('categoryPrivateToggle');
+  const categoryBusinessToggle = document.getElementById('categoryBusinessToggle');
+
+  // Show buttons if feature enabled
+  const categoryFilterEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
+  if (categoryFilterEnabled) {
+    if (categoryPrivateToggle) categoryPrivateToggle.style.display = '';
+    if (categoryBusinessToggle) categoryBusinessToggle.style.display = '';
+
+    // Load saved filter state
+    const savedCategoryFilter = localStorage.getItem('categoryFilter');
+    if (savedCategoryFilter === 'private' && categoryPrivateToggle) {
+      categoryPrivateToggle.classList.add('active');
+    } else if (savedCategoryFilter === 'business' && categoryBusinessToggle) {
+      categoryBusinessToggle.classList.add('active');
+    }
+  }
+
+  if (categoryPrivateToggle) {
+    categoryPrivateToggle.addEventListener('click', () => {
+      const isActive = categoryPrivateToggle.classList.contains('active');
+
+      categoryPrivateToggle.classList.toggle('active', !isActive);
+      categoryBusinessToggle.classList.remove('active');
+
+      localStorage.setItem('categoryFilter', isActive ? '' : 'private');
+
+      const lang = getTranslation();
+      categoryPrivateToggle.title = !isActive
+        ? lang.categoryFilter.activePrivate
+        : lang.categoryFilter.tooltipPrivate;
+
+      renderTasksWithCallbacks();
+    });
+
+    const lang = getTranslation();
+    categoryPrivateToggle.title = categoryPrivateToggle.classList.contains('active')
+      ? lang.categoryFilter.activePrivate
+      : lang.categoryFilter.tooltipPrivate;
+  }
+
+  if (categoryBusinessToggle) {
+    categoryBusinessToggle.addEventListener('click', () => {
+      const isActive = categoryBusinessToggle.classList.contains('active');
+
+      categoryBusinessToggle.classList.toggle('active', !isActive);
+      categoryPrivateToggle.classList.remove('active');
+
+      localStorage.setItem('categoryFilter', isActive ? '' : 'business');
+
+      const lang = getTranslation();
+      categoryBusinessToggle.title = !isActive
+        ? lang.categoryFilter.activeBusiness
+        : lang.categoryFilter.tooltipBusiness;
+
+      renderTasksWithCallbacks();
+    });
+
+    const lang = getTranslation();
+    categoryBusinessToggle.title = categoryBusinessToggle.classList.contains('active')
+      ? lang.categoryFilter.activeBusiness
+      : lang.categoryFilter.tooltipBusiness;
   }
 
   // Settings button (header)

@@ -20,6 +20,14 @@ export const translations = {
       tooltip: 'Nur wichtige Aufgaben anzeigen (Q1 + Q2)',
       active: 'Fokus-Modus aktiv',
     },
+    categoryFilter: {
+      private: 'Privat',
+      business: 'Beruflich',
+      tooltipPrivate: 'Nur private Aufgaben anzeigen',
+      tooltipBusiness: 'Nur berufliche Aufgaben anzeigen',
+      activePrivate: 'Privat-Filter aktiv',
+      activeBusiness: 'Beruf-Filter aktiv',
+    },
     buttons: {
       add: 'Hinzufügen',
       cancel: 'Abbrechen',
@@ -58,6 +66,9 @@ export const translations = {
       smartFunctionsLabel: 'Smarte Funktionen aktivieren',
       smartFunctionsDesc:
         'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind',
+      categoryFilter: 'KATEGORIE-FILTER',
+      categoryFilterLabel: 'Kategorie-Filter aktivieren',
+      categoryFilterDesc: 'Aufgaben als Privat oder Beruflich kategorisieren',
     },
     about: {
       title: 'Über',
@@ -100,6 +111,10 @@ export const translations = {
       inputPlaceholder: 'Was möchtest du tun?',
       monthDayLabel: 'Tag (1-31)',
       dueDate: 'Fällig am',
+      category: 'Kategorie',
+      categoryNone: 'Keine',
+      categoryPrivate: 'Privat',
+      categoryBusiness: 'Beruflich',
     },
     segmentModal: {
       title: 'Wähle ein Segment',
@@ -163,6 +178,14 @@ export const translations = {
       tooltip: 'Show only important tasks (Q1 + Q2)',
       active: 'Focus mode active',
     },
+    categoryFilter: {
+      private: 'Private',
+      business: 'Business',
+      tooltipPrivate: 'Show only private tasks',
+      tooltipBusiness: 'Show only business tasks',
+      activePrivate: 'Private filter active',
+      activeBusiness: 'Business filter active',
+    },
     buttons: {
       add: 'Add',
       cancel: 'Cancel',
@@ -200,6 +223,9 @@ export const translations = {
       smartFunctions: 'SMART FUNCTIONS',
       smartFunctionsLabel: 'Enable Smart Functions',
       smartFunctionsDesc: 'Automatically mark tasks as urgent when due within 3 days',
+      categoryFilter: 'CATEGORY FILTER',
+      categoryFilterLabel: 'Enable Category Filter',
+      categoryFilterDesc: 'Categorize tasks as Private or Business',
     },
     about: {
       title: 'About',
@@ -242,6 +268,10 @@ export const translations = {
       inputPlaceholder: 'What do you want to do?',
       monthDayLabel: 'Day (1-31)',
       dueDate: 'Due Date',
+      category: 'Category',
+      categoryNone: 'None',
+      categoryPrivate: 'Private',
+      categoryBusiness: 'Business',
     },
     segmentModal: {
       title: 'Choose a segment',
@@ -627,6 +657,60 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const smartFunctionsDesc = document.getElementById('smartFunctionsDesc');
   if (smartFunctionsDesc) {
     smartFunctionsDesc.textContent = lang.personalize.smartFunctionsDesc;
+  }
+
+  // Update Category Filter section in Personalize Modal
+  const personalizeCategoryFilterTitle = document.getElementById('personalizeCategoryFilterTitle');
+  if (personalizeCategoryFilterTitle) {
+    personalizeCategoryFilterTitle.textContent = lang.personalize.categoryFilter;
+  }
+
+  const categoryFilterLabel = document.getElementById('categoryFilterLabel');
+  if (categoryFilterLabel) {
+    categoryFilterLabel.textContent = lang.personalize.categoryFilterLabel;
+  }
+
+  const categoryFilterDesc = document.getElementById('categoryFilterDesc');
+  if (categoryFilterDesc) {
+    categoryFilterDesc.textContent = lang.personalize.categoryFilterDesc;
+  }
+
+  // Update Category Filter header buttons
+  const categoryPrivateToggle = document.getElementById('categoryPrivateToggle');
+  if (categoryPrivateToggle) {
+    const isActive = categoryPrivateToggle.classList.contains('active');
+    categoryPrivateToggle.title = isActive
+      ? lang.categoryFilter.activePrivate
+      : lang.categoryFilter.tooltipPrivate;
+  }
+
+  const categoryBusinessToggle = document.getElementById('categoryBusinessToggle');
+  if (categoryBusinessToggle) {
+    const isActive = categoryBusinessToggle.classList.contains('active');
+    categoryBusinessToggle.title = isActive
+      ? lang.categoryFilter.activeBusiness
+      : lang.categoryFilter.tooltipBusiness;
+  }
+
+  // Update Quick Add Category labels
+  const quickAddCategoryLabel = document.getElementById('quickAddCategoryLabel');
+  if (quickAddCategoryLabel) {
+    quickAddCategoryLabel.textContent = lang.quickAddModal.category;
+  }
+
+  const quickAddCategoryNone = document.getElementById('quickAddCategoryNone');
+  if (quickAddCategoryNone) {
+    quickAddCategoryNone.textContent = lang.quickAddModal.categoryNone;
+  }
+
+  const quickAddCategoryPrivate = document.getElementById('quickAddCategoryPrivate');
+  if (quickAddCategoryPrivate) {
+    quickAddCategoryPrivate.textContent = lang.quickAddModal.categoryPrivate;
+  }
+
+  const quickAddCategoryBusiness = document.getElementById('quickAddCategoryBusiness');
+  if (quickAddCategoryBusiness) {
+    quickAddCategoryBusiness.textContent = lang.quickAddModal.categoryBusiness;
   }
 
   const personalizeThemeDark = document.getElementById('personalizeThemeDark');

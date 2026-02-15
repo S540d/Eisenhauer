@@ -159,6 +159,48 @@
           </svg>
         </button>
         <button
+          id="categoryPrivateToggle"
+          class="focus-mode-toggle category-filter-btn"
+          title="Privat"
+          aria-label="Filter private tasks"
+          style="display: none"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+        </button>
+        <button
+          id="categoryBusinessToggle"
+          class="focus-mode-toggle category-filter-btn"
+          title="Beruflich"
+          aria-label="Filter business tasks"
+          style="display: none"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+          </svg>
+        </button>
+        <button
           id="settingsBtnHeader"
           class="settings-btn-header"
           title="Settings"
@@ -319,6 +361,36 @@
             <span id="quickAddDueDateLabel">Due Date</span>
           </label>
           <input type="date" id="quickAddDueDate" class="due-date-input" />
+        </div>
+
+        <!-- Category Selection (shown only when feature enabled) -->
+        <div id="quickAddCategoryConfig" class="category-config" style="display: none">
+          <label class="due-date-label">
+            <span id="quickAddCategoryLabel">Kategorie</span>
+          </label>
+          <div class="category-toggle-group">
+            <button
+              type="button"
+              class="btn btn-toggle category-select-btn active"
+              data-category=""
+            >
+              <span id="quickAddCategoryNone">Keine</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-toggle category-select-btn"
+              data-category="private"
+            >
+              <span id="quickAddCategoryPrivate">Privat</span>
+            </button>
+            <button
+              type="button"
+              class="btn btn-toggle category-select-btn"
+              data-category="business"
+            >
+              <span id="quickAddCategoryBusiness">Beruflich</span>
+            </button>
+          </div>
         </div>
 
         <div class="modal-buttons">
@@ -569,6 +641,22 @@
           </label>
           <p class="settings-info" id="smartFunctionsDesc">
             Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind
+          </p>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Category Filter Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeCategoryFilterTitle">
+            KATEGORIE-FILTER
+          </h4>
+          <label class="smart-functions-toggle">
+            <input type="checkbox" id="categoryFilterToggle" />
+            <span id="categoryFilterLabel">Kategorie-Filter aktivieren</span>
+          </label>
+          <p class="settings-info" id="categoryFilterDesc">
+            Aufgaben als Privat oder Beruflich kategorisieren
           </p>
         </div>
 
