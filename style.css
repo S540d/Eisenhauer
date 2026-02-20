@@ -2430,7 +2430,7 @@ body.dark-mode .undo-toast {
   }
 
   .undo-toast.show {
-    bottom: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
   }
 }
 

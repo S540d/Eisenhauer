@@ -2,9 +2,9 @@
 
 Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der Eisenhauer-Matrix-Methode.
 
-🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.9.2 ✅
+🌐 **Live Demo:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.11.2 ✅
 
-📝 **[Changelog](CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)**
+📝 **[Changelog](docs/CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 📐 **[Architecture](docs/ARCHITECTURE.md)**
 
 ## Environments
 
@@ -114,6 +114,11 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
   - Import mit Merge/Replace Optionen
   - Backup-Dateien mit Versionsinformation und Datum
 - ✅ **Suche** - Aufgaben durchsuchen über Einstellungsmenü
+- ✅ **Due Dates** - Optionale Fälligkeitsdaten für Aufgaben im Quick Add Modal
+- ✅ **Web Push Reminders** - Push-Benachrichtigungen für Aufgaben mit Fälligkeitsdatum
+- ✅ **Smart Urgency Rules** - Auto-Markierung als dringend bei Fälligkeit ≤3 Tage (opt-in)
+- ✅ **Focus Mode** - Blendet Q3/Q4 aus für konzentrierteres Arbeiten
+- ✅ **Category Filter** - Privat/Beruflich-Kategorisierung (opt-in)
 
 ## Verwendung
 
@@ -171,7 +176,7 @@ Eine moderne, mobile-first Progressive Web App zur Aufgabenverwaltung nach der E
 
 **Wichtig:** Die App benötigt Firebase für User-Authentifizierung und Cloud-Sync.
 
-1. Folge der detaillierten Anleitung in [FIREBASE-SETUP.md](FIREBASE-SETUP.md)
+1. Folge der detaillierten Anleitung in [FIREBASE-SETUP.md](docs/FIREBASE-SETUP.md)
 2. Erstelle ein kostenloses Firebase-Projekt
 3. Aktiviere Google & Apple Sign-In
 4. Richte Firestore Database ein
