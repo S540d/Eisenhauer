@@ -1711,6 +1711,30 @@ body.dark-mode .search-highlight {
   height: 18px;
 }
 
+.reminders-days-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.reminders-days-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary, #666);
+  white-space: nowrap;
+}
+
+.reminders-days-select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 6px;
+  background: var(--bg-secondary, #f5f5f5);
+  color: var(--text-primary, #333);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
 .modal-buttons {
   display: flex;
   gap: 8px;

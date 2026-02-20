@@ -75,6 +75,13 @@ class Store {
       draggedTask: null,
       dragSource: null,
       dragTarget: null,
+
+      // Reminders
+      remindersEnabled: localStorage.getItem('remindersEnabled') === 'true',
+      reminderDaysBefore:
+        localStorage.getItem('reminderDaysBefore') !== null
+          ? Number(localStorage.getItem('reminderDaysBefore'))
+          : null,
     };
 
     /**
