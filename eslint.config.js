@@ -100,4 +100,15 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  {
+    // Service Worker — runs in SW scope, not browser window scope
+    files: ['public/sw-custom.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+        workbox: 'readonly',
+        TimestampTrigger: 'readonly',
+      },
+    },
+  },
 ];

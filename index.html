@@ -36,7 +36,7 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <link rel="stylesheet" href="style.css?v=1770496024276" />
+    <link rel="stylesheet" href="style.css?v=1771606009121" />
   </head>
   <body>
     <!-- Splash Screen -->
@@ -661,6 +661,32 @@
         </div>
 
         <div class="settings-separator"></div>
+
+        <!-- Reminders Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeRemindersTitle">ERINNERUNGEN</h4>
+          <label class="smart-functions-toggle">
+            <input type="checkbox" id="remindersToggle" />
+            <span id="remindersLabel">Erinnerungen aktivieren</span>
+          </label>
+          <p class="settings-info" id="remindersDesc">
+            Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum
+          </p>
+          <div id="remindersDaysContainer" class="reminders-days-container" style="display: none">
+            <label class="reminders-days-label" for="remindersDaysSelect" id="remindersBeforeLabel"
+              >Erinnerung</label
+            >
+            <select id="remindersDaysSelect" class="reminders-days-select">
+              <option value="" id="remindersChooseOption">— bitte wählen —</option>
+              <option value="0" id="remindersDay0Option">Am Tag selbst (9:00 Uhr)</option>
+              <option value="1" id="remindersDay1Option">1 Tag vorher (9:00 Uhr)</option>
+              <option value="2" id="remindersDay2Option">2 Tage vorher (9:00 Uhr)</option>
+              <option value="3" id="remindersDay3Option">3 Tage vorher (9:00 Uhr)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-separator"></div>
       </div>
     </div>
 
@@ -884,7 +910,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1770496024276"></script>
+    <script type="module" src="script.js?v=1771606009121"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>

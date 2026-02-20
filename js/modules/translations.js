@@ -69,6 +69,17 @@ export const translations = {
       categoryFilter: 'KATEGORIE-FILTER',
       categoryFilterLabel: 'Kategorie-Filter aktivieren',
       categoryFilterDesc: 'Aufgaben als Privat oder Beruflich kategorisieren',
+      reminders: 'ERINNERUNGEN',
+      remindersLabel: 'Erinnerungen aktivieren',
+      remindersDesc: 'Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum',
+      remindersBefore: 'Erinnerung',
+      remindersDay0: 'Am Tag selbst (9:00 Uhr)',
+      remindersDay1: '1 Tag vorher (9:00 Uhr)',
+      remindersDay2: '2 Tage vorher (9:00 Uhr)',
+      remindersDay3: '3 Tage vorher (9:00 Uhr)',
+      remindersChoose: '— bitte wählen —',
+      remindersDenied: 'Berechtigung verweigert. Bitte in den Browser-Einstellungen erlauben.',
+      remindersNotSupported: 'Dein Browser unterstützt keine Benachrichtigungen.',
     },
     about: {
       title: 'Über',
@@ -226,6 +237,17 @@ export const translations = {
       categoryFilter: 'CATEGORY FILTER',
       categoryFilterLabel: 'Enable Category Filter',
       categoryFilterDesc: 'Categorize tasks as Private or Business',
+      reminders: 'REMINDERS',
+      remindersLabel: 'Enable Reminders',
+      remindersDesc: 'Native notifications for tasks with due dates',
+      remindersBefore: 'Remind me',
+      remindersDay0: 'Same day (9:00 AM)',
+      remindersDay1: '1 day before (9:00 AM)',
+      remindersDay2: '2 days before (9:00 AM)',
+      remindersDay3: '3 days before (9:00 AM)',
+      remindersChoose: '— please select —',
+      remindersDenied: 'Permission denied. Please allow notifications in your browser settings.',
+      remindersNotSupported: 'Your browser does not support notifications.',
     },
     about: {
       title: 'About',
@@ -849,6 +871,52 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const metricsCancelBtn = document.getElementById('metricsCancelBtn');
   if (metricsCancelBtn) {
     metricsCancelBtn.textContent = lang.metrics.close;
+  }
+
+  // Update Reminders section in Personalize Modal
+  const personalizeRemindersTitle = document.getElementById('personalizeRemindersTitle');
+  if (personalizeRemindersTitle) {
+    personalizeRemindersTitle.textContent = lang.personalize.reminders;
+  }
+
+  const remindersLabel = document.getElementById('remindersLabel');
+  if (remindersLabel) {
+    remindersLabel.textContent = lang.personalize.remindersLabel;
+  }
+
+  const remindersDesc = document.getElementById('remindersDesc');
+  if (remindersDesc) {
+    remindersDesc.textContent = lang.personalize.remindersDesc;
+  }
+
+  const remindersBeforeLabel = document.getElementById('remindersBeforeLabel');
+  if (remindersBeforeLabel) {
+    remindersBeforeLabel.textContent = lang.personalize.remindersBefore;
+  }
+
+  const remindersChooseOption = document.getElementById('remindersChooseOption');
+  if (remindersChooseOption) {
+    remindersChooseOption.textContent = lang.personalize.remindersChoose;
+  }
+
+  const remindersDay0Option = document.getElementById('remindersDay0Option');
+  if (remindersDay0Option) {
+    remindersDay0Option.textContent = lang.personalize.remindersDay0;
+  }
+
+  const remindersDay1Option = document.getElementById('remindersDay1Option');
+  if (remindersDay1Option) {
+    remindersDay1Option.textContent = lang.personalize.remindersDay1;
+  }
+
+  const remindersDay2Option = document.getElementById('remindersDay2Option');
+  if (remindersDay2Option) {
+    remindersDay2Option.textContent = lang.personalize.remindersDay2;
+  }
+
+  const remindersDay3Option = document.getElementById('remindersDay3Option');
+  if (remindersDay3Option) {
+    remindersDay3Option.textContent = lang.personalize.remindersDay3;
   }
 
   // Re-render all tasks to update recurring indicators

@@ -84,6 +84,16 @@ import {
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
+import {
+  isSupported as remindersSupported,
+  requestPermission as requestReminderPermission,
+  getPermission,
+  loadReminderSettings,
+  saveReminderSettings,
+  scheduleReminders,
+  cancelReminders,
+  syncPermissionState,
+} from './js/modules/reminder.js';
 import { KeyboardDragManager } from './js/modules/accessibility.js';
 import {
   uploadBackup,
@@ -157,6 +167,12 @@ async function loadAllTasks() {
   } else {
     const loadedTasks = await loadGuestTasks();
     setAllTasks(loadedTasks);
+  }
+
+  // Schedule reminders after tasks are loaded (if reminders were active on app open)
+  if (window._pendingReminderDays !== undefined && window._pendingReminderDays !== null) {
+    scheduleReminders(tasks, window._pendingReminderDays, getCurrentLanguage());
+    window._pendingReminderDays = undefined;
   }
 }
 
@@ -459,6 +475,16 @@ function renderTasksWithCallbacks() {
 
   // Setup drop zones for desktop drag & drop
   setupDropZones(handleMoveTask);
+
+  // Keep reminder schedule in sync with current task list
+  rescheduleRemindersIfActive();
+}
+
+function rescheduleRemindersIfActive() {
+  const { enabled, daysBefore } = loadReminderSettings();
+  if (enabled && daysBefore !== null && getPermission() === 'granted') {
+    scheduleReminders(tasks, daysBefore, getCurrentLanguage());
+  }
 }
 
 // ============================================
@@ -673,6 +699,53 @@ function setupEventListeners() {
 
   // Expose renderTasksWithCallbacks for UI to trigger re-render
   window.renderTasksCallback = renderTasksWithCallbacks;
+
+  // Reminder callbacks for ui.js
+  window.updateRemindersCallback = (enabled, daysBefore) => {
+    saveReminderSettings(enabled, daysBefore);
+    if (enabled && daysBefore !== null) {
+      scheduleReminders(tasks, daysBefore, getCurrentLanguage());
+    } else {
+      cancelReminders();
+    }
+  };
+
+  window.requestRemindersPermission = async (toggleElement) => {
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
+
+    if (!remindersSupported()) {
+      showWarning(t.personalize.remindersNotSupported);
+      toggleElement.checked = false;
+      return;
+    }
+
+    const permission = await requestReminderPermission();
+    if (permission === 'granted') {
+      localStorage.setItem('remindersEnabled', 'true');
+      const container = document.getElementById('remindersDaysContainer');
+      if (container) container.style.display = 'flex';
+      // Don't schedule yet — user still needs to pick daysBefore from dropdown
+    } else {
+      showWarning(t.personalize.remindersDenied);
+      toggleElement.checked = false;
+      localStorage.setItem('remindersEnabled', 'false');
+    }
+  };
+
+  // On app open: sync permission state + reschedule if active
+  const remindersSynced = syncPermissionState();
+  if (remindersSynced) {
+    const { daysBefore } = loadReminderSettings();
+    if (daysBefore !== null) {
+      // Reschedule after tasks are loaded (tasks may not be ready yet, handled below)
+      window._pendingReminderDays = daysBefore;
+    }
+  } else if (getPermission() === 'denied' && localStorage.getItem('remindersEnabled') === 'true') {
+    // Was enabled but permission revoked — toggle was already reset by syncPermissionState
+    const remindersToggle = document.getElementById('remindersToggle');
+    if (remindersToggle) remindersToggle.checked = false;
+  }
 
   // Language toggle buttons in settings modal (legacy support)
   const langButtons = document.querySelectorAll('.lang-btn');

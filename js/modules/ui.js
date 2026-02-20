@@ -714,6 +714,22 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     categoryFilterToggle.checked = localStorage.getItem('categoryFilterEnabled') === 'true';
   }
 
+  // Update reminders toggle + dropdown state
+  const remindersToggle = document.getElementById('remindersToggle');
+  const remindersDaysContainer = document.getElementById('remindersDaysContainer');
+  const remindersDaysSelect = document.getElementById('remindersDaysSelect');
+  if (remindersToggle) {
+    const remindersEnabled = localStorage.getItem('remindersEnabled') === 'true';
+    remindersToggle.checked = remindersEnabled;
+    if (remindersDaysContainer) {
+      remindersDaysContainer.style.display = remindersEnabled ? 'flex' : 'none';
+    }
+    if (remindersDaysSelect) {
+      const stored = localStorage.getItem('reminderDaysBefore');
+      remindersDaysSelect.value = stored !== null ? stored : '';
+    }
+  }
+
   // Use event delegation for all personalize modal buttons
   const existingHandler = personalizeModal._clickHandler;
   if (existingHandler) {
@@ -801,12 +817,49 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       return;
     }
 
+    // Handle reminders toggle
+    if (target.id === 'remindersToggle') {
+      const isEnabled = target.checked;
+      if (isEnabled) {
+        if (window.requestRemindersPermission) {
+          window.requestRemindersPermission(target);
+        }
+      } else {
+        localStorage.setItem('remindersEnabled', 'false');
+        const container = document.getElementById('remindersDaysContainer');
+        if (container) container.style.display = 'none';
+        if (window.updateRemindersCallback) {
+          window.updateRemindersCallback(false, null);
+        }
+      }
+      return;
+    }
+
     // Handle close button click
     if (target.closest('#personalizeCancelBtn')) {
       closePersonalizeModal();
       return;
     }
   };
+
+  // Change handler for reminders days select
+  const existingChangeHandler = personalizeModal._changeHandler;
+  if (existingChangeHandler) {
+    personalizeModal.removeEventListener('change', existingChangeHandler);
+  }
+  const changeHandler = (e) => {
+    if (e.target.id === 'remindersDaysSelect') {
+      const value = e.target.value;
+      if (value === '') return;
+      const daysBefore = Number(value);
+      localStorage.setItem('reminderDaysBefore', String(daysBefore));
+      if (window.updateRemindersCallback) {
+        window.updateRemindersCallback(true, daysBefore);
+      }
+    }
+  };
+  personalizeModal._changeHandler = changeHandler;
+  personalizeModal.addEventListener('change', changeHandler);
 
   // Store handler reference and add listener
   personalizeModal._clickHandler = clickHandler;
