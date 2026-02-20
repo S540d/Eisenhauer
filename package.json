@@ -53,12 +53,12 @@
   },
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "dependencies": {
-    "@eslint/js": "^10.0.1",
     "chart.js": "^4.5.1",
     "firebase": "^12.9.0",
     "localforage": "^1.10.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
@@ -69,6 +69,7 @@
     "happy-dom": "^20.6.1",
     "husky": "^9.1.7",
     "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^4.0.18"
