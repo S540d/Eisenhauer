@@ -475,6 +475,16 @@ function renderTasksWithCallbacks() {
 
   // Setup drop zones for desktop drag & drop
   setupDropZones(handleMoveTask);
+
+  // Keep reminder schedule in sync with current task list
+  rescheduleRemindersIfActive();
+}
+
+function rescheduleRemindersIfActive() {
+  const { enabled, daysBefore } = loadReminderSettings();
+  if (enabled && daysBefore !== null && getPermission() === 'granted') {
+    scheduleReminders(tasks, daysBefore, getCurrentLanguage());
+  }
 }
 
 // ============================================

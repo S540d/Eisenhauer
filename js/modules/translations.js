@@ -873,6 +873,52 @@ export function updateLanguageUI(renderAllTasksCallback) {
     metricsCancelBtn.textContent = lang.metrics.close;
   }
 
+  // Update Reminders section in Personalize Modal
+  const personalizeRemindersTitle = document.getElementById('personalizeRemindersTitle');
+  if (personalizeRemindersTitle) {
+    personalizeRemindersTitle.textContent = lang.personalize.reminders;
+  }
+
+  const remindersLabel = document.getElementById('remindersLabel');
+  if (remindersLabel) {
+    remindersLabel.textContent = lang.personalize.remindersLabel;
+  }
+
+  const remindersDesc = document.getElementById('remindersDesc');
+  if (remindersDesc) {
+    remindersDesc.textContent = lang.personalize.remindersDesc;
+  }
+
+  const remindersBeforeLabel = document.getElementById('remindersBeforeLabel');
+  if (remindersBeforeLabel) {
+    remindersBeforeLabel.textContent = lang.personalize.remindersBefore;
+  }
+
+  const remindersChooseOption = document.getElementById('remindersChooseOption');
+  if (remindersChooseOption) {
+    remindersChooseOption.textContent = lang.personalize.remindersChoose;
+  }
+
+  const remindersDay0Option = document.getElementById('remindersDay0Option');
+  if (remindersDay0Option) {
+    remindersDay0Option.textContent = lang.personalize.remindersDay0;
+  }
+
+  const remindersDay1Option = document.getElementById('remindersDay1Option');
+  if (remindersDay1Option) {
+    remindersDay1Option.textContent = lang.personalize.remindersDay1;
+  }
+
+  const remindersDay2Option = document.getElementById('remindersDay2Option');
+  if (remindersDay2Option) {
+    remindersDay2Option.textContent = lang.personalize.remindersDay2;
+  }
+
+  const remindersDay3Option = document.getElementById('remindersDay3Option');
+  if (remindersDay3Option) {
+    remindersDay3Option.textContent = lang.personalize.remindersDay3;
+  }
+
   // Re-render all tasks to update recurring indicators
   if (renderAllTasksCallback) {
     renderAllTasksCallback();

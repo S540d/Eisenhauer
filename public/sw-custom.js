@@ -32,7 +32,7 @@ self.addEventListener('activate', (event) => {
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames
-          .filter((name) => name.startsWith('workbox-precache') || name.startsWith('eisenhauer-'))
+          .filter((name) => name.startsWith('eisenhauer-'))
           .map((name) => caches.delete(name))
       );
       await self.clients.claim();
@@ -73,18 +73,23 @@ async function scheduleWithTimestampTrigger(task, triggerAt) {
 
   const tag = `reminder-${task.id}`;
 
-  // Cancel existing notification for this task first
-  const existing = await self.registration.getNotifications({ tag });
-  existing.forEach((n) => n.close());
+  try {
+    // Cancel existing notification for this task first
+    const existing = await self.registration.getNotifications({ tag });
+    existing.forEach((n) => n.close());
 
-  await self.registration.showNotification('Eisenhauer', {
-    tag,
-    body: task.notificationBody,
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    data: { taskId: task.id },
-    showTrigger: new TimestampTrigger(triggerAt),
-  });
+    await self.registration.showNotification('Eisenhauer', {
+      tag,
+      body: task.notificationBody,
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-72x72.png',
+      data: { taskId: task.id },
+      showTrigger: new TimestampTrigger(triggerAt),
+    });
+  } catch (_e) {
+    // Notification scheduling failed (e.g. permission revoked mid-session)
+    return false;
+  }
 
   return true;
 }
@@ -95,17 +100,21 @@ async function scheduleWithTimestampTrigger(task, triggerAt) {
 async function fireImmediateNotification(task) {
   const tag = `reminder-${task.id}`;
 
-  // Check if already shown (tag still active = already shown)
-  const existing = await self.registration.getNotifications({ tag });
-  if (existing.length > 0) return;
+  try {
+    // Check if already shown (tag still active = already shown)
+    const existing = await self.registration.getNotifications({ tag });
+    if (existing.length > 0) return;
 
-  await self.registration.showNotification('Eisenhauer', {
-    tag,
-    body: task.notificationBody,
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
-    data: { taskId: task.id },
-  });
+    await self.registration.showNotification('Eisenhauer', {
+      tag,
+      body: task.notificationBody,
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-72x72.png',
+      data: { taskId: task.id },
+    });
+  } catch (_e) {
+    // Notification failed — permission may have been revoked
+  }
 }
 
 // ---------------------------------------------------------------------------
