@@ -69,7 +69,6 @@ import {
 } from './js/modules/storage.js';
 import {
   renderAllTasks,
-  openModal,
   closeModal,
   openQuickAddModal,
   openSettingsModal,
@@ -1225,7 +1224,7 @@ async function initApp() {
       updateOnlineStatus();
     }
     // If neither guest nor logged in, auth.js will show login screen
-  } catch (error) {
+  } catch (_error) {
     // Error loading cached auth state
   }
 
