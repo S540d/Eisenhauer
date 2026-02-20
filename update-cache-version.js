@@ -101,6 +101,6 @@ try {
   updateIndexHtml();
   updateManifest();
   createVersionInfo();
-} catch (error) {
+} catch (_error) {
   process.exit(1);
 }
