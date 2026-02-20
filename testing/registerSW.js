@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Eisenhauer/testing/service-worker.js', { scope: '/Eisenhauer/testing/' })})}
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/Eisenhauer/testing/sw-custom.js', { scope: '/Eisenhauer/testing/' })})}
