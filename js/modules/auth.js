@@ -53,7 +53,7 @@ function isSessionStorageAvailable() {
     sessionStorage.setItem(testKey, 'test');
     sessionStorage.removeItem(testKey);
     return true;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }
@@ -229,7 +229,7 @@ export async function initAuth() {
 
           showLogin();
         }
-      } catch (error) {
+      } catch (_error) {
         isGuestMode = false;
         showLogin();
       }

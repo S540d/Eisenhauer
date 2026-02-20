@@ -22,7 +22,7 @@ export async function loadVersion() {
     const data = await response.json();
     APP_VERSION = 'v' + data.version;
     return APP_VERSION;
-  } catch (error) {
+  } catch (_error) {
     // Silently use fallback version if loading fails
     console.debug('Using fallback version:', APP_VERSION); // debug:
     return APP_VERSION;
