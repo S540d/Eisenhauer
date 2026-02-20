@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.11.2 (b9dd6a6d) built at 1771164070781 -->
+<!-- Cache-Busting Info: v1.11.2 (0ad88d86) built at 1771608270992 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="b9dd6a6d" /><meta name="build-time" content="1771164070781" />
+    <meta name="build-hash" content="0ad88d86" /><meta name="build-time" content="1771608270992" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/Eisenhauer/staging/assets/manifest-BsPr_CvW.json" />
@@ -38,9 +38,9 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <script type="module" crossorigin src="/Eisenhauer/staging/assets/index-niobRS2_.js"></script>
+    <script type="module" crossorigin src="/Eisenhauer/staging/assets/index-CjVCIs_Q.js"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/staging/assets/firebase-EMBLhseW.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/staging/assets/index-Cevm0DXU.css">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/staging/assets/index-VTdaApEn.css">
   <link rel="manifest" href="/Eisenhauer/staging/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/staging/registerSW.js"></script></head>
   <body>
     <!-- Splash Screen -->
@@ -662,6 +662,32 @@
           <p class="settings-info" id="categoryFilterDesc">
             Aufgaben als Privat oder Beruflich kategorisieren
           </p>
+        </div>
+
+        <div class="settings-separator"></div>
+
+        <!-- Reminders Settings -->
+        <div class="settings-section">
+          <h4 class="settings-section-title" id="personalizeRemindersTitle">ERINNERUNGEN</h4>
+          <label class="smart-functions-toggle">
+            <input type="checkbox" id="remindersToggle" />
+            <span id="remindersLabel">Erinnerungen aktivieren</span>
+          </label>
+          <p class="settings-info" id="remindersDesc">
+            Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum
+          </p>
+          <div id="remindersDaysContainer" class="reminders-days-container" style="display: none">
+            <label class="reminders-days-label" for="remindersDaysSelect" id="remindersBeforeLabel"
+              >Erinnerung</label
+            >
+            <select id="remindersDaysSelect" class="reminders-days-select">
+              <option value="" id="remindersChooseOption">— bitte wählen —</option>
+              <option value="0" id="remindersDay0Option">Am Tag selbst (9:00 Uhr)</option>
+              <option value="1" id="remindersDay1Option">1 Tag vorher (9:00 Uhr)</option>
+              <option value="2" id="remindersDay2Option">2 Tage vorher (9:00 Uhr)</option>
+              <option value="3" id="remindersDay3Option">3 Tage vorher (9:00 Uhr)</option>
+            </select>
+          </div>
         </div>
 
         <div class="settings-separator"></div>
