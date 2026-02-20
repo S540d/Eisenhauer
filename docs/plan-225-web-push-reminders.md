@@ -40,7 +40,9 @@ den SW nicht bereinigt. Beim nächsten App-Start werden die Notifications neu ge
 
 ### Timing-Logik im SW
 
-- Erinnerung wird gefeuert wenn: `now >= dueDate - (vorlaufTage * 86400000)`
+- Erinnerungen werden immer um **9:00 Uhr** gefeuert (fester Tageszeitpunkt)
+- Erinnerungstag = `dueDate - vorlaufTage` (z.B. 1 Tag vorher = Vortag um 9:00)
+- Prüfbedingung: `today == reminderDay && now.hour >= 9 && !alreadyNotified`
 - Bereits gefeuerte Erinnerungen werden in IndexedDB als "notified" markiert
 - Bei Task-Änderung (dueDate geändert/gelöscht): SW bekommt Update via postMessage
 
@@ -67,22 +69,27 @@ Custom Service Worker — Workbox injiziert Precache-Manifest, wir fügen hinzu:
 ### Geändert: `js/modules/translations.js`
 Neue Keys (DE + EN):
 ```
-settings.reminders           "Erinnerungen"         "Reminders"
-settings.remindersToggle     "Erinnerungen für fällige Aufgaben"
-settings.remindersBefore     "Erinnerung"           "Remind me"
-settings.remindersDay1       "1 Tag vorher"         "1 day before"
-settings.remindersDay2       "2 Tage vorher"        "2 days before"
-settings.remindersDay3       "3 Tage vorher"        "3 days before"
+settings.reminders           "Erinnerungen"               "Reminders"
+settings.remindersToggle     "Erinnerungen für fällige Aufgaben"  "Reminders for due tasks"
+settings.remindersBefore     "Erinnerung"                 "Remind me"
+settings.remindersDay0       "Am Tag selbst (9:00 Uhr)"   "Same day (9:00 AM)"
+settings.remindersDay1       "1 Tag vorher (9:00 Uhr)"    "1 day before (9:00 AM)"
+settings.remindersDay2       "2 Tage vorher (9:00 Uhr)"   "2 days before (9:00 AM)"
+settings.remindersDay3       "3 Tage vorher (9:00 Uhr)"   "3 days before (9:00 AM)"
 settings.remindersDenied     "Berechtigung verweigert. Bitte in den Browser-Einstellungen erlauben."
-notifications.reminderTitle  "Eisenhauer Erinnerung"
-notifications.reminderBody   "«{task}» ist fällig {date}"
+notifications.reminderTitle  "Eisenhauer Erinnerung"      "Eisenhauer Reminder"
+notifications.reminderBody   "«{task}» ist fällig {date}" "«{task}» is due {date}"
 ```
 
 ### Geändert: `index.html`
 Im Personalize-Modal, neuer Abschnitt unter Smart Functions:
 ```
-[ Erinnerungen                          ◯ ]   ← Toggle
-  Erinnerung  [ 1 Tag vorher ▾ ]              ← Dropdown (nur sichtbar wenn aktiv)
+[ Erinnerungen                               ◯ ]   ← Toggle
+  Erinnerung  [ — bitte wählen — ▾ ]              ← Dropdown (nur sichtbar wenn aktiv, kein Default)
+              [ Am Tag selbst (9:00 Uhr)     ]
+              [ 1 Tag vorher  (9:00 Uhr)     ]
+              [ 2 Tage vorher (9:00 Uhr)     ]
+              [ 3 Tage vorher (9:00 Uhr)     ]
 ```
 
 ### Geändert: `script.js`
@@ -93,7 +100,7 @@ Im Personalize-Modal, neuer Abschnitt unter Smart Functions:
 ### Geändert: `store.js`
 Neue Felder in State:
 - `remindersEnabled: boolean` (Default: `false`)
-- `reminderDaysBefore: number` (Default: `1`)
+- `reminderDaysBefore: number | null` (Default: `null` — kein Default, Nutzer muss wählen)
 
 ## Ablauf aus Nutzersicht
 
@@ -101,10 +108,10 @@ Neue Felder in State:
 1. Nutzer öffnet Settings → Personalize
 2. Toggle "Erinnerungen" umlegen
 3. Browser zeigt Permission-Dialog
-   → Erlaubt: Toggle bleibt an, Dropdown erscheint
+   → Erlaubt: Toggle bleibt an, Dropdown erscheint (ohne Vorauswahl)
    → Verweigert: Toast "Berechtigung verweigert", Toggle geht zurück auf aus
-4. Dropdown: "1 Tag vorher / 2 Tage / 3 Tage" wählen
-5. Fertig — Erinnerungen laufen automatisch
+4. Dropdown: "Am Tag selbst / 1 Tag vorher / 2 Tage / 3 Tage" wählen (Pflicht)
+5. Fertig — Erinnerungen laufen automatisch, täglich um 9:00 Uhr
 ```
 
 ## Einschränkungen (bekannt & akzeptiert)
@@ -113,7 +120,7 @@ Neue Felder in State:
 |---|---|
 | iOS nur bei Home Screen App | iOS-Limitierung für Web Push |
 | SW kann vom Browser bereinigt werden | Notifications werden beim nächsten App-Start neu geplant |
-| Kein exakter Zeitpunkt | 15min-Intervall im SW (Akku-Kompromiss) |
+| Zeitpunkt ~9:00 Uhr, nicht exakt | 15min-Intervall im SW (Akku-Kompromiss) — Abweichung max. 15min |
 | Kein echter Server-Push | Kein Backend → lokale Lösung |
 
 ## Nicht in Scope
@@ -122,10 +129,8 @@ Neue Felder in State:
   (Browser bereinigt inaktive SWs)
 - Notification-Klick öffnet App direkt auf dem Task (möglich, aber Folge-Feature)
 
-## Offene Fragen für Review
+## Entschiedene Design-Fragen
 
-1. Soll der Default-Vorlauf 1 Tag sein, oder soll der Nutzer keinen Default bekommen
-   (muss explizit wählen)?
-2. Soll es eine Erinnerung **am Tag selbst** (0 Tage vorher) geben als Option?
-3. Soll die Erinnerung zu einem bestimmten Uhrzeit kommen (z.B. 9:00 Uhr),
-   oder relativ zur dueDate-Zeit?
+1. **Kein Default-Vorlauf** — Nutzer muss explizit wählen (kein `null`-Default im State)
+2. **"Am Tag selbst"** ist als Option enthalten (0 Tage vorher, 9:00 Uhr)
+3. **Fester Zeitpunkt 9:00 Uhr** — alle Erinnerungen kommen morgens um 9:00 Uhr
