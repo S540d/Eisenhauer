@@ -2685,6 +2685,9 @@ body.dark-mode .undo-toast {
   align-items: center;
   justify-content: center;
   color: var(--text-color);
+  /* Force GPU compositing to prevent SVG icon disappearing on old Android WebViews */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .focus-mode-toggle:hover {
