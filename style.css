@@ -2687,6 +2687,12 @@ body.dark-mode .undo-toast {
   color: var(--text-color);
 }
 
+/* Explicitly set SVG stroke via CSS to fix currentColor inheritance bug on older Android WebView */
+.focus-mode-toggle svg {
+  stroke: currentColor;
+  transition: stroke 0.2s ease;
+}
+
 .focus-mode-toggle:hover {
   background: var(--hover-bg);
   border-color: var(--primary-color);
@@ -2697,6 +2703,10 @@ body.dark-mode .undo-toast {
   border-color: var(--primary-color);
   color: white;
   box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.4);
+}
+
+.focus-mode-toggle.active svg {
+  stroke: white;
 }
 
 /* Focus Mode Active - Hide Q3 and Q4 */
