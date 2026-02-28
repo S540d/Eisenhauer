@@ -228,6 +228,7 @@ header,
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
+  padding-top: calc(15px + env(safe-area-inset-top));
   flex-shrink: 0;
   border-bottom: 1px solid var(--border-color);
 }
