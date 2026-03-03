@@ -11,6 +11,12 @@
 - **Größe:** 512 x 512 px
 - **Verwendung:** Store Listing Icon
 
+### ✅ Screenshots (1080 x 1920 px)
+- `screenshot-01-board-light.png` – Hauptansicht (hell)
+- `screenshot-02-quick-add.png` – Quick-Add-Dialog mit Fälligkeitsdatum
+- `screenshot-03-board-dark.png` – Hauptansicht im Dark Mode
+- `screenshot-04-settings.png` – Einstellungen & Personalisierung
+
 ## 📸 Screenshots erstellen
 
 ### Methode: Browser Developer Tools (Empfohlen)
