@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.11.2 (485ae184) built at 1774284994681 -->
+<!-- Cache-Busting Info: v1.11.2 (c944698a) built at 1774285224064 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="485ae184" /><meta name="build-time" content="1774284994681" />
+    <meta name="build-hash" content="c944698a" /><meta name="build-time" content="1774285224064" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/Eisenhauer/testing/assets/manifest-BsPr_CvW.json" />
@@ -38,7 +38,15 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-BEEecOkd.js"></script>
+    <!-- Security: CSP enforced via meta tag (GitHub Pages has no custom HTTP headers) -->
+    <!-- Note: frame-ancestors is not supported via meta, clickjacking protection requires HTTP header -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; base-uri 'self'; form-action 'self';"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-BioOR9fJ.js"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/testing/assets/firebase-EMBLhseW.js">
     <link rel="stylesheet" crossorigin href="/Eisenhauer/testing/assets/index-CFnGlB93.css">
   <link rel="manifest" href="/Eisenhauer/testing/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/testing/registerSW.js"></script></head>
@@ -87,7 +95,7 @@
         <p class="login-subtitle">Organize your tasks efficiently</p>
 
         <div class="login-buttons">
-          <button id="googleSignInBtn" onclick="signInWithGoogle()" class="login-btn google-btn">
+          <button id="googleSignInBtn" class="login-btn google-btn">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="#4285F4"
@@ -109,7 +117,7 @@
             Sign in with Google
           </button>
 
-          <button onclick="signInWithApple()" class="login-btn apple-btn" style="display: none">
+          <button id="appleSignInBtn" class="login-btn apple-btn" style="display: none">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="currentColor"
@@ -119,7 +127,7 @@
             Sign in with Apple
           </button>
 
-          <button id="guestModeBtn" onclick="continueAsGuest()" class="login-btn guest-btn">
+          <button id="guestModeBtn" class="login-btn guest-btn">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="currentColor"
