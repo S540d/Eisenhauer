@@ -120,11 +120,10 @@ let keyboardDragManager = null;
 // ============================================
 // Expose Functions to Window
 // ============================================
-// Bind Auth functions for onclick handlers in HTML
-// These are now properly exported from auth.js module (no more window._ workarounds)
-window.signInWithGoogle = signInWithGoogle;
-window.signInWithApple = signInWithApple;
-window.continueAsGuest = continueAsGuest;
+// Auth functions bound via addEventListener (no inline onclick handlers)
+document.getElementById('googleSignInBtn')?.addEventListener('click', signInWithGoogle);
+document.getElementById('appleSignInBtn')?.addEventListener('click', signInWithApple);
+document.getElementById('guestModeBtn')?.addEventListener('click', continueAsGuest);
 window.signOut = signOut;
 window.showLogin = showLogin;
 window.showApp = showApp;

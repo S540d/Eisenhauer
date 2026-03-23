@@ -36,7 +36,15 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <link rel="stylesheet" href="style.css?v=1771606009121" />
+    <!-- Security Headers -->
+    <meta
+      http-equiv="Content-Security-Policy-Report-Only"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+    />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <link rel="stylesheet" href="style.css?v=1774284587293" />
   </head>
   <body>
     <!-- Splash Screen -->
@@ -83,7 +91,7 @@
         <p class="login-subtitle">Organize your tasks efficiently</p>
 
         <div class="login-buttons">
-          <button id="googleSignInBtn" onclick="signInWithGoogle()" class="login-btn google-btn">
+          <button id="googleSignInBtn" class="login-btn google-btn">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="#4285F4"
@@ -105,7 +113,7 @@
             Sign in with Google
           </button>
 
-          <button onclick="signInWithApple()" class="login-btn apple-btn" style="display: none">
+          <button id="appleSignInBtn" class="login-btn apple-btn" style="display: none">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="currentColor"
@@ -115,7 +123,7 @@
             Sign in with Apple
           </button>
 
-          <button id="guestModeBtn" onclick="continueAsGuest()" class="login-btn guest-btn">
+          <button id="guestModeBtn" class="login-btn guest-btn">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="currentColor"
@@ -910,7 +918,7 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1771606009121"></script>
+    <script type="module" src="script.js?v=1774284587293"></script>
 
     <!-- Register Service Worker with Cache Busting -->
     <script>
