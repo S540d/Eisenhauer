@@ -118,12 +118,13 @@ let isGuestMode = false;
 let keyboardDragManager = null;
 
 // ============================================
-// Expose Functions to Window
+// Bind Auth UI & Expose Globals
 // ============================================
-// Auth functions bound via addEventListener (no inline onclick handlers)
+// Auth buttons wired via addEventListener (CSP-compatible, no inline handlers)
 document.getElementById('googleSignInBtn')?.addEventListener('click', signInWithGoogle);
 document.getElementById('appleSignInBtn')?.addEventListener('click', signInWithApple);
 document.getElementById('guestModeBtn')?.addEventListener('click', continueAsGuest);
+// These remain on window because they are called from other modules
 window.signOut = signOut;
 window.showLogin = showLogin;
 window.showApp = showApp;

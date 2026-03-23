@@ -36,12 +36,12 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <!-- Security Headers -->
+    <!-- Security: CSP enforced via meta tag (GitHub Pages has no custom HTTP headers) -->
+    <!-- Note: frame-ancestors is not supported via meta, clickjacking protection requires HTTP header -->
     <meta
-      http-equiv="Content-Security-Policy-Report-Only"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; base-uri 'self'; form-action 'self';"
     />
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
     <link rel="stylesheet" href="style.css?v=1774284587293" />
