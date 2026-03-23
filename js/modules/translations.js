@@ -426,7 +426,7 @@ export function initLoginTranslations() {
   }
 
   // Update Apple Sign In button (if visible)
-  const appleSignInBtn = document.querySelector('button[onclick="signInWithApple()"]');
+  const appleSignInBtn = document.getElementById('appleSignInBtn');
   if (appleSignInBtn) {
     const btnText = appleSignInBtn.childNodes[appleSignInBtn.childNodes.length - 1];
     if (btnText && btnText.nodeType === Node.TEXT_NODE) {
