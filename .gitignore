@@ -11,12 +11,14 @@
 # Logs
 *.log
 
-# Firebase
-# Note: Firebase API keys are safe to commit (client-side keys, security via Firebase Rules)
-# firebase-config.js is now tracked in git for deployment
+# Firebase / Environment variables (contain API keys - use .env.*.example as template)
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.staging
+.env.testing
 
 # Node.js
 node_modules/
@@ -81,4 +83,3 @@ playwright/.cache/
 twa-manifest.json
 *.zip
 coverage/
-.env.development
