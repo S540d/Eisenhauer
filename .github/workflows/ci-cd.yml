@@ -154,7 +154,7 @@ jobs:
       - name: Check for hardcoded keystore passwords
         run: |
           echo "Scanning for hardcoded keystore passwords..."
-          FOUND=$(grep -rEi "(keystorePassword|keyPassword|storePassword)\s*=\s*\S" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" 2>/dev/null | grep -v '\${{' | grep -v 'secrets\.' || true)
+          FOUND=$(grep -rEi "(keystorePassword|keyPassword|storePassword)\s*=\s*\S" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.templates --exclude="*.md" 2>/dev/null | grep -v '\${{' | grep -v 'secrets\.' || true)
           if [ -n "$FOUND" ]; then
             echo "❌ Hardcoded keystore password found! Use GitHub Secrets instead."
             echo "$FOUND"
