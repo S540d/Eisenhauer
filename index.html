@@ -36,7 +36,15 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#000000" />
 
-    <link rel="stylesheet" href="style.css?v=1771606009121" />
+    <!-- Security: CSP enforced via meta tag (GitHub Pages has no custom HTTP headers) -->
+    <!-- Note: frame-ancestors is not supported via meta, clickjacking protection requires HTTP header -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; base-uri 'self'; form-action 'self';"
+    />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <link rel="stylesheet" href="style.css?v=1776883834344" />
   </head>
   <body>
     <!-- Splash Screen -->
@@ -83,7 +91,7 @@
         <p class="login-subtitle">Organize your tasks efficiently</p>
 
         <div class="login-buttons">
-          <button id="googleSignInBtn" onclick="signInWithGoogle()" class="login-btn google-btn">
+          <button id="googleSignInBtn" class="login-btn google-btn">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="#4285F4"
@@ -105,7 +113,7 @@
             Sign in with Google
           </button>
 
-          <button onclick="signInWithApple()" class="login-btn apple-btn" style="display: none">
+          <button id="appleSignInBtn" class="login-btn apple-btn" style="display: none">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="currentColor"
@@ -115,7 +123,7 @@
             Sign in with Apple
           </button>
 
-          <button id="guestModeBtn" onclick="continueAsGuest()" class="login-btn guest-btn">
+          <button id="guestModeBtn" class="login-btn guest-btn">
             <svg viewBox="0 0 24 24" width="20" height="20">
               <path
                 fill="currentColor"
@@ -910,129 +918,9 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <script type="module" src="script.js?v=1771606009121"></script>
+    <script type="module" src="script.js?v=1776883834344"></script>
 
     <!-- Register Service Worker with Cache Busting -->
-    <script>
-      // Only register service worker in production builds (not in Vite dev mode)
-      // Dev mode check: explicit localhost-style hosts instead of relying on port
-      const devHosts = ['localhost', '127.0.0.1', '[::1]'];
-      const isProduction = !devHosts.includes(window.location.hostname);
-
-      if ('serviceWorker' in navigator && isProduction) {
-        let refreshing = false;
-
-        // Detect current environment from URL path using robust path matching
-        const currentPath = window.location.pathname;
-        const pathSegments = currentPath.split('/').filter(Boolean);
-        let currentEnvironment = 'production';
-
-        // Use lastIndexOf to find the rightmost occurrence of staging/testing
-        const stagingIndex = pathSegments.lastIndexOf('staging');
-        const testingIndex = pathSegments.lastIndexOf('testing');
-
-        if (stagingIndex !== -1 && stagingIndex > testingIndex) {
-          currentEnvironment = 'staging';
-        } else if (testingIndex !== -1) {
-          currentEnvironment = 'testing';
-        }
-
-        // Get build hash from meta tag (added by post-build.js)
-        const buildHashElement = document.querySelector('meta[name="build-hash"]');
-        const currentBuildHash = buildHashElement
-          ? buildHashElement.content
-          : Date.now().toString();
-
-        // Store current environment in localStorage
-        const cachedEnvironment = localStorage.getItem('sw-environment');
-        const environmentChanged =
-          cachedEnvironment !== null && cachedEnvironment !== currentEnvironment;
-        const isFirstVisit = cachedEnvironment === null;
-
-        // Store current build hash in localStorage (environment-specific key)
-        const buildHashKey = `sw-build-hash-${currentEnvironment}`;
-        const cachedBuildHash = localStorage.getItem(buildHashKey);
-        const buildHashChanged = cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
-
-        // Clear caches if environment changed, build hash changed, or first visit
-        const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
-
-        if (shouldClearCache) {
-          const reason = environmentChanged
-            ? `Environment changed (${cachedEnvironment} → ${currentEnvironment})`
-            : buildHashChanged
-              ? `Build hash changed (${cachedBuildHash} → ${currentBuildHash})`
-              : 'First visit - establishing fresh cache';
-          console.log(`[Service Worker] ${reason}. Clearing caches...`);
-
-          // Clear all caches to force fresh content
-          if ('caches' in window) {
-            caches.keys().then((names) => {
-              names.forEach((name) => {
-                caches.delete(name);
-              });
-            });
-          }
-
-          // Always clear old build hashes from other environments (not just on environment change)
-          ['production', 'staging', 'testing'].forEach((env) => {
-            if (env !== currentEnvironment) {
-              localStorage.removeItem(`sw-build-hash-${env}`);
-            }
-          });
-        }
-
-        localStorage.setItem('sw-environment', currentEnvironment);
-        localStorage.setItem(buildHashKey, currentBuildHash);
-
-        // Reload page when new service worker takes over
-        // ONLY if it's not the first load to avoid reload loops
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (refreshing) return;
-
-          // Only reload if we already had a controller (i.e., this is an update, not first install)
-          // and if we haven't reloaded in this session yet
-          const hasController = !!navigator.serviceWorker.controller;
-          const sessionReloaded = sessionStorage.getItem('sw-reloaded');
-
-          if (hasController && !sessionReloaded) {
-            refreshing = true;
-            sessionStorage.setItem('sw-reloaded', 'true');
-            console.log('[Service Worker] Controller changed, reloading page...');
-            window.location.reload();
-          }
-        });
-
-        window.addEventListener('load', () => {
-          // Register with cache busting query parameter
-          const swUrl = `./service-worker.js?v=${currentBuildHash}`;
-
-          navigator.serviceWorker
-            .register(swUrl)
-            .then((registration) => {
-              console.log('[Service Worker] Registered:', swUrl);
-
-              // Check for updates on page load (less aggressive)
-              if (registration.active) {
-                registration.update();
-              }
-
-              // Check for updates every 60 seconds (less aggressive than 10s)
-              const updateInterval = setInterval(() => {
-                registration.update();
-              }, 60000);
-
-              // Listen for updates
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                console.log('[Service Worker] New version found, waiting for activation...');
-              });
-            })
-            .catch((error) => {
-              console.error('[Service Worker] Registration failed:', error);
-            });
-        });
-      }
-    </script>
+    <script src="js/sw-register.js?v=1776883834344"></script>
   </body>
 </html>

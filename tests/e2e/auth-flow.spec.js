@@ -232,20 +232,20 @@ test.describe('Authentication Flows', () => {
     });
   });
 
-  test.describe('Window Functions Availability', () => {
-    test('signInWithGoogle should be a function', async ({ page }) => {
-      const isFunction = await page.evaluate(() => typeof window.signInWithGoogle === 'function');
-      expect(isFunction).toBe(true);
+  test.describe('Auth UI Availability', () => {
+    test('Google sign-in button should exist', async ({ page }) => {
+      const btn = page.locator('#googleSignInBtn');
+      await expect(btn).toBeAttached();
     });
 
-    test('signInWithApple should be a function', async ({ page }) => {
-      const isFunction = await page.evaluate(() => typeof window.signInWithApple === 'function');
-      expect(isFunction).toBe(true);
+    test('Apple sign-in button should exist', async ({ page }) => {
+      const btn = page.locator('#appleSignInBtn');
+      await expect(btn).toBeAttached();
     });
 
-    test('continueAsGuest should be a function', async ({ page }) => {
-      const isFunction = await page.evaluate(() => typeof window.continueAsGuest === 'function');
-      expect(isFunction).toBe(true);
+    test('Guest mode button should exist', async ({ page }) => {
+      const btn = page.locator('#guestModeBtn');
+      await expect(btn).toBeAttached();
     });
 
     test('signOut should be a function', async ({ page }) => {
@@ -256,25 +256,6 @@ test.describe('Authentication Flows', () => {
     test('showLogin should be a function', async ({ page }) => {
       const isFunction = await page.evaluate(() => typeof window.showLogin === 'function');
       expect(isFunction).toBe(true);
-    });
-
-    test('all global auth functions should be defined before DOMContentLoaded', async ({
-      page,
-    }) => {
-      // CRITICAL TEST: Verifies the core issue from v9 migration
-      // Functions must be available immediately, not after DOMContentLoaded
-
-      const allFunctions = await page.evaluate(() => ({
-        signInWithGoogle: typeof window.signInWithGoogle,
-        signInWithApple: typeof window.signInWithApple,
-        continueAsGuest: typeof window.continueAsGuest,
-        signOut: typeof window.signOut,
-        showLogin: typeof window.showLogin,
-      }));
-
-      for (const [name, type] of Object.entries(allFunctions)) {
-        expect(type).toBe('function');
-      }
     });
   });
 

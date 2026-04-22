@@ -118,13 +118,19 @@ let isGuestMode = false;
 let keyboardDragManager = null;
 
 // ============================================
-// Expose Functions to Window
+// Bind Auth UI & Expose Globals
 // ============================================
-// Bind Auth functions for onclick handlers in HTML
-// These are now properly exported from auth.js module (no more window._ workarounds)
-window.signInWithGoogle = signInWithGoogle;
-window.signInWithApple = signInWithApple;
-window.continueAsGuest = continueAsGuest;
+function getRequiredElement(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Required auth UI element "#${id}" not found. Check the DOM ID.`);
+  return el;
+}
+
+// Auth buttons wired via addEventListener (CSP-compatible, no inline handlers)
+getRequiredElement('googleSignInBtn').addEventListener('click', signInWithGoogle);
+getRequiredElement('appleSignInBtn').addEventListener('click', signInWithApple);
+getRequiredElement('guestModeBtn').addEventListener('click', continueAsGuest);
+// These remain on window because they are called from other modules
 window.signOut = signOut;
 window.showLogin = showLogin;
 window.showApp = showApp;

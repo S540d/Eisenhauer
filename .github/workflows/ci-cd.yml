@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
@@ -56,7 +56,7 @@ jobs:
     needs: code-quality
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
@@ -79,7 +79,7 @@ jobs:
     needs: code-quality
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
@@ -111,7 +111,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Check version consistency
         run: |
@@ -141,25 +141,101 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate || true
+        run: npm audit --audit-level=high || true
 
-      - name: Check for sensitive data
+      - name: Check for hardcoded keystore passwords
         run: |
-          echo "Checking for sensitive data..."
-          # Exclude .env files as they might exist in some contexts, but check code
-          if grep -ri "api_key\|secret\|password.*=" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" --exclude=".env*" 2>/dev/null; then
-            echo "⚠️ WARNING: Potential sensitive data found!"
-          else
-            echo "✅ No obvious sensitive data in code"
+          echo "Scanning for hardcoded keystore passwords..."
+          if grep -rEi "(keystorePassword|keyPassword|storePassword)\s*=\s*\S" . \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" 2>/dev/null \
+              | grep -v '\${{' | grep -v 'secrets\.'; then
+            echo "❌ Hardcoded keystore password found! Use GitHub Secrets instead."
+            exit 1
           fi
+          echo "✅ No hardcoded keystore passwords"
+
+  # ============================================================================
+  # JOB 5b: Docs Privacy Check
+  # ============================================================================
+  docs-privacy:
+    name: 🔐 Docs Privacy Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check .gitignore covers docs/private/
+        run: |
+          if ! grep -q "docs/private/" .gitignore; then
+            echo "❌ docs/private/ is not in .gitignore!"
+            exit 1
+          fi
+          echo "✅ docs/private/ is gitignored"
+
+      - name: Check no private docs are committed
+        run: |
+          PRIVATE=$(git ls-files docs/private/ 2>/dev/null)
+          if [ -n "$PRIVATE" ]; then
+            echo "❌ Private docs found in repo:"
+            echo "$PRIVATE"
+            exit 1
+          fi
+          echo "✅ No private docs committed"
+
+      - name: Check no .env files with real credentials are committed
+        run: |
+          ENV_TRACKED=$(git ls-files | grep -E '^\.env\.' | grep -v '\.example$' || true)
+          if [ -n "$ENV_TRACKED" ]; then
+            echo "❌ .env files with potential real credentials are tracked:"
+            echo "$ENV_TRACKED"
+            exit 1
+          fi
+          echo "✅ No real .env files committed (only .example templates)"
+
+  # ============================================================================
+  # JOB 5c: Keystore & Credential Scan
+  # ============================================================================
+  keystore-secrets:
+    name: 🔑 Keystore & Credential Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check no keystore files are committed
+        run: |
+          FOUND=$(git ls-files | grep -E "\.(keystore|jks|p12|pfx)$" || true)
+          if [ -n "$FOUND" ]; then
+            echo "❌ Keystore committed:"
+            echo "$FOUND"
+            exit 1
+          fi
+          echo "✅ No keystore files found"
+
+      - name: Check .gitignore covers keystore patterns
+        run: |
+          if ! grep -q "\.keystore" .gitignore || ! grep -q "\.jks" .gitignore; then
+            echo "❌ .gitignore missing *.keystore / *.jks"
+            exit 1
+          fi
+          echo "✅ Keystore patterns are gitignored"
+
+      - name: Scan for base64-encoded keystore content
+        run: |
+          if grep -rE "MIIF[A-Za-z0-9+/]{50,}" . \
+              --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" 2>/dev/null; then
+            echo "❌ Possible base64-encoded keystore content found!"
+            exit 1
+          fi
+          echo "✅ No encoded keystore content"
 
   # ============================================================================
   # JOB 6: Release Readiness Report
@@ -171,7 +247,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Generate Release Report
         run: |
