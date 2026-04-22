@@ -8,6 +8,9 @@
 # Claude Code (private instructions)
 .claude/
 
+# Private documentation (local only)
+docs/private/
+
 # Logs
 *.log
 
