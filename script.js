@@ -120,10 +120,16 @@ let keyboardDragManager = null;
 // ============================================
 // Bind Auth UI & Expose Globals
 // ============================================
+function getRequiredElement(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Required auth UI element "#${id}" not found. Check the DOM ID.`);
+  return el;
+}
+
 // Auth buttons wired via addEventListener (CSP-compatible, no inline handlers)
-document.getElementById('googleSignInBtn')?.addEventListener('click', signInWithGoogle);
-document.getElementById('appleSignInBtn')?.addEventListener('click', signInWithApple);
-document.getElementById('guestModeBtn')?.addEventListener('click', continueAsGuest);
+getRequiredElement('googleSignInBtn').addEventListener('click', signInWithGoogle);
+getRequiredElement('appleSignInBtn').addEventListener('click', signInWithApple);
+getRequiredElement('guestModeBtn').addEventListener('click', continueAsGuest);
 // These remain on window because they are called from other modules
 window.signOut = signOut;
 window.showLogin = showLogin;
