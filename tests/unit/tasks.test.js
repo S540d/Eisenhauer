@@ -253,6 +253,7 @@ describe('Tasks', () => {
         dayOfMonth: 1,
         customDays: 1,
       });
+      // createdAt for the hidden recurring follow-up is set to the next due date timestamp (future), not the creation time
       expect(rawTasks[SEGMENTS.DO][0].createdAt).toBeGreaterThan(Date.now());
       expect(rawTasks[SEGMENTS.DONE][0]).toMatchObject({
         id: 200,
@@ -335,6 +336,7 @@ describe('Tasks', () => {
       expect(filterTasks('')[1]).toBe(allTasks[1]);
 
       expect(filterByCategory(allTasks, null)).toBe(allTasks);
+      // Tasks without a category field default to 'private' (see filterByCategory: task.category || 'private')
       expect(filterByCategory(allTasks, 'private')).toEqual({
         1: [{ id: 2, text: 'Private call' }],
         2: [{ id: 3, text: 'Read Book', category: 'private' }],

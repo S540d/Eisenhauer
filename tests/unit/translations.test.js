@@ -590,6 +590,10 @@ describe('updateLanguageUI', () => {
 });
 
 describe('detectBrowserLanguage', () => {
+  afterEach(() => {
+    Object.defineProperty(navigator, 'language', { configurable: true, value: '' });
+  });
+
   it('should detect supported browser languages', () => {
     Object.defineProperty(navigator, 'language', {
       configurable: true,
