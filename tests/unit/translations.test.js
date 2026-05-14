@@ -619,7 +619,7 @@ describe('initLoginTranslations', () => {
       <div id="loginScreen"><h1>Old title</h1></div>
       <p class="login-subtitle">Old subtitle</p>
       <button id="googleSignInBtn"><span>G</span>Old Google</button>
-      <button onclick="signInWithApple()"><span>A</span>Old Apple</button>
+      <button id="appleSignInBtn"><span>A</span>Old Apple</button>
       <button id="guestModeBtn"><span>G</span>Old Guest</button>
       <p class="login-info">Old info</p>
     `;
@@ -632,9 +632,7 @@ describe('initLoginTranslations', () => {
       'Organisiere deine Aufgaben effizient'
     );
     expect(document.getElementById('googleSignInBtn').textContent).toContain('Mit Google anmelden');
-    expect(document.querySelector('button[onclick="signInWithApple()"]').textContent).toContain(
-      'Mit Apple anmelden'
-    );
+    expect(document.getElementById('appleSignInBtn').textContent).toContain('Mit Apple anmelden');
     expect(document.getElementById('guestModeBtn').textContent).toContain('Als Gast fortfahren');
     expect(document.querySelector('.login-info').textContent).toContain('Melde dich an');
   });
