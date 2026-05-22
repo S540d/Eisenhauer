@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- All colors #000000 to match PWA manifest.json theme -->
-    <color name="splashBackground">#000000</color>
     <color name="statusBarColor">#000000</color>
     <color name="navigationBarColor">#000000</color>
 </resources>
