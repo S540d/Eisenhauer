@@ -21,6 +21,7 @@ export const translations = {
       active: 'Fokus-Modus aktiv',
     },
     categoryFilter: {
+      all: 'Alle',
       private: 'Privat',
       business: 'Beruflich',
       tooltipPrivate: 'Nur private Aufgaben anzeigen',
@@ -67,8 +68,9 @@ export const translations = {
       smartFunctionsDesc:
         'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind',
       categoryFilter: 'KATEGORIE-FILTER',
-      categoryFilterLabel: 'Kategorie-Filter aktivieren',
-      categoryFilterDesc: 'Aufgaben als Privat oder Beruflich kategorisieren',
+      categoryFilterLabel: 'Neue Aufgaben automatisch zuordnen',
+      categoryFilterDesc:
+        'Über den Umschalter im Kopf zwischen Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
       reminders: 'ERINNERUNGEN',
       remindersLabel: 'Erinnerungen aktivieren',
       remindersDesc: 'Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum',
@@ -190,6 +192,7 @@ export const translations = {
       active: 'Focus mode active',
     },
     categoryFilter: {
+      all: 'All',
       private: 'Private',
       business: 'Business',
       tooltipPrivate: 'Show only private tasks',
@@ -235,8 +238,9 @@ export const translations = {
       smartFunctionsLabel: 'Enable Smart Functions',
       smartFunctionsDesc: 'Automatically mark tasks as urgent when due within 3 days',
       categoryFilter: 'CATEGORY FILTER',
-      categoryFilterLabel: 'Enable Category Filter',
-      categoryFilterDesc: 'Categorize tasks as Private or Business',
+      categoryFilterLabel: 'Auto-assign new tasks',
+      categoryFilterDesc:
+        'Switch between Private and Business using the header switcher. New tasks are assigned to the active category.',
       reminders: 'REMINDERS',
       remindersLabel: 'Enable Reminders',
       remindersDesc: 'Native notifications for tasks with due dates',
@@ -697,21 +701,22 @@ export function updateLanguageUI(renderAllTasksCallback) {
     categoryFilterDesc.textContent = lang.personalize.categoryFilterDesc;
   }
 
-  // Update Category Filter header buttons
-  const categoryPrivateToggle = document.getElementById('categoryPrivateToggle');
-  if (categoryPrivateToggle) {
-    const isActive = categoryPrivateToggle.classList.contains('active');
-    categoryPrivateToggle.title = isActive
-      ? lang.categoryFilter.activePrivate
-      : lang.categoryFilter.tooltipPrivate;
+  // Update Calendar Switcher button labels
+  const categorySwitchAll = document.getElementById('categorySwitchAll');
+  if (categorySwitchAll) {
+    categorySwitchAll.textContent = lang.categoryFilter.all;
   }
 
-  const categoryBusinessToggle = document.getElementById('categoryBusinessToggle');
-  if (categoryBusinessToggle) {
-    const isActive = categoryBusinessToggle.classList.contains('active');
-    categoryBusinessToggle.title = isActive
-      ? lang.categoryFilter.activeBusiness
-      : lang.categoryFilter.tooltipBusiness;
+  const categorySwitchPrivate = document.getElementById('categorySwitchPrivate');
+  if (categorySwitchPrivate) {
+    categorySwitchPrivate.textContent = lang.categoryFilter.private;
+    categorySwitchPrivate.title = lang.categoryFilter.tooltipPrivate;
+  }
+
+  const categorySwitchBusiness = document.getElementById('categorySwitchBusiness');
+  if (categorySwitchBusiness) {
+    categorySwitchBusiness.textContent = lang.categoryFilter.business;
+    categorySwitchBusiness.title = lang.categoryFilter.tooltipBusiness;
   }
 
   // Update Quick Add Category labels

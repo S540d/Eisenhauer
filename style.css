@@ -2725,3 +2725,47 @@ body.focus-mode .segments {
     margin-right: 2px;
   }
 }
+
+/* Calendar Switcher (Umschalter zwischen Privat- und Arbeits-Kalender) */
+.category-switcher {
+  display: inline-flex;
+  align-items: stretch;
+  background: var(--card-bg);
+  border: 2px solid var(--grid-color);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-right: 4px;
+}
+
+.category-switch-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.category-switch-btn + .category-switch-btn {
+  border-left: 1px solid var(--grid-color);
+}
+
+.category-switch-btn:hover {
+  background: var(--hover-bg);
+}
+
+.category-switch-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .category-switch-btn {
+    padding: 4px 8px;
+    font-size: 0.78rem;
+  }
+}

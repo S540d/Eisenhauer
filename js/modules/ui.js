@@ -708,10 +708,10 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     smartFunctionsToggle.checked = localStorage.getItem('smartFunctionsEnabled') === 'true';
   }
 
-  // Update category filter toggle state
-  const categoryFilterToggle = document.getElementById('categoryFilterToggle');
-  if (categoryFilterToggle) {
-    categoryFilterToggle.checked = localStorage.getItem('categoryFilterEnabled') === 'true';
+  // Update auto-categorize toggle state (defaults to enabled)
+  const autoCategorizeToggle = document.getElementById('autoCategorizeToggle');
+  if (autoCategorizeToggle) {
+    autoCategorizeToggle.checked = localStorage.getItem('autoCategorizeEnabled') !== 'false';
   }
 
   // Update reminders toggle + dropdown state
@@ -793,23 +793,10 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       return;
     }
 
-    // Handle category filter toggle
-    if (target.id === 'categoryFilterToggle') {
+    // Handle auto-categorize toggle (assign new tasks to the active calendar)
+    if (target.id === 'autoCategorizeToggle') {
       const isEnabled = target.checked;
-      localStorage.setItem('categoryFilterEnabled', isEnabled.toString());
-
-      // Show/hide header buttons
-      const privateBtn = document.getElementById('categoryPrivateToggle');
-      const businessBtn = document.getElementById('categoryBusinessToggle');
-      if (privateBtn) privateBtn.style.display = isEnabled ? '' : 'none';
-      if (businessBtn) businessBtn.style.display = isEnabled ? '' : 'none';
-
-      // Clear filter when disabling
-      if (!isEnabled) {
-        localStorage.removeItem('categoryFilter');
-        if (privateBtn) privateBtn.classList.remove('active');
-        if (businessBtn) businessBtn.classList.remove('active');
-      }
+      localStorage.setItem('autoCategorizeEnabled', isEnabled.toString());
 
       if (window.renderTasksCallback) {
         window.renderTasksCallback();
@@ -1191,14 +1178,16 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     dueDateInput.value = '';
   }
 
-  // Show/hide and reset category selector
+  // Show category selector and preselect the active calendar (Privat/Beruflich)
   const categoryConfig = document.getElementById('quickAddCategoryConfig');
-  const categoryEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
   if (categoryConfig) {
-    categoryConfig.style.display = categoryEnabled ? '' : 'none';
+    categoryConfig.style.display = '';
+    // Default to the active calendar so new tasks land in the right category
+    const autoCategorize = localStorage.getItem('autoCategorizeEnabled') !== 'false';
+    const activeCategory = autoCategorize ? localStorage.getItem('categoryFilter') || '' : '';
     const categoryBtns = categoryConfig.querySelectorAll('.category-select-btn');
     categoryBtns.forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.category === '');
+      btn.classList.toggle('active', (btn.dataset.category || '') === activeCategory);
     });
     // Setup category button click handlers
     categoryBtns.forEach((btn) => {
