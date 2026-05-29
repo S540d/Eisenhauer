@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### ✨ Features
+- **Kalender-Umschalter zwischen Privat und Beruflich (#259)**
+  - Sichtbarer Umschalter im Kopfbereich: Alle / Privat / Beruflich
+  - Filtert die angezeigten Aufgaben nach der aktiven Kategorie
+  - Der Quick-Add-Dialog wählt die aktive Kategorie vor; pro Aufgabe überschreibbar (inkl. „Keine")
+  - Ersetzt die zuvor in den Einstellungen versteckten Kategorie-Filter-Buttons
+  - Deutsche und englische Übersetzungen ergänzt (inkl. barrierefreiem Gruppen-Label)
+
+---
+
 ## [1.11.2] - 2026-02-20 🚀 RELEASED (staging)
 
 ### 🐛 Bug Fixes
