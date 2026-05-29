@@ -708,10 +708,20 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     smartFunctionsToggle.checked = localStorage.getItem('smartFunctionsEnabled') === 'true';
   }
 
-  // Update category filter toggle state
-  const categoryFilterToggle = document.getElementById('categoryFilterToggle');
-  if (categoryFilterToggle) {
-    categoryFilterToggle.checked = localStorage.getItem('categoryFilterEnabled') === 'true';
+  // Update reminders toggle + dropdown state
+  const remindersToggle = document.getElementById('remindersToggle');
+  const remindersDaysContainer = document.getElementById('remindersDaysContainer');
+  const remindersDaysSelect = document.getElementById('remindersDaysSelect');
+  if (remindersToggle) {
+    const remindersEnabled = localStorage.getItem('remindersEnabled') === 'true';
+    remindersToggle.checked = remindersEnabled;
+    if (remindersDaysContainer) {
+      remindersDaysContainer.style.display = remindersEnabled ? 'flex' : 'none';
+    }
+    if (remindersDaysSelect) {
+      const stored = localStorage.getItem('reminderDaysBefore');
+      remindersDaysSelect.value = stored !== null ? stored : '';
+    }
   }
 
   // Use event delegation for all personalize modal buttons
@@ -777,26 +787,20 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       return;
     }
 
-    // Handle category filter toggle
-    if (target.id === 'categoryFilterToggle') {
+    // Handle reminders toggle
+    if (target.id === 'remindersToggle') {
       const isEnabled = target.checked;
-      localStorage.setItem('categoryFilterEnabled', isEnabled.toString());
-
-      // Show/hide header buttons
-      const privateBtn = document.getElementById('categoryPrivateToggle');
-      const businessBtn = document.getElementById('categoryBusinessToggle');
-      if (privateBtn) privateBtn.style.display = isEnabled ? '' : 'none';
-      if (businessBtn) businessBtn.style.display = isEnabled ? '' : 'none';
-
-      // Clear filter when disabling
-      if (!isEnabled) {
-        localStorage.removeItem('categoryFilter');
-        if (privateBtn) privateBtn.classList.remove('active');
-        if (businessBtn) businessBtn.classList.remove('active');
-      }
-
-      if (window.renderTasksCallback) {
-        window.renderTasksCallback();
+      if (isEnabled) {
+        if (window.requestRemindersPermission) {
+          window.requestRemindersPermission(target);
+        }
+      } else {
+        localStorage.setItem('remindersEnabled', 'false');
+        const container = document.getElementById('remindersDaysContainer');
+        if (container) container.style.display = 'none';
+        if (window.updateRemindersCallback) {
+          window.updateRemindersCallback(false, null);
+        }
       }
       return;
     }
@@ -807,6 +811,25 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       return;
     }
   };
+
+  // Change handler for reminders days select
+  const existingChangeHandler = personalizeModal._changeHandler;
+  if (existingChangeHandler) {
+    personalizeModal.removeEventListener('change', existingChangeHandler);
+  }
+  const changeHandler = (e) => {
+    if (e.target.id === 'remindersDaysSelect') {
+      const value = e.target.value;
+      if (value === '') return;
+      const daysBefore = Number(value);
+      localStorage.setItem('reminderDaysBefore', String(daysBefore));
+      if (window.updateRemindersCallback) {
+        window.updateRemindersCallback(true, daysBefore);
+      }
+    }
+  };
+  personalizeModal._changeHandler = changeHandler;
+  personalizeModal.addEventListener('change', changeHandler);
 
   // Store handler reference and add listener
   personalizeModal._clickHandler = clickHandler;
@@ -1138,14 +1161,16 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     dueDateInput.value = '';
   }
 
-  // Show/hide and reset category selector
+  // Show category selector and preselect the active calendar (Privat/Beruflich)
   const categoryConfig = document.getElementById('quickAddCategoryConfig');
-  const categoryEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
   if (categoryConfig) {
-    categoryConfig.style.display = categoryEnabled ? '' : 'none';
+    categoryConfig.style.display = '';
+    // Preselect the active calendar so new tasks land in the current view;
+    // the user can still override it (incl. "Keine") per task.
+    const activeCategory = localStorage.getItem('categoryFilter') || '';
     const categoryBtns = categoryConfig.querySelectorAll('.category-select-btn');
     categoryBtns.forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.category === '');
+      btn.classList.toggle('active', (btn.dataset.category || '') === activeCategory);
     });
     // Setup category button click handlers
     categoryBtns.forEach((btn) => {

@@ -3,6 +3,14 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+
+const { showNotificationMock } = vi.hoisted(() => ({
+  showNotificationMock: vi.fn(),
+}));
+
+vi.mock('../../js/modules/notifications.js', () => ({
+  showNotification: showNotificationMock,
+}));
 import {
   DragDropError,
   TaskMoveError,
@@ -63,6 +71,8 @@ describe('ErrorHandler', () => {
   beforeEach(() => {
     ErrorHandler.clearHistory();
     vi.clearAllMocks();
+    window.errorTracker = undefined;
+    window.analytics = undefined;
   });
 
   describe('handleError', () => {
@@ -156,6 +166,112 @@ describe('ErrorHandler', () => {
       expect(stats.byOperation.moveTask).toBe(2);
       expect(stats.byOperation.saveTask).toBe(1);
       expect(stats.recent).toHaveLength(3);
+    });
+  });
+
+  describe('notifications and tracking', () => {
+    it('should show retry action for network errors and execute retry callback', async () => {
+      const retry = vi.fn();
+
+      ErrorHandler.handleNetworkError(new NetworkError('Offline'), {
+        retry,
+      });
+
+      await vi.dynamicImportSettled();
+
+      expect(showNotificationMock).toHaveBeenCalledTimes(1);
+      const notification = showNotificationMock.mock.calls[0][0];
+
+      expect(notification.type).toBe('warning');
+      expect(notification.message).toContain('Netzwerkfehler');
+      expect(notification.actions).toHaveLength(2);
+      expect(notification.actions[0].label).toBe('Erneut versuchen');
+      expect(notification.actions[1]).toEqual({
+        label: 'Schließen',
+        onClick: null,
+      });
+
+      notification.actions[0].onClick();
+      expect(retry).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle retry failures via the generic error handler', async () => {
+      ErrorHandler.handleDragError(new TaskMoveError('Move failed'), {
+        retry: () => {
+          throw new Error('Retry failed');
+        },
+      });
+
+      await vi.dynamicImportSettled();
+
+      expect(showNotificationMock).toHaveBeenCalledTimes(1);
+      const notification = showNotificationMock.mock.calls[0][0];
+      notification.actions[0].onClick();
+
+      await vi.dynamicImportSettled();
+
+      expect(showNotificationMock).toHaveBeenCalledTimes(2);
+      const history = ErrorHandler.getErrorHistory();
+      expect(history).toHaveLength(2);
+      expect(history[1].error.message).toBe('Retry failed');
+      expect(history[1].context.operation).toBe('retry');
+    });
+
+    it('should fall back to alert when notifications fail to render', async () => {
+      showNotificationMock.mockImplementationOnce(() => {
+        throw new Error('Notifications unavailable');
+      });
+
+      ErrorHandler.handleStorageError(new StorageError('quota exceeded'), {});
+
+      await vi.dynamicImportSettled();
+
+      expect(alert).toHaveBeenCalledWith(
+        'Speicherplatz voll. Bitte löschen Sie einige erledigte Aufgaben.'
+      );
+    });
+
+    it('should map permission and generic storage errors to user messages', async () => {
+      ErrorHandler.handleStorageError(new StorageError('permission denied'), {});
+
+      await vi.dynamicImportSettled();
+
+      expect(showNotificationMock).toHaveBeenCalledTimes(1);
+      expect(showNotificationMock.mock.calls[0][0].message).toContain('Keine Berechtigung');
+
+      showNotificationMock.mockClear();
+
+      ErrorHandler.handleStorageError(new StorageError('something else'), {});
+
+      await vi.dynamicImportSettled();
+
+      expect(showNotificationMock).toHaveBeenCalledTimes(1);
+      expect(showNotificationMock.mock.calls[0][0].message).toBe(
+        'Fehler beim Speichern der Daten.'
+      );
+    });
+
+    it('should swallow tracking and analytics failures', () => {
+      window.errorTracker = {
+        captureException: vi.fn(() => {
+          throw new Error('tracking failed');
+        }),
+      };
+      window.analytics = {
+        track: vi.fn(() => {
+          throw new Error('analytics failed');
+        }),
+      };
+
+      expect(() => {
+        ErrorHandler.handleError(new Error('Tracked error'), {
+          silent: true,
+          operation: 'saveTask',
+        });
+      }).not.toThrow();
+
+      expect(window.errorTracker.captureException).toHaveBeenCalledTimes(1);
+      expect(window.analytics.track).toHaveBeenCalledTimes(1);
     });
   });
 });

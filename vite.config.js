@@ -38,14 +38,12 @@ export default defineConfig(({ mode }) => {
 
     plugins: [
       VitePWA({
-        strategies: 'generateSW',
-        registerType: 'autoUpdate',
-        filename: 'service-worker.js',
-        workbox: {
+        strategies: 'injectManifest',
+        srcDir: 'public',
+        filename: 'sw-custom.js',
+        outDir: 'dist',
+        injectManifest: {
           globPatterns: ['**/*.{js,css,html,png,svg,json,ico,woff,woff2}'],
-          cleanupOutdatedCaches: true,
-          // Environment-specific cache name to prevent cross-environment cache pollution
-          cacheId: `eisenhauer-${environment}`,
         },
         manifest: {
           name: 'Eisenhauer Matrix',

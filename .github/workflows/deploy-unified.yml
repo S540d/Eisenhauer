@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # For workflow_run: checkout the branch that triggered CI
           ref: ${{ github.event.workflow_run.head_branch || github.ref }}

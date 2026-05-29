@@ -21,6 +21,8 @@ export const translations = {
       active: 'Fokus-Modus aktiv',
     },
     categoryFilter: {
+      switcherLabel: 'Kalender umschalten',
+      all: 'Alle',
       private: 'Privat',
       business: 'Beruflich',
       tooltipPrivate: 'Nur private Aufgaben anzeigen',
@@ -67,8 +69,19 @@ export const translations = {
       smartFunctionsDesc:
         'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind',
       categoryFilter: 'KATEGORIE-FILTER',
-      categoryFilterLabel: 'Kategorie-Filter aktivieren',
-      categoryFilterDesc: 'Aufgaben als Privat oder Beruflich kategorisieren',
+      categoryFilterDesc:
+        'Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
+      reminders: 'ERINNERUNGEN',
+      remindersLabel: 'Erinnerungen aktivieren',
+      remindersDesc: 'Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum',
+      remindersBefore: 'Erinnerung',
+      remindersDay0: 'Am Tag selbst (9:00 Uhr)',
+      remindersDay1: '1 Tag vorher (9:00 Uhr)',
+      remindersDay2: '2 Tage vorher (9:00 Uhr)',
+      remindersDay3: '3 Tage vorher (9:00 Uhr)',
+      remindersChoose: '— bitte wählen —',
+      remindersDenied: 'Berechtigung verweigert. Bitte in den Browser-Einstellungen erlauben.',
+      remindersNotSupported: 'Dein Browser unterstützt keine Benachrichtigungen.',
     },
     about: {
       title: 'Über',
@@ -179,6 +192,8 @@ export const translations = {
       active: 'Focus mode active',
     },
     categoryFilter: {
+      switcherLabel: 'Switch calendar',
+      all: 'All',
       private: 'Private',
       business: 'Business',
       tooltipPrivate: 'Show only private tasks',
@@ -224,8 +239,19 @@ export const translations = {
       smartFunctionsLabel: 'Enable Smart Functions',
       smartFunctionsDesc: 'Automatically mark tasks as urgent when due within 3 days',
       categoryFilter: 'CATEGORY FILTER',
-      categoryFilterLabel: 'Enable Category Filter',
-      categoryFilterDesc: 'Categorize tasks as Private or Business',
+      categoryFilterDesc:
+        'Switch between All, Private and Business using the header switcher. New tasks are assigned to the active category.',
+      reminders: 'REMINDERS',
+      remindersLabel: 'Enable Reminders',
+      remindersDesc: 'Native notifications for tasks with due dates',
+      remindersBefore: 'Remind me',
+      remindersDay0: 'Same day (9:00 AM)',
+      remindersDay1: '1 day before (9:00 AM)',
+      remindersDay2: '2 days before (9:00 AM)',
+      remindersDay3: '3 days before (9:00 AM)',
+      remindersChoose: '— please select —',
+      remindersDenied: 'Permission denied. Please allow notifications in your browser settings.',
+      remindersNotSupported: 'Your browser does not support notifications.',
     },
     about: {
       title: 'About',
@@ -404,7 +430,7 @@ export function initLoginTranslations() {
   }
 
   // Update Apple Sign In button (if visible)
-  const appleSignInBtn = document.querySelector('button[onclick="signInWithApple()"]');
+  const appleSignInBtn = document.getElementById('appleSignInBtn');
   if (appleSignInBtn) {
     const btnText = appleSignInBtn.childNodes[appleSignInBtn.childNodes.length - 1];
     if (btnText && btnText.nodeType === Node.TEXT_NODE) {
@@ -665,31 +691,32 @@ export function updateLanguageUI(renderAllTasksCallback) {
     personalizeCategoryFilterTitle.textContent = lang.personalize.categoryFilter;
   }
 
-  const categoryFilterLabel = document.getElementById('categoryFilterLabel');
-  if (categoryFilterLabel) {
-    categoryFilterLabel.textContent = lang.personalize.categoryFilterLabel;
-  }
-
   const categoryFilterDesc = document.getElementById('categoryFilterDesc');
   if (categoryFilterDesc) {
     categoryFilterDesc.textContent = lang.personalize.categoryFilterDesc;
   }
 
-  // Update Category Filter header buttons
-  const categoryPrivateToggle = document.getElementById('categoryPrivateToggle');
-  if (categoryPrivateToggle) {
-    const isActive = categoryPrivateToggle.classList.contains('active');
-    categoryPrivateToggle.title = isActive
-      ? lang.categoryFilter.activePrivate
-      : lang.categoryFilter.tooltipPrivate;
+  // Update Calendar Switcher group label (accessibility) + button labels
+  const categorySwitcher = document.getElementById('categorySwitcher');
+  if (categorySwitcher) {
+    categorySwitcher.setAttribute('aria-label', lang.categoryFilter.switcherLabel);
   }
 
-  const categoryBusinessToggle = document.getElementById('categoryBusinessToggle');
-  if (categoryBusinessToggle) {
-    const isActive = categoryBusinessToggle.classList.contains('active');
-    categoryBusinessToggle.title = isActive
-      ? lang.categoryFilter.activeBusiness
-      : lang.categoryFilter.tooltipBusiness;
+  const categorySwitchAll = document.getElementById('categorySwitchAll');
+  if (categorySwitchAll) {
+    categorySwitchAll.textContent = lang.categoryFilter.all;
+  }
+
+  const categorySwitchPrivate = document.getElementById('categorySwitchPrivate');
+  if (categorySwitchPrivate) {
+    categorySwitchPrivate.textContent = lang.categoryFilter.private;
+    categorySwitchPrivate.title = lang.categoryFilter.tooltipPrivate;
+  }
+
+  const categorySwitchBusiness = document.getElementById('categorySwitchBusiness');
+  if (categorySwitchBusiness) {
+    categorySwitchBusiness.textContent = lang.categoryFilter.business;
+    categorySwitchBusiness.title = lang.categoryFilter.tooltipBusiness;
   }
 
   // Update Quick Add Category labels
@@ -849,6 +876,52 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const metricsCancelBtn = document.getElementById('metricsCancelBtn');
   if (metricsCancelBtn) {
     metricsCancelBtn.textContent = lang.metrics.close;
+  }
+
+  // Update Reminders section in Personalize Modal
+  const personalizeRemindersTitle = document.getElementById('personalizeRemindersTitle');
+  if (personalizeRemindersTitle) {
+    personalizeRemindersTitle.textContent = lang.personalize.reminders;
+  }
+
+  const remindersLabel = document.getElementById('remindersLabel');
+  if (remindersLabel) {
+    remindersLabel.textContent = lang.personalize.remindersLabel;
+  }
+
+  const remindersDesc = document.getElementById('remindersDesc');
+  if (remindersDesc) {
+    remindersDesc.textContent = lang.personalize.remindersDesc;
+  }
+
+  const remindersBeforeLabel = document.getElementById('remindersBeforeLabel');
+  if (remindersBeforeLabel) {
+    remindersBeforeLabel.textContent = lang.personalize.remindersBefore;
+  }
+
+  const remindersChooseOption = document.getElementById('remindersChooseOption');
+  if (remindersChooseOption) {
+    remindersChooseOption.textContent = lang.personalize.remindersChoose;
+  }
+
+  const remindersDay0Option = document.getElementById('remindersDay0Option');
+  if (remindersDay0Option) {
+    remindersDay0Option.textContent = lang.personalize.remindersDay0;
+  }
+
+  const remindersDay1Option = document.getElementById('remindersDay1Option');
+  if (remindersDay1Option) {
+    remindersDay1Option.textContent = lang.personalize.remindersDay1;
+  }
+
+  const remindersDay2Option = document.getElementById('remindersDay2Option');
+  if (remindersDay2Option) {
+    remindersDay2Option.textContent = lang.personalize.remindersDay2;
+  }
+
+  const remindersDay3Option = document.getElementById('remindersDay3Option');
+  if (remindersDay3Option) {
+    remindersDay3Option.textContent = lang.personalize.remindersDay3;
   }
 
   // Re-render all tasks to update recurring indicators

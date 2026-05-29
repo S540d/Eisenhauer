@@ -150,7 +150,7 @@ export async function loadGuestTasks() {
 
     // Return empty tasks structure if no data
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
-  } catch (error) {
+  } catch (_error) {
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
   }
 }
@@ -187,7 +187,7 @@ export async function loadUserTasks(userId, db) {
     });
 
     return tasks;
-  } catch (error) {
+  } catch (_error) {
     return { 1: [], 2: [], 3: [], 4: [], 5: [] };
   }
 }
@@ -534,7 +534,7 @@ export async function requestPersistentStorage() {
     try {
       const isPersisted = await navigator.storage.persist();
       return isPersisted;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -550,7 +550,7 @@ export async function checkPersistentStorage() {
     try {
       const isPersisted = await navigator.storage.persisted();
       return isPersisted;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

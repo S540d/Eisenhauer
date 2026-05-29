@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Theme colors from PWA manifest.json -->
-    <color name="colorPrimary">#667eea</color>
-    <color name="colorPrimaryDark">#5568d3</color>
-    <color name="colorAccent">#667eea</color>
-
-    <!-- Background colors -->
-    <color name="backgroundColor">#667eea</color>
-    <color name="splashBackground">#667eea</color>
-    <color name="splashGradientCenter">#764ba2</color>
-
-    <!-- Status bar and navigation bar -->
-    <color name="statusBarColor">#667eea</color>
-    <color name="navigationBarColor">#667eea</color>
+    <!-- All colors #000000 to match PWA manifest.json theme -->
+    <color name="statusBarColor">#000000</color>
+    <color name="navigationBarColor">#000000</color>
 </resources>

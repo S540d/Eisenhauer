@@ -50,6 +50,43 @@ if echo "$STAGED_FILES" | grep -E "package\.json" >/dev/null; then
   fi
 fi
 
+
+# ============================================================================
+# 5. Security: block sensitive files from being committed
+# ============================================================================
+ALL_STAGED=$(git diff --cached --name-only)
+
+# Block keystore files
+KEYSTORE=$(echo "$ALL_STAGED" | grep -E '\.(jks|keystore|p12|pfx)$' || true)
+if [ -n "$KEYSTORE" ]; then
+  echo "❌ Commit blocked: Keystore file detected!"
+  echo "$KEYSTORE"
+  exit 1
+fi
+
+# Block docs/private/ files
+PRIVATE_DOCS=$(echo "$ALL_STAGED" | grep '^docs/private/' || true)
+if [ -n "$PRIVATE_DOCS" ]; then
+  echo "❌ Commit blocked: Files from docs/private/ cannot be committed."
+  echo "$PRIVATE_DOCS"
+  exit 1
+fi
+
+# Block real .env files (only .env.*.example are allowed) — skip deletions (D status)
+ENV_FILES=$(git diff --cached --name-status | grep -E '^\s*[^D]\s+\.env\.' | awk '{print $2}' | grep -v '\.example$' || true)
+if [ -n "$ENV_FILES" ]; then
+  echo "❌ Commit blocked: .env file with real credentials detected!"
+  echo "$ENV_FILES"
+  echo "Use .env.*.example files to document the required structure."
+  exit 1
+fi
+
+# Warn on hardcoded keystore passwords in staged diff
+if git diff --cached | grep -Ei '^\+.*(keystorePassword|keyPassword|storePassword)\s*=\s*\S' 2>/dev/null | grep -v '^\+.*secrets\.' | grep -v '^\+.*#'; then
+  echo "❌ Commit blocked: Hardcoded keystore password detected in diff!"
+  exit 1
+fi
+
 echo ""
 echo "✅ Pre-commit checks passed!"
 echo ""

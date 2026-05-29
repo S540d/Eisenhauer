@@ -75,6 +75,13 @@ class Store {
       draggedTask: null,
       dragSource: null,
       dragTarget: null,
+
+      // Reminders
+      remindersEnabled: localStorage.getItem('remindersEnabled') === 'true',
+      reminderDaysBefore:
+        localStorage.getItem('reminderDaysBefore') !== null
+          ? Number(localStorage.getItem('reminderDaysBefore'))
+          : null,
     };
 
     /**
@@ -235,7 +242,7 @@ class Store {
         // For objects/arrays, use JSON stringify for deep comparison
         try {
           return JSON.stringify(newValue) !== JSON.stringify(prevValue);
-        } catch (e) {
+        } catch (_e) {
           // Fallback to reference comparison if JSON.stringify fails
           return newValue !== prevValue;
         }

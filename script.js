@@ -48,6 +48,7 @@ import {
   moveTask,
   toggleTask,
   getTasks,
+  getAllTasks,
   setAllTasks,
   reorderTask,
   applySmartRules,
@@ -69,7 +70,6 @@ import {
 } from './js/modules/storage.js';
 import {
   renderAllTasks,
-  openModal,
   closeModal,
   openQuickAddModal,
   openSettingsModal,
@@ -84,6 +84,16 @@ import {
 } from './js/modules/ui.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
+import {
+  isSupported as remindersSupported,
+  requestPermission as requestReminderPermission,
+  getPermission,
+  loadReminderSettings,
+  saveReminderSettings,
+  scheduleReminders,
+  cancelReminders,
+  syncPermissionState,
+} from './js/modules/reminder.js';
 import { KeyboardDragManager } from './js/modules/accessibility.js';
 import {
   uploadBackup,
@@ -109,13 +119,19 @@ let isGuestMode = false;
 let keyboardDragManager = null;
 
 // ============================================
-// Expose Functions to Window
+// Bind Auth UI & Expose Globals
 // ============================================
-// Bind Auth functions for onclick handlers in HTML
-// These are now properly exported from auth.js module (no more window._ workarounds)
-window.signInWithGoogle = signInWithGoogle;
-window.signInWithApple = signInWithApple;
-window.continueAsGuest = continueAsGuest;
+function getRequiredElement(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Required auth UI element "#${id}" not found. Check the DOM ID.`);
+  return el;
+}
+
+// Auth buttons wired via addEventListener (CSP-compatible, no inline handlers)
+getRequiredElement('googleSignInBtn').addEventListener('click', signInWithGoogle);
+getRequiredElement('appleSignInBtn').addEventListener('click', signInWithApple);
+getRequiredElement('guestModeBtn').addEventListener('click', continueAsGuest);
+// These remain on window because they are called from other modules
 window.signOut = signOut;
 window.showLogin = showLogin;
 window.showApp = showApp;
@@ -158,6 +174,12 @@ async function loadAllTasks() {
     const loadedTasks = await loadGuestTasks();
     setAllTasks(loadedTasks);
   }
+
+  // Schedule reminders after tasks are loaded (if reminders were active on app open)
+  if (window._pendingReminderDays !== undefined && window._pendingReminderDays !== null) {
+    scheduleReminders(getAllTasks(), window._pendingReminderDays, getCurrentLanguage());
+    window._pendingReminderDays = undefined;
+  }
 }
 
 /**
@@ -166,6 +188,9 @@ async function loadAllTasks() {
 function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null, category = null) {
   if (!taskText || taskText.trim() === '') return;
 
+  // The Quick Add modal already encodes the category choice (it preselects the
+  // active calendar and lets the user override it, including "Keine"), so the
+  // explicitly passed category is used as-is and never silently overridden.
   const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate, category);
 
   // Save to storage based on mode
@@ -448,9 +473,8 @@ function renderTasksWithCallbacks() {
     ? applySmartRules(tasks, true, SMART_RULES.urgentThresholdDays)
     : tasks;
 
-  // Apply category filter if active
-  const categoryFilterEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
-  const categoryFilter = categoryFilterEnabled ? localStorage.getItem('categoryFilter') : null;
+  // Apply category filter based on the active calendar switcher
+  const categoryFilter = localStorage.getItem('categoryFilter');
   if (categoryFilter) {
     tasksToRender = filterByCategory(tasksToRender, categoryFilter);
   }
@@ -459,6 +483,16 @@ function renderTasksWithCallbacks() {
 
   // Setup drop zones for desktop drag & drop
   setupDropZones(handleMoveTask);
+
+  // Keep reminder schedule in sync with current task list
+  rescheduleRemindersIfActive();
+}
+
+function rescheduleRemindersIfActive() {
+  const { enabled, daysBefore } = loadReminderSettings();
+  if (enabled && daysBefore !== null && getPermission() === 'granted') {
+    scheduleReminders(getAllTasks(), daysBefore, getCurrentLanguage());
+  }
 }
 
 // ============================================
@@ -554,77 +588,39 @@ function setupEventListeners() {
     focusModeToggle.title = focusModeEnabled ? lang.focusMode.active : lang.focusMode.tooltip;
   }
 
-  // Category Filter Buttons
-  const categoryPrivateToggle = document.getElementById('categoryPrivateToggle');
-  const categoryBusinessToggle = document.getElementById('categoryBusinessToggle');
+  // Calendar Switcher (Umschalter zwischen Privat- und Arbeits-Kalender)
+  const categorySwitcher = document.getElementById('categorySwitcher');
+  if (categorySwitcher) {
+    const switchButtons = categorySwitcher.querySelectorAll('.category-switch-btn');
 
-  // Show buttons if feature enabled
-  const categoryFilterEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
-  if (categoryFilterEnabled) {
-    if (categoryPrivateToggle) categoryPrivateToggle.style.display = '';
-    if (categoryBusinessToggle) categoryBusinessToggle.style.display = '';
-
-    // Load saved filter state
-    const savedCategoryFilter = localStorage.getItem('categoryFilter');
-    if (savedCategoryFilter === 'private' && categoryPrivateToggle) {
-      categoryPrivateToggle.classList.add('active');
-    } else if (savedCategoryFilter === 'business' && categoryBusinessToggle) {
-      categoryBusinessToggle.classList.add('active');
-    }
-  }
-
-  if (categoryPrivateToggle) {
-    categoryPrivateToggle.addEventListener('click', () => {
-      const isActive = categoryPrivateToggle.classList.contains('active');
-
-      categoryPrivateToggle.classList.toggle('active', !isActive);
-      categoryBusinessToggle.classList.remove('active');
-
-      if (isActive) {
-        localStorage.removeItem('categoryFilter');
-      } else {
-        localStorage.setItem('categoryFilter', 'private');
-      }
-
-      const lang = getTranslation();
-      categoryPrivateToggle.title = !isActive
-        ? lang.categoryFilter.activePrivate
-        : lang.categoryFilter.tooltipPrivate;
-
-      renderTasksWithCallbacks();
+    // Restore the active calendar from the saved state ('' = all)
+    const savedCategoryFilter = localStorage.getItem('categoryFilter') || '';
+    switchButtons.forEach((btn) => {
+      btn.classList.toggle('active', (btn.dataset.category || '') === savedCategoryFilter);
+      btn.setAttribute('aria-pressed', (btn.dataset.category || '') === savedCategoryFilter);
     });
 
-    const lang = getTranslation();
-    categoryPrivateToggle.title = categoryPrivateToggle.classList.contains('active')
-      ? lang.categoryFilter.activePrivate
-      : lang.categoryFilter.tooltipPrivate;
-  }
+    switchButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const category = btn.dataset.category || '';
 
-  if (categoryBusinessToggle) {
-    categoryBusinessToggle.addEventListener('click', () => {
-      const isActive = categoryBusinessToggle.classList.contains('active');
+        // Update active state
+        switchButtons.forEach((b) => {
+          const isTarget = b === btn;
+          b.classList.toggle('active', isTarget);
+          b.setAttribute('aria-pressed', isTarget);
+        });
 
-      categoryBusinessToggle.classList.toggle('active', !isActive);
-      categoryPrivateToggle.classList.remove('active');
+        // Persist selection ('' clears the filter to show all calendars)
+        if (category) {
+          localStorage.setItem('categoryFilter', category);
+        } else {
+          localStorage.removeItem('categoryFilter');
+        }
 
-      if (isActive) {
-        localStorage.removeItem('categoryFilter');
-      } else {
-        localStorage.setItem('categoryFilter', 'business');
-      }
-
-      const lang = getTranslation();
-      categoryBusinessToggle.title = !isActive
-        ? lang.categoryFilter.activeBusiness
-        : lang.categoryFilter.tooltipBusiness;
-
-      renderTasksWithCallbacks();
+        renderTasksWithCallbacks();
+      });
     });
-
-    const lang = getTranslation();
-    categoryBusinessToggle.title = categoryBusinessToggle.classList.contains('active')
-      ? lang.categoryFilter.activeBusiness
-      : lang.categoryFilter.tooltipBusiness;
   }
 
   // Settings button (header)
@@ -673,6 +669,53 @@ function setupEventListeners() {
 
   // Expose renderTasksWithCallbacks for UI to trigger re-render
   window.renderTasksCallback = renderTasksWithCallbacks;
+
+  // Reminder callbacks for ui.js
+  window.updateRemindersCallback = (enabled, daysBefore) => {
+    saveReminderSettings(enabled, daysBefore);
+    if (enabled && daysBefore !== null) {
+      scheduleReminders(getAllTasks(), daysBefore, getCurrentLanguage());
+    } else {
+      cancelReminders();
+    }
+  };
+
+  window.requestRemindersPermission = async (toggleElement) => {
+    const lang = getCurrentLanguage();
+    const t = translations[lang];
+
+    if (!remindersSupported()) {
+      showWarning(t.personalize.remindersNotSupported);
+      toggleElement.checked = false;
+      return;
+    }
+
+    const permission = await requestReminderPermission();
+    if (permission === 'granted') {
+      localStorage.setItem('remindersEnabled', 'true');
+      const container = document.getElementById('remindersDaysContainer');
+      if (container) container.style.display = 'flex';
+      // Don't schedule yet — user still needs to pick daysBefore from dropdown
+    } else {
+      showWarning(t.personalize.remindersDenied);
+      toggleElement.checked = false;
+      localStorage.setItem('remindersEnabled', 'false');
+    }
+  };
+
+  // On app open: sync permission state + reschedule if active
+  const remindersSynced = syncPermissionState();
+  if (remindersSynced) {
+    const { daysBefore } = loadReminderSettings();
+    if (daysBefore !== null) {
+      // Reschedule after tasks are loaded (tasks may not be ready yet, handled below)
+      window._pendingReminderDays = daysBefore;
+    }
+  } else if (getPermission() === 'denied' && localStorage.getItem('remindersEnabled') === 'true') {
+    // Was enabled but permission revoked — toggle was already reset by syncPermissionState
+    const remindersToggle = document.getElementById('remindersToggle');
+    if (remindersToggle) remindersToggle.checked = false;
+  }
 
   // Language toggle buttons in settings modal (legacy support)
   const langButtons = document.querySelectorAll('.lang-btn');
@@ -1152,7 +1195,7 @@ async function initApp() {
       updateOnlineStatus();
     }
     // If neither guest nor logged in, auth.js will show login screen
-  } catch (error) {
+  } catch (_error) {
     // Error loading cached auth state
   }
 

@@ -7,6 +7,67 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### ✨ Features
+- **Kalender-Umschalter zwischen Privat und Beruflich (#259)**
+  - Sichtbarer Umschalter im Kopfbereich: Alle / Privat / Beruflich
+  - Filtert die angezeigten Aufgaben nach der aktiven Kategorie
+  - Der Quick-Add-Dialog wählt die aktive Kategorie vor; pro Aufgabe überschreibbar (inkl. „Keine")
+  - Ersetzt die zuvor in den Einstellungen versteckten Kategorie-Filter-Buttons
+  - Deutsche und englische Übersetzungen ergänzt (inkl. barrierefreiem Gruppen-Label)
+
+---
+
+## [1.11.2] - 2026-02-20 🚀 RELEASED (staging)
+
+### 🐛 Bug Fixes
+- **iOS Layout Fix (#224)**
+  - Header wurde auf iPadOS/iOS hinter der Browser-Toolbar verborgen
+  - `viewport-fit=cover` zum Viewport-Meta-Tag hinzugefügt
+  - `env(safe-area-inset-top)` im Header-Padding, `env(safe-area-inset-bottom)` im Undo-Toast
+- **ESLint 0 Warnings**
+  - Alle 11 pre-existing Warnings behoben: Unused catch variables mit `_`-Prefix versehen
+  - Ungenutzten `openModal`-Import in `script.js` entfernt
+  - Service-Worker-Globals für `sw-custom.js` registriert
+
+---
+
+## [1.11.1] - 2026-02-15
+
+### 🔧 Maintenance
+- Version Bump für Play Store Release (versionCode 22)
+
+---
+
+## [1.11.0] - 2026-02-15
+
+### ✨ New Features
+- **Web Push Reminders (#225)**
+  - Push-Benachrichtigungen für Aufgaben mit Fälligkeitsdatum
+  - Service Worker Integration, Permission-Flow in der App
+  - Erinnerung 1 Tag vor Fälligkeit
+- **CI/CD Verbesserungen (#214)**
+  - Harte Fehler bei Lint und Tests in der CI-Pipeline erzwungen
+  - Deploy nur nach erfolgreich durchgelaufenen Quality-Checks
+
+---
+
+## [1.10.2] - 2026-02-10
+
+### 🔧 Maintenance
+- Version Bump für Play Store Release (versionCode 20)
+
+---
+
+## [1.10.1] - 2026-02-07
+
+### 🔧 Maintenance
+- Version Bump für Play Store Release (versionCode 19)
+- Android Build Info liest Version aus `build.gradle` statt `version.json`
+
+---
+
 ## [1.10.0] - 2026-02-04 🚀 RELEASED
 
 ### 🐛 Bug Fixes

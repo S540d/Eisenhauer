@@ -210,8 +210,12 @@ describe('Translations', () => {
   });
 });
 
-// Import updateLanguageUI for DOM testing
-import { updateLanguageUI } from '../../js/modules/translations.js';
+// Import DOM helpers for testing
+import {
+  updateLanguageUI,
+  detectBrowserLanguage,
+  initLoginTranslations,
+} from '../../js/modules/translations.js';
 import { beforeEach, afterEach, vi } from 'vitest';
 
 describe('updateLanguageUI', () => {
@@ -582,5 +586,69 @@ describe('updateLanguageUI', () => {
       const input = document.getElementById('taskInput');
       expect(input.placeholder).toBe('Neue Aufgabe');
     });
+  });
+});
+
+describe('detectBrowserLanguage', () => {
+  afterEach(() => {
+    Object.defineProperty(navigator, 'language', { configurable: true, value: '' });
+  });
+
+  it('should detect supported browser languages', () => {
+    Object.defineProperty(navigator, 'language', {
+      configurable: true,
+      value: 'de-DE',
+    });
+
+    expect(detectBrowserLanguage()).toBe('de');
+  });
+
+  it('should fall back to English for unsupported browser languages', () => {
+    Object.defineProperty(navigator, 'language', {
+      configurable: true,
+      value: 'fr-FR',
+    });
+
+    expect(detectBrowserLanguage()).toBe('en');
+  });
+});
+
+describe('initLoginTranslations', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  it('should update login screen texts for the active language', () => {
+    document.body.innerHTML = `
+      <div id="loginScreen"><h1>Old title</h1></div>
+      <p class="login-subtitle">Old subtitle</p>
+      <button id="googleSignInBtn"><span>G</span>Old Google</button>
+      <button id="appleSignInBtn"><span>A</span>Old Apple</button>
+      <button id="guestModeBtn"><span>G</span>Old Guest</button>
+      <p class="login-info">Old info</p>
+    `;
+    setLanguage('de');
+
+    initLoginTranslations();
+
+    expect(document.querySelector('#loginScreen h1').textContent).toBe('Eisenhauer Matrix');
+    expect(document.querySelector('.login-subtitle').textContent).toBe(
+      'Organisiere deine Aufgaben effizient'
+    );
+    expect(document.getElementById('googleSignInBtn').textContent).toContain('Mit Google anmelden');
+    expect(document.getElementById('appleSignInBtn').textContent).toContain('Mit Apple anmelden');
+    expect(document.getElementById('guestModeBtn').textContent).toContain('Als Gast fortfahren');
+    expect(document.querySelector('.login-info').textContent).toContain('Melde dich an');
+  });
+
+  it('should ignore buttons without trailing text nodes and missing elements', () => {
+    document.body.innerHTML = `
+      <div id="loginScreen"><h1>Old title</h1></div>
+      <button id="googleSignInBtn"><span>Only icon</span></button>
+    `;
+    setLanguage('en');
+
+    expect(() => initLoginTranslations()).not.toThrow();
+    expect(document.getElementById('googleSignInBtn').textContent).toBe('Only icon');
   });
 });
