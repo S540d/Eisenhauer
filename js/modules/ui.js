@@ -708,12 +708,6 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     smartFunctionsToggle.checked = localStorage.getItem('smartFunctionsEnabled') === 'true';
   }
 
-  // Update auto-categorize toggle state (defaults to enabled)
-  const autoCategorizeToggle = document.getElementById('autoCategorizeToggle');
-  if (autoCategorizeToggle) {
-    autoCategorizeToggle.checked = localStorage.getItem('autoCategorizeEnabled') !== 'false';
-  }
-
   // Update reminders toggle + dropdown state
   const remindersToggle = document.getElementById('remindersToggle');
   const remindersDaysContainer = document.getElementById('remindersDaysContainer');
@@ -787,17 +781,6 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       localStorage.setItem('smartFunctionsEnabled', isEnabled.toString());
 
       // Trigger re-render if callback is provided
-      if (window.renderTasksCallback) {
-        window.renderTasksCallback();
-      }
-      return;
-    }
-
-    // Handle auto-categorize toggle (assign new tasks to the active calendar)
-    if (target.id === 'autoCategorizeToggle') {
-      const isEnabled = target.checked;
-      localStorage.setItem('autoCategorizeEnabled', isEnabled.toString());
-
       if (window.renderTasksCallback) {
         window.renderTasksCallback();
       }
@@ -1182,9 +1165,9 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   const categoryConfig = document.getElementById('quickAddCategoryConfig');
   if (categoryConfig) {
     categoryConfig.style.display = '';
-    // Default to the active calendar so new tasks land in the right category
-    const autoCategorize = localStorage.getItem('autoCategorizeEnabled') !== 'false';
-    const activeCategory = autoCategorize ? localStorage.getItem('categoryFilter') || '' : '';
+    // Preselect the active calendar so new tasks land in the current view;
+    // the user can still override it (incl. "Keine") per task.
+    const activeCategory = localStorage.getItem('categoryFilter') || '';
     const categoryBtns = categoryConfig.querySelectorAll('.category-select-btn');
     categoryBtns.forEach((btn) => {
       btn.classList.toggle('active', (btn.dataset.category || '') === activeCategory);

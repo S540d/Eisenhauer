@@ -187,23 +187,10 @@ async function loadAllTasks() {
 function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null, category = null) {
   if (!taskText || taskText.trim() === '') return;
 
-  // Default new tasks to the active calendar (Privat/Beruflich) when auto-assign is enabled
-  let effectiveCategory = category;
-  if (!effectiveCategory && localStorage.getItem('autoCategorizeEnabled') !== 'false') {
-    const activeCategory = localStorage.getItem('categoryFilter');
-    if (activeCategory) {
-      effectiveCategory = activeCategory;
-    }
-  }
-
-  const task = addTaskToSegment(
-    taskText,
-    segment,
-    recurringConfig,
-    null,
-    dueDate,
-    effectiveCategory
-  );
+  // The Quick Add modal already encodes the category choice (it preselects the
+  // active calendar and lets the user override it, including "Keine"), so the
+  // explicitly passed category is used as-is and never silently overridden.
+  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate, category);
 
   // Save to storage based on mode
   if (currentUser && db && !isGuestMode) {

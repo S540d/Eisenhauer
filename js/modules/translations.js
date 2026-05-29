@@ -21,6 +21,7 @@ export const translations = {
       active: 'Fokus-Modus aktiv',
     },
     categoryFilter: {
+      switcherLabel: 'Kalender umschalten',
       all: 'Alle',
       private: 'Privat',
       business: 'Beruflich',
@@ -68,9 +69,8 @@ export const translations = {
       smartFunctionsDesc:
         'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind',
       categoryFilter: 'KATEGORIE-FILTER',
-      categoryFilterLabel: 'Neue Aufgaben automatisch zuordnen',
       categoryFilterDesc:
-        'Über den Umschalter im Kopf zwischen Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
+        'Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
       reminders: 'ERINNERUNGEN',
       remindersLabel: 'Erinnerungen aktivieren',
       remindersDesc: 'Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum',
@@ -192,6 +192,7 @@ export const translations = {
       active: 'Focus mode active',
     },
     categoryFilter: {
+      switcherLabel: 'Switch calendar',
       all: 'All',
       private: 'Private',
       business: 'Business',
@@ -238,9 +239,8 @@ export const translations = {
       smartFunctionsLabel: 'Enable Smart Functions',
       smartFunctionsDesc: 'Automatically mark tasks as urgent when due within 3 days',
       categoryFilter: 'CATEGORY FILTER',
-      categoryFilterLabel: 'Auto-assign new tasks',
       categoryFilterDesc:
-        'Switch between Private and Business using the header switcher. New tasks are assigned to the active category.',
+        'Switch between All, Private and Business using the header switcher. New tasks are assigned to the active category.',
       reminders: 'REMINDERS',
       remindersLabel: 'Enable Reminders',
       remindersDesc: 'Native notifications for tasks with due dates',
@@ -691,17 +691,17 @@ export function updateLanguageUI(renderAllTasksCallback) {
     personalizeCategoryFilterTitle.textContent = lang.personalize.categoryFilter;
   }
 
-  const categoryFilterLabel = document.getElementById('categoryFilterLabel');
-  if (categoryFilterLabel) {
-    categoryFilterLabel.textContent = lang.personalize.categoryFilterLabel;
-  }
-
   const categoryFilterDesc = document.getElementById('categoryFilterDesc');
   if (categoryFilterDesc) {
     categoryFilterDesc.textContent = lang.personalize.categoryFilterDesc;
   }
 
-  // Update Calendar Switcher button labels
+  // Update Calendar Switcher group label (accessibility) + button labels
+  const categorySwitcher = document.getElementById('categorySwitcher');
+  if (categorySwitcher) {
+    categorySwitcher.setAttribute('aria-label', lang.categoryFilter.switcherLabel);
+  }
+
   const categorySwitchAll = document.getElementById('categorySwitchAll');
   if (categorySwitchAll) {
     categorySwitchAll.textContent = lang.categoryFilter.all;
