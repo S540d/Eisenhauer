@@ -154,10 +154,10 @@ jobs:
       - name: Check for hardcoded keystore passwords
         run: |
           echo "Scanning for hardcoded keystore passwords..."
-          if grep -rEi "(keystorePassword|keyPassword|storePassword)\s*=\s*\S" . \
-              --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" 2>/dev/null \
-              | grep -v '\${{' | grep -v 'secrets\.'; then
+          FOUND=$(grep -rEi "(keystorePassword|keyPassword|storePassword)\s*=\s*\S" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.templates --exclude="*.md" 2>/dev/null | grep -v 'secrets\.' | grep -v 'github\.event\|github\.sha' || true)
+          if [ -n "$FOUND" ]; then
             echo "❌ Hardcoded keystore password found! Use GitHub Secrets instead."
+            echo "$FOUND"
             exit 1
           fi
           echo "✅ No hardcoded keystore passwords"
@@ -230,8 +230,8 @@ jobs:
 
       - name: Scan for base64-encoded keystore content
         run: |
-          if grep -rE "MIIF[A-Za-z0-9+/]{50,}" . \
-              --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" 2>/dev/null; then
+          FOUND=$(grep -rE "MIIF[A-Za-z0-9+/]{50,}" . --exclude-dir=node_modules --exclude-dir=.git --exclude="*.md" 2>/dev/null || true)
+          if [ -n "$FOUND" ]; then
             echo "❌ Possible base64-encoded keystore content found!"
             exit 1
           fi

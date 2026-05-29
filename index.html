@@ -166,48 +166,37 @@
             <circle cx="12" cy="12" r="3" />
           </svg>
         </button>
-        <button
-          id="categoryPrivateToggle"
-          class="focus-mode-toggle category-filter-btn"
-          title="Privat"
-          aria-label="Filter private tasks"
-          style="display: none"
+        <div
+          id="categorySwitcher"
+          class="category-switcher"
+          role="group"
+          aria-label="Kalender umschalten"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+          <button
+            type="button"
+            id="categorySwitchAll"
+            class="category-switch-btn active"
+            data-category=""
           >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-        </button>
-        <button
-          id="categoryBusinessToggle"
-          class="focus-mode-toggle category-filter-btn"
-          title="Beruflich"
-          aria-label="Filter business tasks"
-          style="display: none"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            Alle
+          </button>
+          <button
+            type="button"
+            id="categorySwitchPrivate"
+            class="category-switch-btn"
+            data-category="private"
           >
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-          </svg>
-        </button>
+            Privat
+          </button>
+          <button
+            type="button"
+            id="categorySwitchBusiness"
+            class="category-switch-btn"
+            data-category="business"
+          >
+            Beruflich
+          </button>
+        </div>
         <button
           id="settingsBtnHeader"
           class="settings-btn-header"
@@ -654,17 +643,14 @@
 
         <div class="settings-separator"></div>
 
-        <!-- Category Filter Settings -->
+        <!-- Category Switcher Info -->
         <div class="settings-section">
           <h4 class="settings-section-title" id="personalizeCategoryFilterTitle">
             KATEGORIE-FILTER
           </h4>
-          <label class="smart-functions-toggle">
-            <input type="checkbox" id="categoryFilterToggle" />
-            <span id="categoryFilterLabel">Kategorie-Filter aktivieren</span>
-          </label>
           <p class="settings-info" id="categoryFilterDesc">
-            Aufgaben als Privat oder Beruflich kategorisieren
+            Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben
+            werden der aktiven Kategorie zugeordnet.
           </p>
         </div>
 

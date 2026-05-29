@@ -17,6 +17,7 @@ export default defineConfig({
         'js/modules/notifications.js',
         'js/modules/error-handler.js',
         'js/modules/translations.js',
+        'js/modules/tasks.js',
         'js/modules/version.js',
       ],
       exclude: [
@@ -34,7 +35,6 @@ export default defineConfig({
         'js/modules/firebase-init.js',
         'js/modules/offline-queue.js',
         'js/modules/drag-*.js',
-        'js/modules/tasks.js',
         'js/modules/ui.js',
         'js/modules/accessibility.js',
       ],
