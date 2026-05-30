@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.11.2 (af60b82d) built at 1776883095141 -->
+<!-- Cache-Busting Info: v1.11.2 (b1ba0a0a) built at 1780176984153 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="af60b82d" /><meta name="build-time" content="1776883095141" />
+    <meta name="build-hash" content="b1ba0a0a" /><meta name="build-time" content="1780176984153" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/Eisenhauer/testing/assets/manifest-BsPr_CvW.json" />
@@ -46,9 +46,9 @@
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-BioOR9fJ.js"></script>
+    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-CPpmun3d.js"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/testing/assets/firebase-EMBLhseW.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/testing/assets/index-CFnGlB93.css">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/testing/assets/index-CMLQ-wmF.css">
   <link rel="manifest" href="/Eisenhauer/testing/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/testing/registerSW.js"></script></head>
   <body>
     <!-- Splash Screen -->
@@ -170,48 +170,37 @@
             <circle cx="12" cy="12" r="3" />
           </svg>
         </button>
-        <button
-          id="categoryPrivateToggle"
-          class="focus-mode-toggle category-filter-btn"
-          title="Privat"
-          aria-label="Filter private tasks"
-          style="display: none"
+        <div
+          id="categorySwitcher"
+          class="category-switcher"
+          role="group"
+          aria-label="Kalender umschalten"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+          <button
+            type="button"
+            id="categorySwitchAll"
+            class="category-switch-btn active"
+            data-category=""
           >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-        </button>
-        <button
-          id="categoryBusinessToggle"
-          class="focus-mode-toggle category-filter-btn"
-          title="Beruflich"
-          aria-label="Filter business tasks"
-          style="display: none"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            Alle
+          </button>
+          <button
+            type="button"
+            id="categorySwitchPrivate"
+            class="category-switch-btn"
+            data-category="private"
           >
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-          </svg>
-        </button>
+            Privat
+          </button>
+          <button
+            type="button"
+            id="categorySwitchBusiness"
+            class="category-switch-btn"
+            data-category="business"
+          >
+            Beruflich
+          </button>
+        </div>
         <button
           id="settingsBtnHeader"
           class="settings-btn-header"
@@ -658,17 +647,14 @@
 
         <div class="settings-separator"></div>
 
-        <!-- Category Filter Settings -->
+        <!-- Category Switcher Info -->
         <div class="settings-section">
           <h4 class="settings-section-title" id="personalizeCategoryFilterTitle">
             KATEGORIE-FILTER
           </h4>
-          <label class="smart-functions-toggle">
-            <input type="checkbox" id="categoryFilterToggle" />
-            <span id="categoryFilterLabel">Kategorie-Filter aktivieren</span>
-          </label>
           <p class="settings-info" id="categoryFilterDesc">
-            Aufgaben als Privat oder Beruflich kategorisieren
+            Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben
+            werden der aktiven Kategorie zugeordnet.
           </p>
         </div>
 
@@ -924,126 +910,6 @@
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
 
     <!-- Register Service Worker with Cache Busting -->
-    <script>
-      // Only register service worker in production builds (not in Vite dev mode)
-      // Dev mode check: explicit localhost-style hosts instead of relying on port
-      const devHosts = ['localhost', '127.0.0.1', '[::1]'];
-      const isProduction = !devHosts.includes(window.location.hostname);
-
-      if ('serviceWorker' in navigator && isProduction) {
-        let refreshing = false;
-
-        // Detect current environment from URL path using robust path matching
-        const currentPath = window.location.pathname;
-        const pathSegments = currentPath.split('/').filter(Boolean);
-        let currentEnvironment = 'production';
-
-        // Use lastIndexOf to find the rightmost occurrence of staging/testing
-        const stagingIndex = pathSegments.lastIndexOf('staging');
-        const testingIndex = pathSegments.lastIndexOf('testing');
-
-        if (stagingIndex !== -1 && stagingIndex > testingIndex) {
-          currentEnvironment = 'staging';
-        } else if (testingIndex !== -1) {
-          currentEnvironment = 'testing';
-        }
-
-        // Get build hash from meta tag (added by post-build.js)
-        const buildHashElement = document.querySelector('meta[name="build-hash"]');
-        const currentBuildHash = buildHashElement
-          ? buildHashElement.content
-          : Date.now().toString();
-
-        // Store current environment in localStorage
-        const cachedEnvironment = localStorage.getItem('sw-environment');
-        const environmentChanged =
-          cachedEnvironment !== null && cachedEnvironment !== currentEnvironment;
-        const isFirstVisit = cachedEnvironment === null;
-
-        // Store current build hash in localStorage (environment-specific key)
-        const buildHashKey = `sw-build-hash-${currentEnvironment}`;
-        const cachedBuildHash = localStorage.getItem(buildHashKey);
-        const buildHashChanged = cachedBuildHash !== null && cachedBuildHash !== currentBuildHash;
-
-        // Clear caches if environment changed, build hash changed, or first visit
-        const shouldClearCache = environmentChanged || buildHashChanged || isFirstVisit;
-
-        if (shouldClearCache) {
-          const reason = environmentChanged
-            ? `Environment changed (${cachedEnvironment} → ${currentEnvironment})`
-            : buildHashChanged
-              ? `Build hash changed (${cachedBuildHash} → ${currentBuildHash})`
-              : 'First visit - establishing fresh cache';
-          console.log(`[Service Worker] ${reason}. Clearing caches...`);
-
-          // Clear all caches to force fresh content
-          if ('caches' in window) {
-            caches.keys().then((names) => {
-              names.forEach((name) => {
-                caches.delete(name);
-              });
-            });
-          }
-
-          // Always clear old build hashes from other environments (not just on environment change)
-          ['production', 'staging', 'testing'].forEach((env) => {
-            if (env !== currentEnvironment) {
-              localStorage.removeItem(`sw-build-hash-${env}`);
-            }
-          });
-        }
-
-        localStorage.setItem('sw-environment', currentEnvironment);
-        localStorage.setItem(buildHashKey, currentBuildHash);
-
-        // Reload page when new service worker takes over
-        // ONLY if it's not the first load to avoid reload loops
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (refreshing) return;
-
-          // Only reload if we already had a controller (i.e., this is an update, not first install)
-          // and if we haven't reloaded in this session yet
-          const hasController = !!navigator.serviceWorker.controller;
-          const sessionReloaded = sessionStorage.getItem('sw-reloaded');
-
-          if (hasController && !sessionReloaded) {
-            refreshing = true;
-            sessionStorage.setItem('sw-reloaded', 'true');
-            console.log('[Service Worker] Controller changed, reloading page...');
-            window.location.reload();
-          }
-        });
-
-        window.addEventListener('load', () => {
-          // Register with cache busting query parameter
-          const swUrl = `./service-worker.js?v=${currentBuildHash}`;
-
-          navigator.serviceWorker
-            .register(swUrl)
-            .then((registration) => {
-              console.log('[Service Worker] Registered:', swUrl);
-
-              // Check for updates on page load (less aggressive)
-              if (registration.active) {
-                registration.update();
-              }
-
-              // Check for updates every 60 seconds (less aggressive than 10s)
-              const updateInterval = setInterval(() => {
-                registration.update();
-              }, 60000);
-
-              // Listen for updates
-              registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                console.log('[Service Worker] New version found, waiting for activation...');
-              });
-            })
-            .catch((error) => {
-              console.error('[Service Worker] Registration failed:', error);
-            });
-        });
-      }
-    </script>
+    <script src="js/sw-register.js?v=1776883834344"></script>
   </body>
 </html>
