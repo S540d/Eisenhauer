@@ -7,14 +7,11 @@
  *  - iOS / Firefox (fallback): Check on app-open and fire overdue notifications then
  */
 
-// Injected by Vite PWA plugin at build time
-self.__WB_MANIFEST;
-
-importScripts('https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js');
-
-const { precacheAndRoute, cleanupOutdatedCaches } = workbox.precaching;
-const { NavigationRoute, registerRoute } = workbox.routing;
-const { createHandlerBoundToURL } = workbox.precaching;
+// Injected by Vite PWA plugin at build time (injectManifest strategy)
+// Workbox APIs (precacheAndRoute, registerRoute, etc.) are bundled by the build —
+// do NOT add importScripts() for workbox-sw.js here.
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
 
 // Precache all assets listed in the injected manifest
 precacheAndRoute(self.__WB_MANIFEST || []);
@@ -41,7 +38,11 @@ self.addEventListener('activate', (event) => {
 });
 
 // ---------------------------------------------------------------------------
-// Reminder storage (in-memory, repopulated via postMessage on each app open)
+// Reminder storage — in-memory only; lost on SW restart (browsers terminate SWs
+// after a few seconds of inactivity). TimestampTrigger schedules are also lost.
+// Recovery path: the app sends SCHEDULE_REMINDERS on every open, so schedules
+// are restored within one app-open cycle. This is an accepted tradeoff over
+// persisting tasks in IndexedDB inside the SW.
 // ---------------------------------------------------------------------------
 let reminderTasks = [];
 let reminderDaysBefore = null;

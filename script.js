@@ -48,6 +48,7 @@ import {
   moveTask,
   toggleTask,
   getTasks,
+  getAllTasks,
   setAllTasks,
   reorderTask,
   applySmartRules,
@@ -176,7 +177,7 @@ async function loadAllTasks() {
 
   // Schedule reminders after tasks are loaded (if reminders were active on app open)
   if (window._pendingReminderDays !== undefined && window._pendingReminderDays !== null) {
-    scheduleReminders(tasks, window._pendingReminderDays, getCurrentLanguage());
+    scheduleReminders(getAllTasks(), window._pendingReminderDays, getCurrentLanguage());
     window._pendingReminderDays = undefined;
   }
 }
@@ -490,7 +491,7 @@ function renderTasksWithCallbacks() {
 function rescheduleRemindersIfActive() {
   const { enabled, daysBefore } = loadReminderSettings();
   if (enabled && daysBefore !== null && getPermission() === 'granted') {
-    scheduleReminders(tasks, daysBefore, getCurrentLanguage());
+    scheduleReminders(getAllTasks(), daysBefore, getCurrentLanguage());
   }
 }
 
@@ -673,7 +674,7 @@ function setupEventListeners() {
   window.updateRemindersCallback = (enabled, daysBefore) => {
     saveReminderSettings(enabled, daysBefore);
     if (enabled && daysBefore !== null) {
-      scheduleReminders(tasks, daysBefore, getCurrentLanguage());
+      scheduleReminders(getAllTasks(), daysBefore, getCurrentLanguage());
     } else {
       cancelReminders();
     }
