@@ -268,21 +268,35 @@ export function renderSegment(segmentId, tasks, translations, currentLanguage, c
   segmentElement.innerHTML = '';
 
   const segmentTasks = tasks[segmentId] || [];
+
+  // Phase 1: build elements, skipping any task that fails to render. A single
+  // corrupt task (e.g. an invalid dueDate or a malformed recurring object) must
+  // never abort the whole loop and leave the matrix blank ("stuck on start
+  // screen"). taskIndex/totalTasks are provisional here and corrected in phase 2.
+  const renderedElements = [];
   segmentTasks.forEach((task, index) => {
-    // Isolate rendering of each task: a single corrupt task (e.g. an invalid
-    // dueDate or a malformed recurring object) must never abort the whole loop
-    // and leave the matrix blank ("stuck on start screen"). Skip the bad one,
-    // log it, and keep rendering the rest.
     try {
       const taskElement = createTaskElement(task, translations, currentLanguage, {
         ...callbacks,
         taskIndex: index,
         totalTasks: segmentTasks.length,
       });
-      segmentElement.appendChild(taskElement);
+      renderedElements.push(taskElement);
     } catch (error) {
       console.error('Failed to render task, skipping it:', task?.id, error);
     }
+  });
+
+  // Phase 2: append and fix the reorder buttons' disabled state based on the
+  // actually rendered list, so a skipped task does not leave the first/last
+  // visible task with a wrong "move up"/"move down" enabled state.
+  const total = renderedElements.length;
+  renderedElements.forEach((taskElement, position) => {
+    const upBtn = taskElement.querySelector('.reorder-up');
+    const downBtn = taskElement.querySelector('.reorder-down');
+    if (upBtn) upBtn.disabled = position === 0;
+    if (downBtn) downBtn.disabled = position === total - 1;
+    segmentElement.appendChild(taskElement);
   });
 }
 
