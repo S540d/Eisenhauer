@@ -5,7 +5,7 @@ on:
   workflow_run:
     workflows: ["CI/CD - Automated Quality Checks"]
     types: [completed]
-    branches: [main, staging, testing]
+    branches: [main, testing]
   workflow_dispatch:
     inputs:
       environment:
@@ -16,7 +16,6 @@ on:
         options:
           - auto
           - production
-          - staging
           - testing
 
 permissions:
@@ -53,8 +52,6 @@ jobs:
             BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
             if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "refs/heads/main" ]; then
               ENV="production"
-            elif [ "$BRANCH" = "staging" ] || [ "$BRANCH" = "refs/heads/staging" ]; then
-              ENV="staging"
             elif [ "$BRANCH" = "testing" ] || [ "$BRANCH" = "refs/heads/testing" ]; then
               ENV="testing"
             else
@@ -72,12 +69,6 @@ jobs:
               echo "destination_dir=" >> $GITHUB_OUTPUT
               echo "emoji=🚀" >> $GITHUB_OUTPUT
               echo "url=https://s540d.github.io/Eisenhauer/" >> $GITHUB_OUTPUT
-              ;;
-            staging)
-              echo "build_script=build:staging" >> $GITHUB_OUTPUT
-              echo "destination_dir=staging" >> $GITHUB_OUTPUT
-              echo "emoji=🎨" >> $GITHUB_OUTPUT
-              echo "url=https://s540d.github.io/Eisenhauer/staging/" >> $GITHUB_OUTPUT
               ;;
             testing)
               echo "build_script=build:testing" >> $GITHUB_OUTPUT
