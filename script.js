@@ -53,6 +53,7 @@ import {
   reorderTask,
   applySmartRules,
   filterByCategory,
+  sanitizeTasks,
 } from './js/modules/tasks.js';
 import {
   initStorage,
@@ -167,12 +168,36 @@ async function saveAllTasks() {
  * Load all tasks (Guest or Firebase)
  */
 async function loadAllTasks() {
-  if (currentUser && db && !isGuestMode) {
-    const loadedTasks = await loadUserTasks(currentUser.uid, db);
-    setAllTasks(loadedTasks);
-  } else {
-    const loadedTasks = await loadGuestTasks();
-    setAllTasks(loadedTasks);
+  const isFirestoreMode = currentUser && db && !isGuestMode;
+  const loadedTasks = isFirestoreMode
+    ? await loadUserTasks(currentUser.uid, db)
+    : await loadGuestTasks();
+
+  // Repair corrupt tasks (invalid dueDate/completedAt, malformed recurring) so a
+  // single bad entry can never blank the whole list. If anything was fixed,
+  // persist the cleaned data back so the corruption does not return on reload
+  // (cache clearing / reinstall did not help affected users for this reason).
+  const { tasks: cleanTasks, repairedTaskIds, changed } = sanitizeTasks(loadedTasks);
+  setAllTasks(cleanTasks);
+
+  if (changed) {
+    console.warn(`Repaired ${repairedTaskIds.length} corrupt task(s) on load:`, repairedTaskIds);
+    try {
+      if (isFirestoreMode) {
+        // Re-save the repaired tasks individually to Firestore.
+        for (const segmentId of [1, 2, 3, 4, 5]) {
+          for (const task of cleanTasks[segmentId]) {
+            if (repairedTaskIds.includes(task.id)) {
+              saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
+            }
+          }
+        }
+      } else {
+        await saveGuestTasks(cleanTasks);
+      }
+    } catch (error) {
+      console.error('Failed to persist repaired tasks:', error);
+    }
   }
 
   // Schedule reminders after tasks are loaded (if reminders were active on app open)

@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Ungültige Datumswerte in `createTaskElement` werden abgefangen, statt
     „Invalid Date" zu rendern oder eine Exception zu werfen.
   - Regressionstests ergänzt (`tests/unit/render-resilience.test.js`).
+- **Automatische Reparatur defekter Aufgaben beim Laden**
+  - Neue Funktion `sanitizeTasks` repariert beim Laden defekte Aufgaben:
+    ungültige `dueDate`/`completedAt`-Werte und fehlerhafte `recurring`-Objekte
+    werden entfernt, strukturell unbrauchbare Aufgaben (ohne Text) verworfen.
+  - Reparierte Daten werden direkt zurückgespeichert (Firestore bzw. Guest-Speicher),
+    damit die Beschädigung nicht bei jedem Neuladen erneut auftritt.
+  - Tests ergänzt (`tests/unit/sanitize-tasks.test.js`).
 
 ### ✨ Features
 - **Kalender-Umschalter zwischen Privat und Beruflich (#259)**

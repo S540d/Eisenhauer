@@ -493,6 +493,90 @@ export function setAllTasks(newTasks) {
 }
 
 /**
+ * Repair a single task in place, returning a (possibly) fixed copy plus whether
+ * it changed. Corrupt fields that previously crashed rendering are normalized:
+ *  - invalid/unparseable dueDate or completedAt are dropped
+ *  - a malformed recurring object (not an object, or enabled without a valid
+ *    interval) is dropped
+ * Tasks that are unusable (no string text) are reported as droppable.
+ *
+ * @param {object} task
+ * @returns {{ task: object|null, changed: boolean }}
+ */
+function sanitizeTask(task) {
+  // Structurally broken: cannot be rendered or saved meaningfully → drop it.
+  if (!task || typeof task !== 'object' || typeof task.text !== 'string') {
+    return { task: null, changed: true };
+  }
+
+  let changed = false;
+  const fixed = { ...task };
+
+  const isValidDate = (value) => !Number.isNaN(new Date(value).getTime());
+  const isPresent = (value) => value !== null && value !== undefined;
+
+  if (isPresent(fixed.dueDate) && !isValidDate(fixed.dueDate)) {
+    delete fixed.dueDate;
+    changed = true;
+  }
+
+  if (isPresent(fixed.completedAt) && !isValidDate(fixed.completedAt)) {
+    delete fixed.completedAt;
+    changed = true;
+  }
+
+  if (isPresent(fixed.recurring)) {
+    const r = fixed.recurring;
+    const validIntervals = ['daily', 'weekly', 'monthly', 'yearly'];
+    const recurringOk =
+      typeof r === 'object' &&
+      (!r.enabled || (typeof r.interval === 'string' && validIntervals.includes(r.interval)));
+    if (!recurringOk) {
+      delete fixed.recurring;
+      changed = true;
+    }
+  }
+
+  return { task: fixed, changed };
+}
+
+/**
+ * Sanitize a full tasks object (segments 1–5). Repairs corrupt fields and drops
+ * unusable tasks so that one bad entry can never blank the whole task list.
+ *
+ * @param {object} tasksObject
+ * @returns {{ tasks: object, repairedTaskIds: Array<string|number>, changed: boolean }}
+ */
+export function sanitizeTasks(tasksObject) {
+  const source = tasksObject || {};
+  const result = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+  const repairedTaskIds = [];
+  let changed = false;
+
+  for (let segmentId = 1; segmentId <= 5; segmentId++) {
+    const rawSegment = source[segmentId];
+    const segmentTasks = Array.isArray(rawSegment) ? rawSegment : [];
+    if (!Array.isArray(rawSegment) && rawSegment !== null && rawSegment !== undefined) {
+      changed = true;
+    }
+    for (const task of segmentTasks) {
+      const { task: fixed, changed: taskChanged } = sanitizeTask(task);
+      if (fixed === null) {
+        changed = true;
+        continue; // drop unusable task
+      }
+      if (taskChanged) {
+        changed = true;
+        if (fixed.id !== null && fixed.id !== undefined) repairedTaskIds.push(fixed.id);
+      }
+      result[segmentId].push(fixed);
+    }
+  }
+
+  return { tasks: result, repairedTaskIds, changed };
+}
+
+/**
  * Get task count for a segment
  * @param {number} segmentId - Segment ID
  * @returns {number} Number of tasks in segment
