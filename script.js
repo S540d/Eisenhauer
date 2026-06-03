@@ -177,22 +177,36 @@ async function loadAllTasks() {
   // single bad entry can never blank the whole list. If anything was fixed,
   // persist the cleaned data back so the corruption does not return on reload
   // (cache clearing / reinstall did not help affected users for this reason).
-  const { tasks: cleanTasks, repairedTaskIds, changed } = sanitizeTasks(loadedTasks);
+  const {
+    tasks: cleanTasks,
+    repairedTaskIds,
+    droppedTaskIds,
+    changed,
+  } = sanitizeTasks(loadedTasks);
   setAllTasks(cleanTasks);
 
   if (changed) {
-    console.warn(`Repaired ${repairedTaskIds.length} corrupt task(s) on load:`, repairedTaskIds);
+    console.warn(
+      `Repaired ${repairedTaskIds.length} and dropped ${droppedTaskIds.length} corrupt task(s) on load:`,
+      { repairedTaskIds, droppedTaskIds }
+    );
     try {
       if (isFirestoreMode) {
-        // Re-save the repaired tasks individually to Firestore.
+        // Re-save repaired tasks and delete dropped (unusable) docs individually,
+        // so the corruption does not return on the next reload. Awaited so any
+        // failure is caught by this try/catch.
         for (const segmentId of [1, 2, 3, 4, 5]) {
           for (const task of cleanTasks[segmentId]) {
             if (repairedTaskIds.includes(task.id)) {
-              saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
+              await saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
             }
           }
         }
+        for (const droppedId of droppedTaskIds) {
+          await deleteTaskFromFirestore(droppedId, currentUser.uid, db);
+        }
       } else {
+        // Guest mode: cleanTasks already excludes dropped tasks, one write covers all.
         await saveGuestTasks(cleanTasks);
       }
     } catch (error) {

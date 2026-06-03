@@ -528,7 +528,11 @@ function sanitizeTask(task) {
   if (isPresent(fixed.recurring)) {
     const r = fixed.recurring;
     const validIntervals = ['daily', 'weekly', 'monthly', 'yearly'];
+    // Note: typeof null === 'object', so guard r !== null explicitly even though
+    // isPresent() already filters null/undefined — belt and suspenders, since a
+    // crash here would reintroduce the blank-screen bug during load.
     const recurringOk =
+      r !== null &&
       typeof r === 'object' &&
       (!r.enabled || (typeof r.interval === 'string' && validIntervals.includes(r.interval)));
     if (!recurringOk) {
@@ -545,12 +549,13 @@ function sanitizeTask(task) {
  * unusable tasks so that one bad entry can never blank the whole task list.
  *
  * @param {object} tasksObject
- * @returns {{ tasks: object, repairedTaskIds: Array<string|number>, changed: boolean }}
+ * @returns {{ tasks: object, repairedTaskIds: Array<string|number>, droppedTaskIds: Array<string|number>, changed: boolean }}
  */
 export function sanitizeTasks(tasksObject) {
   const source = tasksObject || {};
   const result = { 1: [], 2: [], 3: [], 4: [], 5: [] };
   const repairedTaskIds = [];
+  const droppedTaskIds = [];
   let changed = false;
 
   for (let segmentId = 1; segmentId <= 5; segmentId++) {
@@ -563,6 +568,9 @@ export function sanitizeTasks(tasksObject) {
       const { task: fixed, changed: taskChanged } = sanitizeTask(task);
       if (fixed === null) {
         changed = true;
+        // Record the id of dropped tasks so the caller can delete the orphaned
+        // record from persistent storage (otherwise it returns on every reload).
+        if (task && task.id !== null && task.id !== undefined) droppedTaskIds.push(task.id);
         continue; // drop unusable task
       }
       if (taskChanged) {
@@ -573,7 +581,7 @@ export function sanitizeTasks(tasksObject) {
     }
   }
 
-  return { tasks: result, repairedTaskIds, changed };
+  return { tasks: result, repairedTaskIds, droppedTaskIds, changed };
 }
 
 /**

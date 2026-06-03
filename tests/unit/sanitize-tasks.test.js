@@ -67,6 +67,29 @@ describe('sanitizeTasks', () => {
     expect(tasks[1][2].recurring).toEqual({ enabled: true, interval: 'weekly' });
   });
 
+  it('handles recurring: null without crashing (typeof null === "object")', () => {
+    let result;
+    expect(() => {
+      result = sanitizeTasks({
+        1: [{ id: 'n', segment: 1, text: 'Null recurring', recurring: null }],
+      });
+    }).not.toThrow();
+    // null recurring is simply absent in the output, task is kept
+    expect(result.tasks[1][0].text).toBe('Null recurring');
+    expect(result.tasks[1][0].recurring == null).toBe(true);
+  });
+
+  it('reports dropped task ids so the caller can delete orphaned records', () => {
+    const { droppedTaskIds, changed } = sanitizeTasks({
+      1: [
+        { id: 'gone', segment: 1 /* no text */ },
+        { id: 'keep', segment: 1, text: 'Keep' },
+      ],
+    });
+    expect(changed).toBe(true);
+    expect(droppedTaskIds).toEqual(['gone']);
+  });
+
   it('drops structurally unusable tasks (no string text)', () => {
     const { tasks, changed } = sanitizeTasks({
       1: [null, { id: 'x', segment: 1 }, { id: 'y', segment: 1, text: 'Keep me' }],
