@@ -58,7 +58,7 @@ Du bekommst jetzt einen Code-Schnipsel wie diesen:
 
 ```javascript
 const firebaseConfig = {
-  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  apiKey: "<DEIN_API_KEY>",
   authDomain: "eisenhauer-matrix-xxxxx.firebaseapp.com",
   projectId: "eisenhauer-matrix-xxxxx",
   storageBucket: "eisenhauer-matrix-xxxxx.appspot.com",
@@ -78,7 +78,7 @@ const firebaseConfig = {
 
 ```javascript
 const firebaseConfig = {
-    apiKey: "DEIN_API_KEY_HIER",  // z.B. "AIzaSyXXXXXXXXXXXXXXXX..."
+    apiKey: "<DEIN_API_KEY>",  // aus der Firebase-Konsole kopieren
     authDomain: "DEIN_PROJECT_ID.firebaseapp.com",
     projectId: "DEIN_PROJECT_ID",
     storageBucket: "DEIN_PROJECT_ID.appspot.com",
