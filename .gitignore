@@ -14,7 +14,7 @@ docs/private/
 # Logs
 *.log
 
-# Firebase / Environment variables (contain API keys - use .env.*.example as template)
+# Firebase / Environment variables (contain API keys - use .env-*.example as template)
 .env
 .env.local
 .env.*.local
@@ -57,6 +57,9 @@ Android/gradle-*/
 # Keystore files (CRITICAL - NEVER COMMIT!)
 *.jks
 *.keystore
+*.p12
+*.p8
+credentials.json
 key.properties
 Android/keystore/
 Android/gradle.properties
@@ -86,3 +89,8 @@ playwright/.cache/
 twa-manifest.json
 *.zip
 coverage/
+
+# Security: sensitive credentials (Issue #7 – reusable-gitignore-audit)
+credentials.json
+*.p12
+*.p8

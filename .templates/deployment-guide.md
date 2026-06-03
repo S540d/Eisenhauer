@@ -197,7 +197,7 @@ export default {
 
 ```javascript
 // ❌ BAD - Secrets im Code
-const API_KEY = 'sk-1234567890abcdef';
+const API_KEY = 'sk-…';
 
 // ✅ GOOD - Umgebungsvariablen
 const API_KEY = process.env.REACT_APP_API_KEY;

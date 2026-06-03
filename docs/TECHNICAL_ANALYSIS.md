@@ -191,7 +191,7 @@ taskElement.querySelector('.task-text').textContent = task.text;
 ```javascript
 // firebase-init.js (öffentlich sichtbar)
 const firebaseConfig = {
-  apiKey: 'AIzaSyDVZh7wLZeFXpoxIqwKFtC8KsYj9zF6lBM',
+  apiKey: 'AIzaSy…',
   authDomain: 'eisenhauer-matrix.firebaseapp.com',
   // ...
 };
