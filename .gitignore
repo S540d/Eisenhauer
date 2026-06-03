@@ -86,3 +86,8 @@ playwright/.cache/
 twa-manifest.json
 *.zip
 coverage/
+
+# Security: sensitive credentials (Issue #7 – reusable-gitignore-audit)
+credentials.json
+*.p12
+*.p8

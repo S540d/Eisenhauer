@@ -10,7 +10,11 @@
 // Injected by Vite PWA plugin at build time (injectManifest strategy)
 // Workbox APIs (precacheAndRoute, registerRoute, etc.) are bundled by the build —
 // do NOT add importScripts() for workbox-sw.js here.
-import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
+import {
+  precacheAndRoute,
+  cleanupOutdatedCaches,
+  createHandlerBoundToURL,
+} from 'workbox-precaching';
 import { NavigationRoute, registerRoute } from 'workbox-routing';
 
 // Precache all assets listed in the injected manifest
