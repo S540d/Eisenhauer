@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🐛 Bug Fixes
+- **Weiße/leere Startseite – Aufgaben unsichtbar (Render-Robustheit)**
+  - Eine einzelne defekte Aufgabe (z. B. ungültiges `dueDate`/`completedAt` oder
+    fehlerhaftes `recurring`-Objekt) brach die gesamte Render-Schleife ab, sodass
+    **keine** Aufgaben mehr angezeigt wurden („hängt auf der Startseite fest").
+    Cache löschen/Neuinstallation half nicht, da die defekten Daten im
+    synchronisierten Speicher (Firestore/IndexedDB) lagen, nicht im Browser-Cache.
+  - `renderSegment`/`renderAllTasks` rendern Aufgaben und Segmente jetzt isoliert:
+    eine fehlerhafte Aufgabe wird übersprungen und geloggt, alle übrigen werden
+    normal angezeigt.
+  - Ungültige Datumswerte in `createTaskElement` werden abgefangen, statt
+    „Invalid Date" zu rendern oder eine Exception zu werfen.
+  - Regressionstests ergänzt (`tests/unit/render-resilience.test.js`).
+
 ### ✨ Features
 - **Kalender-Umschalter zwischen Privat und Beruflich (#259)**
   - Sichtbarer Umschalter im Kopfbereich: Alle / Privat / Beruflich

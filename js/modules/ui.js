@@ -118,16 +118,21 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     const dueDateSpan = document.createElement('span');
     dueDateSpan.className = 'task-due-date';
 
-    // Format date based on locale - use numeric format as specified
+    // Format date based on locale - use numeric format as specified.
+    // Guard against corrupt/unparseable dueDate values so toLocaleDateString
+    // never throws "Invalid time value" and breaks the whole task list.
     const dueDate = new Date(task.dueDate);
-    const formattedDate = dueDate.toLocaleDateString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-
-    dueDateSpan.textContent = formattedDate;
-    content.appendChild(dueDateSpan);
+    if (!Number.isNaN(dueDate.getTime())) {
+      dueDateSpan.textContent = dueDate.toLocaleDateString(
+        currentLanguage === 'de' ? 'de-DE' : 'en-US',
+        {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+        }
+      );
+      content.appendChild(dueDateSpan);
+    }
   }
 
   // Add completion timestamp for Done! segment
@@ -135,17 +140,19 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     const timestampSpan = document.createElement('span');
     timestampSpan.className = 'task-timestamp';
     const date = new Date(task.completedAt);
-    const formattedDate = date.toLocaleDateString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-    const formattedTime = date.toLocaleTimeString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    timestampSpan.textContent = `${formattedDate} ${formattedTime}`;
-    content.appendChild(timestampSpan);
+    if (!Number.isNaN(date.getTime())) {
+      const formattedDate = date.toLocaleDateString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      const formattedTime = date.toLocaleTimeString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      timestampSpan.textContent = `${formattedDate} ${formattedTime}`;
+      content.appendChild(timestampSpan);
+    }
   }
 
   div.appendChild(checkbox);
@@ -262,12 +269,20 @@ export function renderSegment(segmentId, tasks, translations, currentLanguage, c
 
   const segmentTasks = tasks[segmentId] || [];
   segmentTasks.forEach((task, index) => {
-    const taskElement = createTaskElement(task, translations, currentLanguage, {
-      ...callbacks,
-      taskIndex: index,
-      totalTasks: segmentTasks.length,
-    });
-    segmentElement.appendChild(taskElement);
+    // Isolate rendering of each task: a single corrupt task (e.g. an invalid
+    // dueDate or a malformed recurring object) must never abort the whole loop
+    // and leave the matrix blank ("stuck on start screen"). Skip the bad one,
+    // log it, and keep rendering the rest.
+    try {
+      const taskElement = createTaskElement(task, translations, currentLanguage, {
+        ...callbacks,
+        taskIndex: index,
+        totalTasks: segmentTasks.length,
+      });
+      segmentElement.appendChild(taskElement);
+    } catch (error) {
+      console.error('Failed to render task, skipping it:', task?.id, error);
+    }
   });
 }
 
@@ -280,7 +295,12 @@ export function renderSegment(segmentId, tasks, translations, currentLanguage, c
  */
 export function renderAllTasks(tasks, translations, currentLanguage, callbacks = {}) {
   for (let i = 1; i <= 5; i++) {
-    renderSegment(i, tasks, translations, currentLanguage, callbacks);
+    // Isolate per-segment so a failure in one quadrant cannot blank out the others.
+    try {
+      renderSegment(i, tasks, translations, currentLanguage, callbacks);
+    } catch (error) {
+      console.error(`Failed to render segment ${i}:`, error);
+    }
   }
 }
 
