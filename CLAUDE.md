@@ -10,10 +10,15 @@ Progressive Web App (PWA) zur Aufgabenverwaltung nach der Eisenhauer-Matrix. Zus
 ## Branch-Strategie
 
 ```
-feature-branch → testing → staging → main (production)
+feature/issue-XXX → testing → main (production)
 ```
 
+`staging` wurde entfernt (2026-06-03, Issue #7).
+
 - PRs für Fixes/Features immer gegen **`testing`** anlegen
+- `gh pr merge <nr> --squash --delete-branch` für Feature→testing
+- `gh pr merge <nr> --squash` für testing→main (kein `--delete-branch`!)
+- **Vor Push:** lokale Tests (`npm test`); kein Merge bei CI-Fail
 - `main` ist protected
 
 ## Android-App (TWA)
