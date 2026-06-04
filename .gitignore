@@ -62,7 +62,7 @@ Android/gradle-*/
 credentials.json
 key.properties
 Android/keystore/
-Android/gradle.properties
+# Android/gradle.properties is committed (credentials-free); signing props passed via -P flags
 Android/KEYSTORE_INFO.md
 Android/BUILD_SUCCESS.md
 
