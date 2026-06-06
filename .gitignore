@@ -6,7 +6,8 @@
 .idea/
 
 # Claude Code – .claude/commands/ wird versioniert (Issue #31)
-# Maschinenspezifisches (memory/, settings.local.json, ...) via ~/.gitignore_global ignoriert
+# Maschinenspezifisches via ~/.gitignore_global ignoriert; settings.json lokal halten
+.claude/settings.json
 
 # Private documentation (local only)
 docs/private/
