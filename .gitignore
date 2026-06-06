@@ -5,12 +5,8 @@
 .vscode/
 .idea/
 
-# Claude Code – nur maschinenspezifische Artefakte ignorieren
-.claude/settings.local.json
-.claude/memory/
-.claude/todos/
-# Commands werden versioniert (Issue #31)
-# .claude/commands/ ist bewusst NICHT ignoriert
+# Claude Code – .claude/commands/ wird versioniert (Issue #31)
+# Maschinenspezifisches (memory/, settings.local.json, ...) via ~/.gitignore_global ignoriert
 
 # Private documentation (local only)
 docs/private/
