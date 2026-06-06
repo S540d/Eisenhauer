@@ -5,8 +5,12 @@
 .vscode/
 .idea/
 
-# Claude Code (private instructions)
-.claude/
+# Claude Code – nur maschinenspezifische Artefakte ignorieren
+.claude/settings.local.json
+.claude/memory/
+.claude/todos/
+# Commands werden versioniert (Issue #31)
+# .claude/commands/ ist bewusst NICHT ignoriert
 
 # Private documentation (local only)
 docs/private/
