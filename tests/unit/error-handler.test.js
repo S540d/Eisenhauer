@@ -114,6 +114,22 @@ describe('ErrorHandler', () => {
       expect(history).toHaveLength(1);
       expect(history[0].error.name).toBe('TaskMoveError');
     });
+
+    it('should route NetworkError to handleNetworkError', () => {
+      const networkError = new NetworkError('Network failed');
+      ErrorHandler.handleError(networkError, { silent: true });
+
+      const history = ErrorHandler.getErrorHistory();
+      expect(history[0].error.name).toBe('NetworkError');
+    });
+
+    it('should route SyncError to handleSyncError', () => {
+      const syncError = new SyncError('Sync failed');
+      ErrorHandler.handleError(syncError, { silent: true });
+
+      const history = ErrorHandler.getErrorHistory();
+      expect(history[0].error.name).toBe('SyncError');
+    });
   });
 
   describe('Error History', () => {
@@ -272,6 +288,28 @@ describe('ErrorHandler', () => {
 
       expect(window.errorTracker.captureException).toHaveBeenCalledTimes(1);
       expect(window.analytics.track).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('handleSyncError', () => {
+    it('should add sync error to history and show notification', async () => {
+      const error = new SyncError('Sync failed');
+      ErrorHandler.handleSyncError(error, {});
+
+      await vi.dynamicImportSettled();
+
+      const history = ErrorHandler.getErrorHistory();
+      expect(history).toHaveLength(1);
+      expect(showNotificationMock).toHaveBeenCalled();
+    });
+
+    it('should not show notification when silent', async () => {
+      const error = new SyncError('Sync failed');
+      ErrorHandler.handleSyncError(error, { silent: true });
+
+      await vi.dynamicImportSettled();
+
+      expect(showNotificationMock).not.toHaveBeenCalled();
     });
   });
 });
