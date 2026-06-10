@@ -269,6 +269,62 @@ describe('Tasks', () => {
       );
     });
 
+    it('should handle monthly and custom recurring intervals correctly', () => {
+      vi.setSystemTime(new Date('2026-01-15T10:00:00Z'));
+
+      // Monthly recurring
+      const monthlyTask = {
+        id: 300,
+        text: 'Monthly review',
+        segment: 1,
+        checked: false,
+        createdAt: Date.now(),
+        completedAt: null,
+        recurring: {
+          enabled: true,
+          interval: 'monthly',
+          weekdays: [],
+          dayOfMonth: 15,
+          customDays: 1,
+        },
+      };
+      setAllTasks({ 1: [monthlyTask], 2: [], 3: [], 4: [], 5: [] });
+
+      const monthlyResult = toggleTask(monthlyTask.id, 1);
+      expect(monthlyResult.action).toBe('completed');
+      const rawAfterMonthly = getAllTasks();
+      const nextMonthly = rawAfterMonthly[1][0];
+      // Next occurrence should be in February
+      expect(new Date(nextMonthly.createdAt).getMonth()).toBe(1); // February = month index 1
+
+      // Custom recurring (7 days)
+      setAllTasks({ 1: [], 2: [], 3: [], 4: [], 5: [] });
+      const customTask = {
+        id: 301,
+        text: 'Custom recurring',
+        segment: 1,
+        checked: false,
+        createdAt: Date.now(),
+        completedAt: null,
+        recurring: {
+          enabled: true,
+          interval: 'custom',
+          weekdays: [],
+          dayOfMonth: 1,
+          customDays: 7,
+        },
+      };
+      setAllTasks({ 1: [customTask], 2: [], 3: [], 4: [], 5: [] });
+
+      const customResult = toggleTask(customTask.id, 1);
+      expect(customResult.action).toBe('completed');
+      const rawAfterCustom = getAllTasks();
+      const nextCustom = rawAfterCustom[1][0];
+      // Next occurrence should be 7 days in the future
+      const expectedNextCustom = new Date('2026-01-22T00:00:00.000Z').getTime();
+      expect(nextCustom.createdAt).toBe(expectedNextCustom);
+    });
+
     it('should restore completed tasks back to the Do segment', () => {
       const task = {
         id: 201,
@@ -408,6 +464,29 @@ describe('Tasks', () => {
       expect(
         getRecurringDescription({ enabled: true, interval: 'unexpected' }, translationStub)
       ).toBe('');
+    });
+
+    it('should return weekly description when weekdays is empty array (falls back to generic label)', () => {
+      const translationStub = {
+        recurring: {
+          daily: 'Daily',
+          weekly: 'Weekly',
+          monthly: 'Monthly',
+          custom: 'Every',
+          customDays: 'days',
+          dayOfMonth: 'Day',
+          weekdays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        },
+      };
+      expect(
+        getRecurringDescription(
+          { enabled: true, interval: 'weekly', weekdays: [] },
+          translationStub
+        )
+      ).toBe('Weekly');
+      expect(getRecurringDescription({ enabled: true, interval: 'weekly' }, translationStub)).toBe(
+        'Weekly'
+      );
     });
 
     it('should apply and clear urgency rules based on due dates', () => {
