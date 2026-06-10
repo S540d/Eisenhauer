@@ -467,11 +467,6 @@ function renderTasksWithCallbacks() {
     onReorder: handleReorderTask,
   };
 
-  // DIAGNOSTICS (debug/splash-hang-diagnostics): the pre-render transforms below
-  // (applySmartRules / filterByCategory) and the post-render hooks
-  // (setupDropZones / rescheduleRemindersIfActive) previously ran UNGUARDED.
-  // A throw here aborts initApp before the splash is hidden → splash hangs.
-  // Wrap defensively AND report the real error so we can see it on the device.
   try {
     // Apply smart rules if enabled
     const smartFunctionsEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
@@ -493,9 +488,6 @@ function renderTasksWithCallbacks() {
     // Keep reminder schedule in sync with current task list
     rescheduleRemindersIfActive();
   } catch (error) {
-    if (typeof window.__diagReport === 'function') {
-      window.__diagReport('renderTasksWithCallbacks failed', error);
-    }
     console.error('renderTasksWithCallbacks failed:', error);
   }
 }
@@ -1208,11 +1200,6 @@ async function initApp() {
     }
     // If neither guest nor logged in, auth.js will show login screen
   } catch (error) {
-    // DIAGNOSTICS (debug/splash-hang-diagnostics): surface the real cause on-device
-    // instead of silently swallowing it (which leaves the splash hanging).
-    if (typeof window.__diagReport === 'function') {
-      window.__diagReport('initApp: early-load failed', error);
-    }
     console.error('initApp early-load failed:', error);
   }
 
