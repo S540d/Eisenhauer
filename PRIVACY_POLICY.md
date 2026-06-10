@@ -7,7 +7,6 @@ _Stand: wird beim nächsten Release aktualisiert_
 Verantwortlich für die Datenverarbeitung ist:
 
 Sven-Uwe Strohkark  
-Meisenstrasse, 14612 Falkensee  
 E-Mail: DevSven@posteo.de
 
 ## 2. Allgemeine Informationen
@@ -34,7 +33,7 @@ Wir erheben und verarbeiten folgende Daten:
 
 - Gerätetyp und Betriebssystem
 - Browser-Typ und -Version
-- IP-Adresse (anonymisiert)
+- IP-Adresse (wird von Firebase gemäß deren Datenschutzrichtlinie verarbeitet)
 - Datum und Uhrzeit des Zugriffs
 
 ## 4. Zweck der Datenverarbeitung
@@ -50,8 +49,8 @@ Die Verarbeitung Ihrer Daten erfolgt zu folgenden Zwecken:
 
 Die Verarbeitung Ihrer personenbezogenen Daten erfolgt auf Grundlage von:
 
-- **Art. 6 Abs. 1 lit. b DSGVO:** Verarbeitung zur Erfüllung eines Vertrags (Nutzung der App)
-- **Art. 6 Abs. 1 lit. f DSGVO:** Berechtigtes Interesse an der Bereitstellung und Verbesserung der App
+- **Art. 6 Abs. 1 lit. b DSGVO:** Verarbeitung zur Erfüllung eines Vertrags (Nutzung der App) — gilt für Authentifizierungs- und Nutzerdaten
+- **Art. 6 Abs. 1 lit. f DSGVO:** Berechtigtes Interesse — gilt für technische Logs zur Sicherstellung des stabilen Betriebs; unser Interesse an einem sicheren Betrieb überwiegt, da keine Profilbildung stattfindet und die Daten nur 30 Tage aufbewahrt werden
 
 ## 6. Datenspeicherung und -weitergabe
 
