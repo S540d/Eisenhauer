@@ -23,17 +23,18 @@
     return document.getElementById(id);
   }
 
-  function showDiag(title, detail) {
-    reported.push(title + '\n' + detail);
+  function showDiag(title, detail, attempt) {
     const box = el('splashDiag');
     const body = el('splashDiagBody');
     if (!box || !body) {
-      // Splash/diag DOM not ready yet — retry shortly.
-      setTimeout(function () {
-        showDiag(title, detail);
-      }, 200);
+      if ((attempt || 0) < 10) {
+        setTimeout(function () {
+          showDiag(title, detail, (attempt || 0) + 1);
+        }, 200);
+      }
       return;
     }
+    reported.push(title + '\n' + detail);
     // Keep the splash visible (so the report is readable) but reveal the report.
     const splash = el('splashScreen');
     if (splash) {
