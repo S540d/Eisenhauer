@@ -7,9 +7,6 @@ A modern, mobile-first Progressive Web App for task management using the Eisenho
 - **Web App:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) - v1.11.2 ✅
 - Available as Android TWA via Google Play Store
 
-[![Tests](https://github.com/S540d/Eisenhauer/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/S540d/Eisenhauer/actions/workflows/ci-cd.yml)
-[![Coverage](https://img.shields.io/badge/coverage-80%25%2B-brightgreen)](https://github.com/S540d/Eisenhauer/actions/workflows/ci-cd.yml)
-
 📝 **[Changelog](docs/CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 📐 **[Architecture](docs/ARCHITECTURE.md)**
 
 ## Tech Stack
