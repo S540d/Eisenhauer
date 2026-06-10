@@ -2,7 +2,7 @@
  * Unit Tests for Store Module
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Store } from '../../js/modules/store.js';
 
 describe('Store', () => {
@@ -158,6 +158,19 @@ describe('Store', () => {
       store.setState({ isGuestMode: false });
       expect(listener).toHaveBeenCalledTimes(2); // Not called
     });
+
+    it('should return an unsubscribe function that stops notifications', () => {
+      const listener = vi.fn();
+      store.setState({ language: 'de' });
+
+      const unsubscribe = store.subscribeToKeys('language', listener);
+      store.setState({ language: 'en' });
+      expect(listener).toHaveBeenCalledTimes(1);
+
+      unsubscribe();
+      store.setState({ language: 'de' });
+      expect(listener).toHaveBeenCalledTimes(1); // not called again
+    });
   });
 
   describe('reset', () => {
@@ -284,6 +297,35 @@ describe('Store', () => {
 
       expect(store.getState().networkStatus).toBe('online');
       expect(listener).toHaveBeenCalled();
+    });
+  });
+
+  describe('Language initialization', () => {
+    afterEach(() => {
+      localStorage.removeItem('language');
+      Object.defineProperty(navigator, 'language', { configurable: true, value: '' });
+      vi.restoreAllMocks();
+    });
+
+    it('should load stored language from localStorage when valid', () => {
+      localStorage.setItem('language', 'de');
+      const s = new Store();
+      expect(s.getState().language).toBe('de');
+    });
+
+    it('should detect German from browser language when localStorage is empty', () => {
+      localStorage.removeItem('language');
+      Object.defineProperty(navigator, 'language', { configurable: true, value: 'de-DE' });
+      const s = new Store();
+      expect(s.getState().language).toBe('de');
+    });
+
+    it('should default to English when localStorage throws', () => {
+      vi.spyOn(Storage.prototype, 'getItem').mockImplementationOnce(() => {
+        throw new Error('storage unavailable');
+      });
+      const s = new Store();
+      expect(s.getState().language).toBe('en');
     });
   });
 });

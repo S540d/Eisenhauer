@@ -90,10 +90,9 @@ describe('render resilience', () => {
     expect(realGetById('segment3').querySelectorAll('.task-item').length).toBe(1);
   });
 
-  it('keeps reorder up/down buttons correct when a middle task is skipped', () => {
-    // Mock createTaskElement-level failure is hard; instead verify the disabled
-    // states are computed from the rendered list. Three healthy tasks → first
-    // has "up" disabled, last has "down" disabled.
+  it('keeps reorder up/down buttons correct for a 3-task healthy segment', () => {
+    // Verify the disabled states are computed from the rendered list.
+    // Three healthy tasks → first has "up" disabled, last has "down" disabled.
     const onReorder = () => {};
     const tasks = {
       1: [
@@ -111,5 +110,29 @@ describe('render resilience', () => {
     expect(items[0].querySelector('.reorder-down').disabled).toBe(false);
     expect(items[2].querySelector('.reorder-up').disabled).toBe(false);
     expect(items[2].querySelector('.reorder-down').disabled).toBe(true);
+  });
+
+  it('actually skips a middle task on render error and corrects reorder buttons for the remaining two', () => {
+    const corruptMiddle = Object.defineProperty({ id: 't2', segment: 1, checked: false }, 'text', {
+      get() {
+        throw new Error('corrupt task data');
+      },
+    });
+    const tasks = {
+      1: [
+        { id: 't1', segment: 1, text: 'First', checked: false },
+        corruptMiddle,
+        { id: 't3', segment: 1, text: 'Last', checked: false },
+      ],
+    };
+
+    renderSegment(1, tasks, translations, 'de', { onReorder: () => {} });
+
+    const items = document.getElementById('segment1').querySelectorAll('.task-item');
+    expect(items.length).toBe(2); // middle task was skipped
+    expect(items[0].querySelector('.reorder-up').disabled).toBe(true);
+    expect(items[0].querySelector('.reorder-down').disabled).toBe(false);
+    expect(items[1].querySelector('.reorder-up').disabled).toBe(false);
+    expect(items[1].querySelector('.reorder-down').disabled).toBe(true);
   });
 });
