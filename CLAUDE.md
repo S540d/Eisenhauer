@@ -52,18 +52,38 @@ Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` od
 - **#259/#260:** Sichtbarer, segmentierter **Umschalter** im Header (`#categorySwitcher`, Buttons `Alle / Privat / Beruflich`). Persistiert in `localStorage` unter `categoryFilter` (`''` = Alle). Filtert beim Render und der Quick-Add-Dialog wählt die aktive Kategorie vor (pro Aufgabe überschreibbar, inkl. „Keine"). Es gibt **keinen** separaten Auto-Assign-Schalter mehr – die sichtbare Quick-Add-Vorauswahl ist die einzige Quelle der Wahrheit (alle Adds laufen über das Modal).
 - i18n: `categoryFilter.{switcherLabel,all,private,business,...}` in `js/modules/translations.js`; `updateLanguageUI` aktualisiert Button-Texte **und** das barrierefreie `aria-label` des Switchers.
 
-## Offene Issues (Backlog-Stand 2026-05-30)
+## Test-Coverage (Stand 2026-06-07)
+
+Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
+
+| Metrik | Wert |
+|---|---|
+| Statements | 91.0% |
+| Branches | 80.8% |
+| Functions | 97.7% |
+| Lines | 90.9% |
+
+- Schwellenwerte in `vitest.config.js`: alle auf **80%** gesetzt (schlägt fehl wenn darunter)
+- CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
+- Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
+
+## Offene Issues (Backlog-Stand 2026-06-07)
 
 | # | Titel | Prio |
 |---|-------|------|
 | #263 | Sentry-Integration (Error Monitoring) | Medium |
-| #264 | Test-Coverage auf 80%+ + Coverage Badge | Medium |
 | #265 | CONTRIBUTING.md erstellen | Low |
 | #266 | JSDoc-Kommentare für alle public functions | Low |
 | #256 | Dependency Updates (firebase, vite, vitest, playwright, eslint) | Low |
-| #257 | JSON-Export/Backup Erinnerung | Low |
 | #245 | Security-Header (CSP) – Phase 2 & 3 ausstehend | Medium |
 | #254 | Firebase Spark-Tarif prüfen | – |
+
+### Kürzlich erledigt (PR #295, offen/in Review)
+
+- **#257** – `docs/last-backup.txt` mit letztem manuellen Export-Datum erstellt
+- **#264** – Test-Coverage auf 80%+ angehoben; vitest-Schwellenwerte auf 80%; Badge in README
+- **#286** – Falscher Testname in `render-resilience.test.js` korrigiert; echter Skip-Test ergänzt
+- **#232** – War bereits als geschlossener PR erledigt (docs-Konsolidierung, 2026-02-20)
 
 Epic #95 (Production-Grade Dev Setup) wurde am 2026-05-30 als `completed` geschlossen. Die vier offenen Punkte daraus sind in #263–#266 erfasst.
 

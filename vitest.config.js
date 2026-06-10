@@ -39,10 +39,10 @@ export default defineConfig({
         'js/modules/accessibility.js',
       ],
       thresholds: {
-        statements: 52,
-        branches: 41,
-        functions: 68,
-        lines: 52,
+        statements: 80,
+        branches: 80,
+        functions: 80,
+        lines: 80,
       },
     },
 

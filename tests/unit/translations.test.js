@@ -587,6 +587,44 @@ describe('updateLanguageUI', () => {
       expect(input.placeholder).toBe('Neue Aufgabe');
     });
   });
+
+  describe('Reminder option elements', () => {
+    it('should update reminder select options when present', () => {
+      // Add reminder select option elements to DOM
+      document.body.innerHTML += `
+        <select id="remindersBeforeSelect">
+          <option id="remindersChooseOption">Old choose</option>
+          <option id="remindersDay0Option">Old day0</option>
+          <option id="remindersDay1Option">Old day1</option>
+          <option id="remindersDay2Option">Old day2</option>
+          <option id="remindersDay3Option">Old day3</option>
+        </select>
+        <span id="remindersDesc">Old desc</span>
+        <span id="remindersBeforeLabel">Old before</span>
+      `;
+
+      setLanguage('en');
+      updateLanguageUI();
+
+      expect(document.getElementById('remindersDesc').textContent).toBe(
+        'Native notifications for tasks with due dates'
+      );
+      expect(document.getElementById('remindersBeforeLabel').textContent).toBe('Remind me');
+      expect(document.getElementById('remindersChooseOption').textContent).toBe(
+        '— please select —'
+      );
+      expect(document.getElementById('remindersDay0Option').textContent).toBe('Same day (9:00 AM)');
+      expect(document.getElementById('remindersDay1Option').textContent).toBe(
+        '1 day before (9:00 AM)'
+      );
+      expect(document.getElementById('remindersDay2Option').textContent).toBe(
+        '2 days before (9:00 AM)'
+      );
+      expect(document.getElementById('remindersDay3Option').textContent).toBe(
+        '3 days before (9:00 AM)'
+      );
+    });
+  });
 });
 
 describe('detectBrowserLanguage', () => {

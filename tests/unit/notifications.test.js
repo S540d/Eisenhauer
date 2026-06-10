@@ -194,6 +194,15 @@ describe('Notifications', () => {
         dismissNotification('non-existent-id');
       }).not.toThrow();
     });
+
+    it('should remove element immediately when immediate=true', async () => {
+      const id = showNotification({ type: 'info', message: 'Test' });
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      expect(document.getElementById(id)).toBeTruthy();
+      dismissNotification(id, true);
+      expect(document.getElementById(id)).toBeNull();
+    });
   });
 
   describe('dismissAll', () => {
