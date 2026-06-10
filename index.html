@@ -73,48 +73,6 @@
         </svg>
         <span class="splash-title">Eisenhauer</span>
       </div>
-      <!-- DIAGNOSTICS: visible on-device error report (debug/splash-hang-diagnostics) -->
-      <div
-        id="splashDiag"
-        style="
-          display: none;
-          position: absolute;
-          left: 12px;
-          right: 12px;
-          bottom: 12px;
-          max-height: 60vh;
-          overflow: auto;
-          background: rgba(0, 0, 0, 0.85);
-          color: #ffb4b4;
-          font: 12px/1.4 monospace;
-          padding: 12px;
-          border-radius: 8px;
-          text-align: left;
-          white-space: pre-wrap;
-          word-break: break-word;
-          z-index: 100000;
-        "
-      >
-        <div style="color: #fff; font-weight: bold; margin-bottom: 6px">
-          ⚠️ Startfehler (Diagnose-Build)
-        </div>
-        <div id="splashDiagBody"></div>
-        <button
-          id="splashDiagCopy"
-          type="button"
-          style="
-            margin-top: 10px;
-            padding: 8px 14px;
-            font: 13px sans-serif;
-            background: #fff;
-            color: #000;
-            border: 0;
-            border-radius: 6px;
-          "
-        >
-          Fehlertext kopieren
-        </button>
-      </div>
     </div>
 
     <!-- Staging Banner -->
@@ -946,11 +904,6 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
-    <!-- DIAGNOSTICS (debug/splash-hang-diagnostics): visible on-device error report.
-         Loaded BEFORE the module so it can catch module import/eval failures.
-         TEMPORARY — remove before production release. -->
-    <script src="js/diag.js?v=diag1"></script>
-
     <script type="module" src="script.js?v=1.12.0"></script>
 
     <!-- Register Service Worker with Cache Busting -->
