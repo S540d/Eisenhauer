@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.12.0 (807e1d1e) built at 1781117845287 -->
+<!-- Cache-Busting Info: v1.12.0 (3e5a26e4) built at 1781122336482 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="807e1d1e" /><meta name="build-time" content="1781117845287" />
+    <meta name="build-hash" content="3e5a26e4" /><meta name="build-time" content="1781122336482" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/Eisenhauer/assets/manifest-DGuGbcQD.json" />
@@ -46,7 +46,7 @@
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-B0nnS22B.js?v=807e1d1e"></script>
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-DEG6UPFc.js?v=3e5a26e4"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-EMBLhseW.js">
     <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-CMLQ-wmF.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
@@ -76,6 +76,48 @@
           <polyline class="splash-check splash-check-4" points="60,68 68,76 80,60" />
         </svg>
         <span class="splash-title">Eisenhauer</span>
+      </div>
+      <!-- DIAGNOSTICS: visible on-device error report (debug/splash-hang-diagnostics) -->
+      <div
+        id="splashDiag"
+        style="
+          display: none;
+          position: absolute;
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
+          max-height: 60vh;
+          overflow: auto;
+          background: rgba(0, 0, 0, 0.85);
+          color: #ffb4b4;
+          font: 12px/1.4 monospace;
+          padding: 12px;
+          border-radius: 8px;
+          text-align: left;
+          white-space: pre-wrap;
+          word-break: break-word;
+          z-index: 100000;
+        "
+      >
+        <div style="color: #fff; font-weight: bold; margin-bottom: 6px">
+          ⚠️ Startfehler (Diagnose-Build)
+        </div>
+        <div id="splashDiagBody"></div>
+        <button
+          id="splashDiagCopy"
+          type="button"
+          style="
+            margin-top: 10px;
+            padding: 8px 14px;
+            font: 13px sans-serif;
+            background: #fff;
+            color: #000;
+            border: 0;
+            border-radius: 6px;
+          "
+        >
+          Fehlertext kopieren
+        </button>
       </div>
     </div>
 
@@ -908,6 +950,11 @@
 
     <!-- Main App (ES6 Module with Firebase Modular SDK) -->
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
+    <!-- DIAGNOSTICS (debug/splash-hang-diagnostics): visible on-device error report.
+         Loaded BEFORE the module so it can catch module import/eval failures.
+         TEMPORARY — remove before production release. -->
+    <script src="js/diag.js?v=diag1"></script>
+
 
     <!-- Register Service Worker with Cache Busting -->
     <script src="js/sw-register.js?v=1776883834344"></script>
