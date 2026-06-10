@@ -467,25 +467,37 @@ function renderTasksWithCallbacks() {
     onReorder: handleReorderTask,
   };
 
-  // Apply smart rules if enabled
-  const smartFunctionsEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
-  let tasksToRender = smartFunctionsEnabled
-    ? applySmartRules(tasks, true, SMART_RULES.urgentThresholdDays)
-    : tasks;
+  // DIAGNOSTICS (debug/splash-hang-diagnostics): the pre-render transforms below
+  // (applySmartRules / filterByCategory) and the post-render hooks
+  // (setupDropZones / rescheduleRemindersIfActive) previously ran UNGUARDED.
+  // A throw here aborts initApp before the splash is hidden → splash hangs.
+  // Wrap defensively AND report the real error so we can see it on the device.
+  try {
+    // Apply smart rules if enabled
+    const smartFunctionsEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
+    let tasksToRender = smartFunctionsEnabled
+      ? applySmartRules(tasks, true, SMART_RULES.urgentThresholdDays)
+      : tasks;
 
-  // Apply category filter based on the active calendar switcher
-  const categoryFilter = localStorage.getItem('categoryFilter');
-  if (categoryFilter) {
-    tasksToRender = filterByCategory(tasksToRender, categoryFilter);
+    // Apply category filter based on the active calendar switcher
+    const categoryFilter = localStorage.getItem('categoryFilter');
+    if (categoryFilter) {
+      tasksToRender = filterByCategory(tasksToRender, categoryFilter);
+    }
+
+    renderAllTasks(tasksToRender, translations, getCurrentLanguage(), callbacks);
+
+    // Setup drop zones for desktop drag & drop
+    setupDropZones(handleMoveTask);
+
+    // Keep reminder schedule in sync with current task list
+    rescheduleRemindersIfActive();
+  } catch (error) {
+    if (typeof window.__diagReport === 'function') {
+      window.__diagReport('renderTasksWithCallbacks failed', error);
+    }
+    console.error('renderTasksWithCallbacks failed:', error);
   }
-
-  renderAllTasks(tasksToRender, translations, getCurrentLanguage(), callbacks);
-
-  // Setup drop zones for desktop drag & drop
-  setupDropZones(handleMoveTask);
-
-  // Keep reminder schedule in sync with current task list
-  rescheduleRemindersIfActive();
 }
 
 function rescheduleRemindersIfActive() {
@@ -1195,8 +1207,13 @@ async function initApp() {
       updateOnlineStatus();
     }
     // If neither guest nor logged in, auth.js will show login screen
-  } catch (_error) {
-    // Error loading cached auth state
+  } catch (error) {
+    // DIAGNOSTICS (debug/splash-hang-diagnostics): surface the real cause on-device
+    // instead of silently swallowing it (which leaves the splash hanging).
+    if (typeof window.__diagReport === 'function') {
+      window.__diagReport('initApp: early-load failed', error);
+    }
+    console.error('initApp early-load failed:', error);
   }
 
   // Note: Event listeners and tasks are loaded ABOVE for instant start
