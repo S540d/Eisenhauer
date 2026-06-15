@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 📚 Dokumentation
+- **CONTRIBUTING.md erstellt (#265):** Entwicklungs-Setup, Branch-Strategie, Commit-Konventionen,
+  PR-Richtlinien, Code-Style, Testing-Anforderungen und Pre-commit-Hook-Dokumentation
+- **Backup-Datum aktualisiert (#257):** `docs/last-backup.txt` auf 2026-06-15 gesetzt
+
 ### 🐛 Bug Fixes
 - **Weiße/leere Startseite – Aufgaben unsichtbar (Render-Robustheit)**
   - Eine einzelne defekte Aufgabe (z. B. ungültiges `dueDate`/`completedAt` oder
