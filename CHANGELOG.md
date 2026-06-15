@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 🔧 Maintenance
+- **Dependency Updates (#256):** patch/minor Updates aller Abhängigkeiten
+  (`firebase`, `vite`, `vitest`, `@vitest/*`, `@playwright/test`, `eslint`,
+  `@typescript-eslint/*`, `prettier`, `globals`, `vite-plugin-pwa`, `happy-dom`)
+- **Security: CSP Enforcing (#245):** Content-Security-Policy vollständig auf
+  Enforcing-Modus umgestellt (kein Report-Only mehr); `X-Content-Type-Options`
+  und `Referrer-Policy` als Meta-Tags gesetzt
+- **Test-Qualität (#286):** Skip-Szenario für Reorder-Buttons korrekt abgedeckt
+  (echter corrupt-getter-Task löst den Skip aus, Buttons korrekt disabled)
+
 ### 🐛 Bug Fixes
 - **Weiße/leere Startseite – Aufgaben unsichtbar (Render-Robustheit)**
   - Eine einzelne defekte Aufgabe (z. B. ungültiges `dueDate`/`completedAt` oder
