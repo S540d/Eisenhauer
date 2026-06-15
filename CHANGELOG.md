@@ -9,6 +9,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✅ Testing
+- **Firebase-Mock in Unit-Tests:** `firebase-init.js` wird in `tests/setup.js` global gemockt —
+  `storage.test.js` (31 Tests) laufen jetzt durch statt mit `auth/invalid-api-key` zu crashen
+- **Timezone-agnostischer Recurring-Test:** `tasks.test.js` custom-Interval-Test nutzt jetzt
+  lokale `new Date(2026, 0, 22)` statt UTC-Timestamp — besteht auf allen Timezones
+
+### 📚 Dokumentation
+- **CONTRIBUTING.md erstellt (#265):** Entwicklungs-Setup, Branch-Strategie, Commit-Konventionen,
+  PR-Richtlinien, Code-Style, Testing-Anforderungen und Pre-commit-Hook-Dokumentation
+- **Backup-Datum aktualisiert (#257):** `docs/last-backup.txt` auf 2026-06-15 gesetzt
+
+### 🔧 Maintenance
+- **Dependency Updates (#256):** patch/minor Updates aller Abhängigkeiten
+  (`firebase`, `vite`, `vitest`, `@vitest/*`, `@playwright/test`, `eslint`,
+  `@typescript-eslint/*`, `prettier`, `globals`, `vite-plugin-pwa`, `happy-dom`)
+- **Security: CSP Enforcing (#245):** Content-Security-Policy vollständig auf
+  Enforcing-Modus umgestellt (kein Report-Only mehr); `X-Content-Type-Options`
+  und `Referrer-Policy` als Meta-Tags gesetzt
+- **Test-Qualität (#286):** Skip-Szenario für Reorder-Buttons korrekt abgedeckt
+  (echter corrupt-getter-Task löst den Skip aus, Buttons korrekt disabled)
+
 ### 🐛 Bug Fixes
 - **Weiße/leere Startseite – Aufgaben unsichtbar (Render-Robustheit)**
   - Eine einzelne defekte Aufgabe (z. B. ungültiges `dueDate`/`completedAt` oder

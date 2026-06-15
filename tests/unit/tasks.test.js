@@ -320,8 +320,9 @@ describe('Tasks', () => {
       expect(customResult.action).toBe('completed');
       const rawAfterCustom = getAllTasks();
       const nextCustom = rawAfterCustom[1][0];
-      // Next occurrence should be 7 days in the future
-      const expectedNextCustom = new Date('2026-01-22T00:00:00.000Z').getTime();
+      // Next occurrence should be 7 days in the future at local midnight
+      // Use local Date construction to be timezone-agnostic (implementation uses setHours)
+      const expectedNextCustom = new Date(2026, 0, 22, 0, 0, 0, 0).getTime();
       expect(nextCustom.createdAt).toBe(expectedNextCustom);
     });
 
