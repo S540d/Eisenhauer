@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### ✅ Testing
+- **Firebase-Mock in Unit-Tests:** `firebase-init.js` wird in `tests/setup.js` global gemockt —
+  `storage.test.js` (31 Tests) laufen jetzt durch statt mit `auth/invalid-api-key` zu crashen
+- **Timezone-agnostischer Recurring-Test:** `tasks.test.js` custom-Interval-Test nutzt jetzt
+  lokale `new Date(2026, 0, 22)` statt UTC-Timestamp — besteht auf allen Timezones
+
 ### 📚 Dokumentation
 - **CONTRIBUTING.md erstellt (#265):** Entwicklungs-Setup, Branch-Strategie, Commit-Konventionen,
   PR-Richtlinien, Code-Style, Testing-Anforderungen und Pre-commit-Hook-Dokumentation
