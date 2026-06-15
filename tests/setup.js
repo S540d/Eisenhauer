@@ -5,6 +5,21 @@
 
 import { vi } from 'vitest';
 
+// Mock firebase-init.js globally to prevent real Firebase initialization in tests
+vi.mock('../js/modules/firebase-init.js', () => ({
+  app: {},
+  auth: {
+    currentUser: null,
+    onAuthStateChanged: vi.fn(),
+    signOut: vi.fn(),
+  },
+  db: {},
+  storage: {},
+  googleProvider: {},
+  appleProvider: {},
+  firebaseEnvironment: { env: 'testing', projectId: 'eisenhauer-testing' },
+}));
+
 // Mock localStorage
 const localStorageMock = (() => {
   let store = {};
