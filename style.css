@@ -1532,6 +1532,28 @@ body.dark-mode .search-highlight {
   margin-bottom: 10px;
 }
 
+.recurring-config-quick .recurring-options {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.28s ease-out;
+}
+
+.recurring-config-quick .recurring-options.expanded {
+  max-height: 350px;
+}
+
+.recurring-config-quick .weekdays-container,
+.recurring-config-quick #quickMonthDayContainer {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.2s ease-out;
+}
+
+.recurring-config-quick .weekdays-container.expanded,
+.recurring-config-quick #quickMonthDayContainer.expanded {
+  max-height: 80px;
+}
+
 .recurring-enable {
   display: flex;
   align-items: center;
@@ -2767,5 +2789,105 @@ body.focus-mode .segments {
   .category-switch-btn {
     padding: 4px 8px;
     font-size: 0.78rem;
+  }
+}
+
+/* ============================================================
+   UX Animations (Issue #242)
+   All wrapped in prefers-reduced-motion guard at the bottom.
+   ============================================================ */
+
+/* --- Skeleton Loader --- */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.skeleton-item {
+  height: 36px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--task-bg) 25%,
+    var(--border-color) 50%,
+    var(--task-bg) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-item:nth-child(2) {
+  width: 75%;
+  animation-delay: 0.2s;
+}
+
+/* --- Task card fade-in --- */
+@keyframes taskFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.task-item {
+  animation: taskFadeIn 0.18s ease-out both;
+}
+
+/* --- Modal slide-up --- */
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal .modal-content {
+  animation: modalSlideUp 0.22s ease-out both;
+}
+
+/* --- Button :active feedback --- */
+.btn:active,
+.login-btn:active,
+.segment-add-btn:active,
+.settings-btn:active,
+.category-switch-btn:active {
+  transform: scale(0.96);
+  transition: transform 0.08s ease-out;
+}
+
+/* --- Respect prefers-reduced-motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-item {
+    animation: none;
+    opacity: 0.5;
+  }
+
+  .task-item {
+    animation: none;
+  }
+
+  .modal .modal-content {
+    animation: none;
+  }
+
+  .btn:active,
+  .login-btn:active,
+  .segment-add-btn:active,
+  .settings-btn:active,
+  .category-switch-btn:active {
+    transform: none;
   }
 }
