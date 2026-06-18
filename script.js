@@ -8,6 +8,7 @@
 
 // Import environment config
 import { isStaging, isTesting } from './js/modules/env-config.js';
+import { initSentry } from './js/modules/sentry.js';
 
 // Import npm packages for local storage and charting
 import localforage from 'localforage';
@@ -18,7 +19,7 @@ window.localforage = localforage;
 window.Chart = Chart;
 
 // Import Firebase services (Modular SDK V2)
-import { auth, db, storage } from './js/modules/firebase-init.js';
+import { auth, db, storage, logAppOpen } from './js/modules/firebase-init.js';
 import {
   initAuth,
   signInWithGoogle,
@@ -959,12 +960,16 @@ function setupEventListeners() {
     });
   }
 
-  // Quick add recurring toggle (Fix for Issue #76)
+  // Quick add recurring toggle (Fix for Issue #76, smooth expand #314)
   const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
   const quickRecurringOptions = document.getElementById('quickRecurringOptions');
   if (quickRecurringEnabled && quickRecurringOptions) {
     quickRecurringEnabled.addEventListener('change', () => {
-      quickRecurringOptions.style.display = quickRecurringEnabled.checked ? 'block' : 'none';
+      quickRecurringOptions.classList.toggle('expanded', quickRecurringEnabled.checked);
+      if (!quickRecurringEnabled.checked) {
+        document.getElementById('quickWeekdaysContainer')?.classList.remove('expanded');
+        document.getElementById('quickMonthDayContainer')?.classList.remove('expanded');
+      }
     });
   }
 
@@ -1102,6 +1107,9 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
  * Initialize the application
  */
 async function initApp() {
+  initSentry();
+  logAppOpen();
+
   // Initialize theme from localStorage (before anything visual loads)
   const savedTheme = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
   if (savedTheme === 'true') {

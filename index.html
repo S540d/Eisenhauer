@@ -40,7 +40,7 @@
     <!-- Note: frame-ancestors is not supported via meta, clickjacking protection requires HTTP header -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com https://*.ingest.sentry.io; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; base-uri 'self'; form-action 'self';"
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
@@ -226,7 +226,10 @@
             <h2>Do!</h2>
             <button class="segment-add-btn" data-segment="1" title="Add task">+</button>
           </div>
-          <div class="task-list" id="segment1" data-segment="1"></div>
+          <div class="task-list" id="segment1" data-segment="1">
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+          </div>
         </div>
 
         <!-- Segment 2: Schedule! -->
@@ -235,7 +238,10 @@
             <h2>Schedule!</h2>
             <button class="segment-add-btn" data-segment="2" title="Add task">+</button>
           </div>
-          <div class="task-list" id="segment2" data-segment="2"></div>
+          <div class="task-list" id="segment2" data-segment="2">
+            <div class="skeleton-item"></div>
+            <div class="skeleton-item"></div>
+          </div>
         </div>
 
         <!-- Segment 3: Delegate! -->
@@ -244,7 +250,9 @@
             <h2>Delegate!</h2>
             <button class="segment-add-btn" data-segment="3" title="Add task">+</button>
           </div>
-          <div class="task-list" id="segment3" data-segment="3"></div>
+          <div class="task-list" id="segment3" data-segment="3">
+            <div class="skeleton-item"></div>
+          </div>
         </div>
 
         <!-- Segment 4: Ignore! -->
@@ -253,7 +261,9 @@
             <h2>Ignore!</h2>
             <button class="segment-add-btn" data-segment="4" title="Add task">+</button>
           </div>
-          <div class="task-list" id="segment4" data-segment="4"></div>
+          <div class="task-list" id="segment4" data-segment="4">
+            <div class="skeleton-item"></div>
+          </div>
         </div>
 
         <!-- Segment 5: Done! -->
@@ -261,7 +271,9 @@
           <div class="segment-header">
             <h2>Done!</h2>
           </div>
-          <div class="task-list" id="segment5" data-segment="5"></div>
+          <div class="task-list" id="segment5" data-segment="5">
+            <div class="skeleton-item"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -290,7 +302,7 @@
             <span id="quickRecurringEnableText">🔁 Make recurring</span>
           </label>
 
-          <div id="quickRecurringOptions" class="recurring-options" style="display: none">
+          <div id="quickRecurringOptions" class="recurring-options">
             <div class="recurring-option">
               <label>
                 <input type="radio" name="quickRecurringType" value="daily" checked />
@@ -302,7 +314,7 @@
                 <input type="radio" name="quickRecurringType" value="weekly" />
                 <span id="quickRecurringWeekly">Weekly</span>
               </label>
-              <div id="quickWeekdaysContainer" class="weekdays-container" style="display: none">
+              <div id="quickWeekdaysContainer" class="weekdays-container">
                 <label
                   ><input type="checkbox" class="weekday-check" value="1" />
                   <span id="quickMon">Mon</span></label
@@ -338,7 +350,7 @@
                 <input type="radio" name="quickRecurringType" value="monthly" />
                 <span id="quickRecurringMonthly">Monthly</span>
               </label>
-              <div id="quickMonthDayContainer" style="display: none">
+              <div id="quickMonthDayContainer">
                 <input
                   type="number"
                   id="quickMonthDay"

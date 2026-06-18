@@ -53,6 +53,7 @@
   },
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "dependencies": {
+    "@sentry/browser": "^10.58.0",
     "chart.js": "^4.5.1",
     "firebase": "^12.9.0",
     "localforage": "^1.10.0"
@@ -60,6 +61,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
+    "@sentry/vite-plugin": "^5.3.0",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
     "@vitest/coverage-v8": "^4.0.18",

@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { getBaseUrl } from './lib/environment-utils.js';
 
 export default defineConfig(({ mode }) => {
@@ -21,7 +22,8 @@ export default defineConfig(({ mode }) => {
 
     build: {
       outDir: 'dist',
-      sourcemap: environment !== 'production', // Source maps only for staging/testing (not exposed in production)
+      // Hidden source maps for Sentry in production; inline for staging/testing
+      sourcemap: environment === 'production' ? 'hidden' : true,
 
       rollupOptions: {
         output: {
@@ -37,6 +39,16 @@ export default defineConfig(({ mode }) => {
     },
 
     plugins: [
+      // Upload source maps to Sentry on production builds (requires SENTRY_AUTH_TOKEN + VITE_SENTRY_DSN)
+      environment === 'production' && env.SENTRY_AUTH_TOKEN && env.VITE_SENTRY_DSN
+        ? sentryVitePlugin({
+            org: env.SENTRY_ORG,
+            project: env.SENTRY_PROJECT,
+            authToken: env.SENTRY_AUTH_TOKEN,
+            sourcemaps: { assets: './dist/**' },
+            release: { name: env.npm_package_version },
+          })
+        : null,
       VitePWA({
         strategies: 'injectManifest',
         srcDir: 'public',
