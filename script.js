@@ -959,12 +959,16 @@ function setupEventListeners() {
     });
   }
 
-  // Quick add recurring toggle (Fix for Issue #76)
+  // Quick add recurring toggle (Fix for Issue #76, smooth expand #314)
   const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
   const quickRecurringOptions = document.getElementById('quickRecurringOptions');
   if (quickRecurringEnabled && quickRecurringOptions) {
     quickRecurringEnabled.addEventListener('change', () => {
-      quickRecurringOptions.style.display = quickRecurringEnabled.checked ? 'block' : 'none';
+      quickRecurringOptions.classList.toggle('expanded', quickRecurringEnabled.checked);
+      if (!quickRecurringEnabled.checked) {
+        document.getElementById('quickWeekdaysContainer')?.classList.remove('expanded');
+        document.getElementById('quickMonthDayContainer')?.classList.remove('expanded');
+      }
     });
   }
 
