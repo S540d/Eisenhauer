@@ -1187,7 +1187,10 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   // Reset modal
   quickAddInput.value = '';
   quickRecurringEnabled.checked = false;
-  quickRecurringOptions.style.display = 'none';
+  quickRecurringOptions.classList.remove('expanded');
+  document.getElementById('quickWeekdaysContainer')?.classList.remove('expanded');
+  document.getElementById('quickMonthDayContainer')?.classList.remove('expanded');
+  document.querySelector('input[name="quickRecurringType"][value="daily"]').checked = true;
 
   // Reset due date
   const dueDateInput = document.getElementById('quickAddDueDate');
@@ -1249,6 +1252,18 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   if (quickRecurringDaily) quickRecurringDaily.textContent = lang.recurring.daily;
   if (quickRecurringWeekly) quickRecurringWeekly.textContent = lang.recurring.weekly;
   if (quickRecurringMonthly) quickRecurringMonthly.textContent = lang.recurring.monthly;
+
+  // Wire up sub-option visibility for recurring type (missing since legacy migration)
+  document.querySelectorAll('input[name="quickRecurringType"]').forEach((radio) => {
+    radio.onchange = () => {
+      document
+        .getElementById('quickWeekdaysContainer')
+        ?.classList.toggle('expanded', radio.value === 'weekly');
+      document
+        .getElementById('quickMonthDayContainer')
+        ?.classList.toggle('expanded', radio.value === 'monthly');
+    };
+  });
 
   // Show modal
   quickAddModal.style.display = 'flex';

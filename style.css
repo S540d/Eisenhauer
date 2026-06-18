@@ -1532,6 +1532,28 @@ body.dark-mode .search-highlight {
   margin-bottom: 10px;
 }
 
+.recurring-config-quick .recurring-options {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.28s ease-out;
+}
+
+.recurring-config-quick .recurring-options.expanded {
+  max-height: 350px;
+}
+
+.recurring-config-quick .weekdays-container,
+.recurring-config-quick #quickMonthDayContainer {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.2s ease-out;
+}
+
+.recurring-config-quick .weekdays-container.expanded,
+.recurring-config-quick #quickMonthDayContainer.expanded {
+  max-height: 80px;
+}
+
 .recurring-enable {
   display: flex;
   align-items: center;
