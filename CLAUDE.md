@@ -44,6 +44,16 @@ Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeig
 
 ## Features
 
+### Firebase Analytics (Issue #318)
+
+`logAppOpen()` wird in `initApp()` (script.js) aufgerufen und ist in `js/modules/firebase-init.js` implementiert.
+
+- Nur in **production** aktiv (`CURRENT_ENV === 'production'` + `measurementId` gesetzt)
+- Erkennt PWA vs. Browser via `window.matchMedia('(display-mode: standalone)')`
+- Loggt Event `app_open` mit Parameter `app_mode: 'standalone' | 'browser'`
+- Metriken einsehbar im **Firebase Console → Analytics → Events** (DAU/WAU/MAU unter „Active users")
+- Voraussetzung: `VITE_FIREBASE_MEASUREMENT_ID` muss als GitHub Actions Secret gesetzt sein (production environment)
+
 ### Kategorien / Kalender-Umschalter (Issue #198 + #259, PR #260)
 
 Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` oder `'business'` (siehe `filterByCategory` in `js/modules/tasks.js`). Aufgaben ohne Kategorie werden beim Filtern wie `'private'` behandelt.
