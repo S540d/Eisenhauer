@@ -21,6 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Backup-Datum aktualisiert (#257):** `docs/last-backup.txt` auf 2026-06-15 gesetzt
 
 ### 🔧 Maintenance
+- **Firebase Analytics entfernt (#320 rückgängig):** Aus Datenschutzgründen wird keine
+  Firebase/Google Analytics mehr genutzt — `getAnalytics`/`logEvent`/`isSupported`-Import,
+  `analyticsPromise`, `logAppOpen()`, `measurementId` und das
+  `VITE_FIREBASE_MEASUREMENT_ID`-Secret entfernt. Besucherzahlen werden stattdessen
+  über GitHub Pages Insights erfasst.
 - **Dependency Updates (#256):** patch/minor Updates aller Abhängigkeiten
   (`firebase`, `vite`, `vitest`, `@vitest/*`, `@playwright/test`, `eslint`,
   `@typescript-eslint/*`, `prettier`, `globals`, `vite-plugin-pwa`, `happy-dom`)

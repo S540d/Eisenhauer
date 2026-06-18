@@ -12,7 +12,6 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { getAnalytics, logEvent, isSupported } from 'firebase/analytics';
 import { getAuth, GoogleAuthProvider, OAuthProvider } from 'firebase/auth';
 import {
   initializeFirestore,
@@ -33,7 +32,6 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Safeguard: Verify Firebase project matches expected environment
@@ -99,26 +97,8 @@ const appleProvider = new OAuthProvider('apple.com');
 // Initialize Firebase Storage
 const storage = getStorage(app);
 
-// Initialize Firebase Analytics (production only, requires measurementId)
-// Promise-based so logAppOpen() can await it and avoid a race condition.
-const analyticsPromise =
-  CURRENT_ENV === 'production' && firebaseConfig.measurementId
-    ? isSupported()
-        .then((supported) => (supported ? getAnalytics(app) : null))
-        .catch(() => null)
-    : Promise.resolve(null);
-
-/**
- * Logs an app_open event with the display mode (PWA vs. browser).
- * No-op outside production or when Analytics is not supported.
- */
-export async function logAppOpen() {
-  const analytics = await analyticsPromise;
-  if (!analytics) return;
-  const isPWA =
-    window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-  logEvent(analytics, 'app_open', { app_mode: isPWA ? 'standalone' : 'browser' });
-}
+// Note: Firebase Analytics / Google Analytics is intentionally NOT used
+// (privacy). Visitor counts are tracked via GitHub Pages Insights instead.
 
 // Export current environment for debugging
 export const firebaseEnvironment = {
