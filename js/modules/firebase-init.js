@@ -100,20 +100,20 @@ const appleProvider = new OAuthProvider('apple.com');
 const storage = getStorage(app);
 
 // Initialize Firebase Analytics (production only, requires measurementId)
-let analytics = null;
-if (CURRENT_ENV === 'production' && firebaseConfig.measurementId) {
-  isSupported().then((supported) => {
-    if (supported) {
-      analytics = getAnalytics(app);
-    }
-  });
-}
+// Promise-based so logAppOpen() can await it and avoid a race condition.
+const analyticsPromise =
+  CURRENT_ENV === 'production' && firebaseConfig.measurementId
+    ? isSupported()
+        .then((supported) => (supported ? getAnalytics(app) : null))
+        .catch(() => null)
+    : Promise.resolve(null);
 
 /**
  * Logs an app_open event with the display mode (PWA vs. browser).
  * No-op outside production or when Analytics is not supported.
  */
-export function logAppOpen() {
+export async function logAppOpen() {
+  const analytics = await analyticsPromise;
   if (!analytics) return;
   const isPWA =
     window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
