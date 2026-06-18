@@ -2733,7 +2733,8 @@ body.dark-mode .undo-toast {
 
 /* Focus Mode Active - Hide Q3 and Q4 */
 body.focus-mode .segment[data-segment='3'],
-body.focus-mode .segment[data-segment='4'] {
+body.focus-mode .segment[data-segment='4'],
+body.focus-mode .segment[data-segment='5'] {
   display: none;
 }
 
