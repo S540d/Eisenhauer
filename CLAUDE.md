@@ -44,6 +44,16 @@ Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeig
 
 ## Features
 
+### Sentry Error Monitoring (Issue #263)
+
+`initSentry()` in `js/modules/sentry.js`, aufgerufen als erstes in `initApp()` (script.js).
+
+- Nur in **production** aktiv (`CURRENT_ENV === 'production'` + `VITE_SENTRY_DSN` gesetzt)
+- Setzt `window.errorTracker` → klinkt sich in `ErrorHandler._trackError()` ein
+- **Benötigte Secrets (GitHub Actions, production environment):**
+  - `VITE_SENTRY_DSN` — DSN aus Sentry-Projekt-Settings
+  - `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` — für Source-Map-Upload (optional)
+
 ### Firebase Analytics (Issue #318)
 
 `logAppOpen()` wird in `initApp()` (script.js) aufgerufen und ist in `js/modules/firebase-init.js` implementiert.
