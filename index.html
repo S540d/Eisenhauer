@@ -40,7 +40,7 @@
     <!-- Note: frame-ancestors is not supported via meta, clickjacking protection requires HTTP header -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com https://*.ingest.sentry.io; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app wss://*.firebaseio.com https://*.ingest.sentry.io; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com https://apis.google.com https://accounts.google.com; base-uri 'self'; form-action 'self';"
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
