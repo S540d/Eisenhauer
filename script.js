@@ -18,7 +18,7 @@ window.localforage = localforage;
 window.Chart = Chart;
 
 // Import Firebase services (Modular SDK V2)
-import { auth, db, storage } from './js/modules/firebase-init.js';
+import { auth, db, storage, logAppOpen } from './js/modules/firebase-init.js';
 import {
   initAuth,
   signInWithGoogle,
@@ -1102,6 +1102,8 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
  * Initialize the application
  */
 async function initApp() {
+  logAppOpen();
+
   // Initialize theme from localStorage (before anything visual loads)
   const savedTheme = localStorage.getItem(STORAGE_KEYS.DARK_MODE);
   if (savedTheme === 'true') {
