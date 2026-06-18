@@ -52,6 +52,8 @@ export const translations = {
       about: 'Über',
       q4Detox: 'Q4-DETOX',
       q4DetoxBtn: 'Q4 aufräumen',
+      q4DetoxDesc:
+        'Archiviert alle Aufgaben aus „Später!" (Q4) auf einmal – ideal, um nicht dringende und unwichtige Aufgaben aufzuräumen.',
       q4DetoxConfirm: 'Alle Aufgaben aus "Später!" archivieren?',
       q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
       q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
@@ -223,6 +225,8 @@ export const translations = {
       about: 'About',
       q4Detox: 'Q4 DETOX',
       q4DetoxBtn: 'Clear Q4',
+      q4DetoxDesc:
+        'Archives all tasks from "Ignore!" (Q4) at once – ideal for clearing out tasks that are neither urgent nor important.',
       q4DetoxConfirm: 'Archive all tasks from "Ignore!"?',
       q4DetoxSuccess: 'Q4 tasks archived!',
       q4DetoxEmpty: 'No Q4 tasks to archive',
@@ -683,6 +687,22 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const smartFunctionsDesc = document.getElementById('smartFunctionsDesc');
   if (smartFunctionsDesc) {
     smartFunctionsDesc.textContent = lang.personalize.smartFunctionsDesc;
+  }
+
+  // Update Q4-Detox section (title, description, button)
+  const q4DetoxTitle = document.getElementById('q4DetoxTitle');
+  if (q4DetoxTitle) {
+    q4DetoxTitle.textContent = lang.settings.q4Detox;
+  }
+
+  const q4DetoxDesc = document.getElementById('q4DetoxDesc');
+  if (q4DetoxDesc) {
+    q4DetoxDesc.textContent = lang.settings.q4DetoxDesc;
+  }
+
+  const q4DetoxBtn = document.getElementById('q4DetoxBtn');
+  if (q4DetoxBtn) {
+    q4DetoxBtn.textContent = lang.settings.q4DetoxBtn;
   }
 
   // Update Category Filter section in Personalize Modal
