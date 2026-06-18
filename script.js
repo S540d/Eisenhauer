@@ -8,6 +8,7 @@
 
 // Import environment config
 import { isStaging, isTesting } from './js/modules/env-config.js';
+import { initSentry } from './js/modules/sentry.js';
 
 // Import npm packages for local storage and charting
 import localforage from 'localforage';
@@ -1106,6 +1107,7 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
  * Initialize the application
  */
 async function initApp() {
+  initSentry();
   logAppOpen();
 
   // Initialize theme from localStorage (before anything visual loads)
