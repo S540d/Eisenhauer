@@ -64,6 +64,35 @@ Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeig
 - Metriken einsehbar im **Firebase Console → Analytics → Events** (DAU/WAU/MAU unter „Active users")
 - Voraussetzung: `VITE_FIREBASE_MEASUREMENT_ID` muss als GitHub Actions Secret gesetzt sein (production environment)
 
+### Export CSV & Markdown (Issue #179, PR #332)
+
+Export-Buttons in den Einstellungen unter „Daten" (kein Feature-Flag):
+
+- `js/modules/export.js` – `exportCsv(tasks, lang)` und `exportMarkdown(tasks, lang)`
+- CSV: alle Felder (ID, Text, Quadrant, Kategorie, erstellt, fällig, abgeschlossen)
+- Markdown: nach Quadrant gruppiert, mit Checkboxen
+- Labels und Datumsformat folgen der aktuellen App-Sprache (de/en)
+- i18n: `settings.exportCsvBtn` / `settings.exportMarkdownBtn` in `translations.js`
+
+### Smart Suggest – Quadrant-Vorschlag (Issue #179, PR #332)
+
+Echtzeit-Keyword-Analyse im Quick-Add-Dialog, hinter **Smart Features**-Flag:
+
+- `js/modules/smart-suggest.js` – `suggestSegment(text)` gibt Segment-ID 1–4 oder `null` zurück
+- Listener auf `#quickAddInput` in `setupEventListeners()` in `script.js`
+- Hinweis-Element `#smartSuggestHint` / `#smartSuggestText` in `index.html`
+- Flag-Check: `localStorage.getItem('smartFunctionsEnabled') === 'true'`
+- i18n: `smartSuggest.prefix` in `translations.js`; Labels in `SEGMENT_SUGGEST_LABELS` im Modul
+
+### Matrix-Verteilung in den Metriken (Issue #179, PR #332)
+
+Balkendiagramm im Metriken-Dialog, hinter **Smart Features**-Flag:
+
+- `renderMatrixStats(allTasks, lang)` in `script.js` – rendert CSS-Balken ohne externe Library
+- Abschnitt `#matrixStatsSection` / `#matrixStatsBars` in `index.html`; nur sichtbar wenn Smart Features aktiv
+- CSS-Klassen in `style.css`: `.matrix-stats-bars`, `.matrix-stats-row`, `.matrix-stats-bar-wrap`, `.matrix-stats-bar`
+- i18n: `metrics.matrixStats` in `translations.js`
+
 ### Kategorien / Kalender-Umschalter (Issue #198 + #259, PR #260)
 
 Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` oder `'business'` (siehe `filterByCategory` in `js/modules/tasks.js`). Aufgaben ohne Kategorie werden beim Filtern wie `'private'` behandelt.
@@ -72,7 +101,7 @@ Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` od
 - **#259/#260:** Sichtbarer, segmentierter **Umschalter** im Header (`#categorySwitcher`, Buttons `Alle / Privat / Beruflich`). Persistiert in `localStorage` unter `categoryFilter` (`''` = Alle). Filtert beim Render und der Quick-Add-Dialog wählt die aktive Kategorie vor (pro Aufgabe überschreibbar, inkl. „Keine"). Es gibt **keinen** separaten Auto-Assign-Schalter mehr – die sichtbare Quick-Add-Vorauswahl ist die einzige Quelle der Wahrheit (alle Adds laufen über das Modal).
 - i18n: `categoryFilter.{switcherLabel,all,private,business,...}` in `js/modules/translations.js`; `updateLanguageUI` aktualisiert Button-Texte **und** das barrierefreie `aria-label` des Switchers.
 
-## Test-Coverage (Stand 2026-06-07)
+## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
 
@@ -87,7 +116,7 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-06-07)
+## Offene Issues (Backlog-Stand 2026-06-19)
 
 | # | Titel | Prio |
 |---|-------|------|
@@ -98,8 +127,9 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 | #245 | Security-Header (CSP) – Phase 2 & 3 ausstehend | Medium |
 | #254 | Firebase Spark-Tarif prüfen | – |
 
-### Kürzlich erledigt (PR #295, offen/in Review)
+### Kürzlich erledigt
 
+- **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)
 - **#257** – `docs/last-backup.txt` mit letztem manuellen Export-Datum erstellt
 - **#264** – Test-Coverage auf 80%+ angehoben; vitest-Schwellenwerte auf 80%; Badge in README
 - **#286** – Falscher Testname in `render-resilience.test.js` korrigiert; echter Skip-Test ergänzt
