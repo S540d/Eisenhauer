@@ -50,6 +50,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Regressionstests ergänzt (`tests/unit/render-resilience.test.js`).
 
 ### ✨ Features
+- **Export als CSV & Markdown (#179)**
+  - Aufgaben können als CSV-Datei oder formatiertes Markdown exportiert werden
+  - Export-Buttons in den Einstellungen unter „Daten"; kein Feature-Flag erforderlich
+  - CSV enthält alle Felder (ID, Text, Quadrant, Kategorie, erstellt, fällig, abgeschlossen)
+  - Markdown gruppiert Aufgaben nach Quadrant mit Checkboxen
+  - Sprache der Labels und Datumsformate folgt der aktuellen App-Sprache (de/en)
+- **Quadrant-Vorschlag beim Eingeben (Smart Features, #179)**
+  - Keyword-basierte Echtzeit-Analyse des Aufgabentexts im Quick-Add-Dialog
+  - Zeigt einen Vorschlag-Hinweis (z. B. „Vorschlag: Sofort! (Q1)") direkt unter dem Eingabefeld
+  - Unterstützt deutsche und englische Keywords für alle vier Quadranten
+  - Nur aktiv wenn „Smart Features" in den Einstellungen aktiviert ist
+- **Matrix-Verteilung in den Metriken (Smart Features, #179)**
+  - Neuer Abschnitt „Matrix Distribution" im Metriken-Dialog
+  - Zeigt Anzahl und prozentualen Anteil aktiver Aufgaben pro Quadrant als CSS-Balkendiagramm
+  - Farben entsprechen den Quadrant-Farben der Matrix
+  - Nur sichtbar wenn „Smart Features" in den Einstellungen aktiviert ist
 - **Kalender-Umschalter zwischen Privat und Beruflich (#259)**
   - Sichtbarer Umschalter im Kopfbereich: Alle / Privat / Beruflich
   - Filtert die angezeigten Aufgaben nach der aktiven Kategorie
