@@ -294,6 +294,14 @@
           />
           <span id="quickAddCharCount" class="char-counter">0/140</span>
         </div>
+        <div
+          id="smartSuggestHint"
+          class="smart-suggest-hint"
+          style="display: none"
+          aria-live="polite"
+        >
+          <span id="smartSuggestText"></span>
+        </div>
 
         <!-- Recurring Task Configuration -->
         <div class="recurring-config-quick">
@@ -517,6 +525,10 @@
           <div class="settings-data-buttons">
             <button id="exportJsonBtn" class="btn">Export</button>
             <button id="importGuestTasksBtn" class="btn">Import</button>
+          </div>
+          <div class="settings-data-buttons settings-export-extra">
+            <button id="exportCsvBtn" class="btn">Export CSV</button>
+            <button id="exportMarkdownBtn" class="btn">Export Markdown</button>
           </div>
         </div>
 
@@ -809,6 +821,12 @@
           <div class="metrics-section">
             <h4 id="metricsDistributionTitle">Distribution by segments</h4>
             <canvas id="segmentDistributionChart"></canvas>
+          </div>
+
+          <!-- Matrix Distribution (Smart Features) -->
+          <div id="matrixStatsSection" class="metrics-section" style="display: none">
+            <h4 id="matrixStatsTitle" class="settings-section-title">MATRIX DISTRIBUTION</h4>
+            <div id="matrixStatsBars" class="matrix-stats-bars"></div>
           </div>
         </div>
         <button id="metricsCancelBtn" class="btn cancel-btn">Close</button>

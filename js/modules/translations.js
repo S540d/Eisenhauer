@@ -50,6 +50,8 @@ export const translations = {
       sendFeedback: 'Feedback senden',
       supportMe: 'Unterstütze mich',
       about: 'Über',
+      exportCsvBtn: 'Export CSV',
+      exportMarkdownBtn: 'Export Markdown',
       q4Detox: 'Q4-DETOX',
       q4DetoxBtn: 'Q4 aufräumen',
       q4DetoxConfirm: 'Alle Aufgaben aus "Später!" archivieren?',
@@ -67,7 +69,7 @@ export const translations = {
       smartFunctions: 'SMARTE FUNKTIONEN',
       smartFunctionsLabel: 'Smarte Funktionen aktivieren',
       smartFunctionsDesc:
-        'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind',
+        'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind. Aktiviert auch Quadranten-Vorschläge und Matrix-Statistiken.',
       categoryFilter: 'KATEGORIE-FILTER',
       categoryFilterDesc:
         'Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
@@ -141,6 +143,21 @@ export const translations = {
     metrics: {
       title: '📊 Produktivitäts-Statistiken',
       close: 'Schließen',
+      overview: 'Übersicht',
+      totalCompleted: 'Abgeschlossen',
+      streak: 'Tage-Streak',
+      avgTime: 'Ø Bearbeitungszeit',
+      completedTasks: 'Abgeschlossene Aufgaben',
+      distribution: 'Verteilung nach Segmenten',
+      day: 'Tag',
+      week: 'Woche',
+      month: 'Monat',
+      matrixStats: 'MATRIX-VERTEILUNG',
+      activeTasks: 'Aktive Aufgaben',
+      noTasks: 'Keine Aufgaben vorhanden',
+    },
+    smartSuggest: {
+      prefix: 'Vorschlag:',
     },
     dragHint: {
       tip: 'Ziehe Aufgaben zwischen Kategorien, um sie zu verschieben. Wische nach links, um zu löschen.',
@@ -221,6 +238,8 @@ export const translations = {
       sendFeedback: 'Send Feedback',
       supportMe: 'Support Me',
       about: 'About',
+      exportCsvBtn: 'Export CSV',
+      exportMarkdownBtn: 'Export Markdown',
       q4Detox: 'Q4 DETOX',
       q4DetoxBtn: 'Clear Q4',
       q4DetoxConfirm: 'Archive all tasks from "Ignore!"?',
@@ -237,7 +256,8 @@ export const translations = {
       langDe: 'Deutsch',
       smartFunctions: 'SMART FUNCTIONS',
       smartFunctionsLabel: 'Enable Smart Functions',
-      smartFunctionsDesc: 'Automatically mark tasks as urgent when due within 3 days',
+      smartFunctionsDesc:
+        'Automatically mark tasks as urgent when due within 3 days. Also enables quadrant suggestions and matrix statistics.',
       categoryFilter: 'CATEGORY FILTER',
       categoryFilterDesc:
         'Switch between All, Private and Business using the header switcher. New tasks are assigned to the active category.',
@@ -311,6 +331,21 @@ export const translations = {
     metrics: {
       title: '📊 Productivity Statistics',
       close: 'Close',
+      overview: 'Overview',
+      totalCompleted: 'Completed',
+      streak: 'Day streak',
+      avgTime: 'Avg. processing time',
+      completedTasks: 'Completed Tasks',
+      distribution: 'Distribution by segments',
+      day: 'Day',
+      week: 'Week',
+      month: 'Month',
+      matrixStats: 'MATRIX DISTRIBUTION',
+      activeTasks: 'Active tasks',
+      noTasks: 'No tasks yet',
+    },
+    smartSuggest: {
+      prefix: 'Suggestion:',
     },
     dragHint: {
       tip: 'Drag tasks between categories to move them. Swipe left to delete.',
@@ -647,6 +682,16 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
   if (importGuestTasksBtn) {
     importGuestTasksBtn.textContent = lang.settings.importGuestBtn;
+  }
+
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+  if (exportCsvBtn) {
+    exportCsvBtn.textContent = lang.settings.exportCsvBtn;
+  }
+
+  const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
+  if (exportMarkdownBtn) {
+    exportMarkdownBtn.textContent = lang.settings.exportMarkdownBtn;
   }
 
   const personalizeBtn = document.getElementById('personalizeBtn');

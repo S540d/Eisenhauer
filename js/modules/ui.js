@@ -1161,6 +1161,11 @@ export function updateMetricsLanguage(translations, currentLanguage) {
 
   const metricsCancelBtn = document.getElementById('metricsCancelBtn');
   if (metricsCancelBtn) metricsCancelBtn.textContent = lang.metrics.close;
+
+  const matrixStatsTitle = document.getElementById('matrixStatsTitle');
+  if (matrixStatsTitle && lang.metrics.matrixStats) {
+    matrixStatsTitle.textContent = lang.metrics.matrixStats;
+  }
 }
 
 /**
