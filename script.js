@@ -54,6 +54,7 @@ import {
   reorderTask,
   applySmartRules,
   filterByCategory,
+  sameTaskId,
 } from './js/modules/tasks.js';
 import {
   initStorage,
@@ -213,7 +214,7 @@ function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null
  */
 function handleDeleteTask(taskId, segment) {
   // Find the task to check if it's recurring
-  const task = tasks[segment].find((t) => t.id === taskId);
+  const task = tasks[segment].find((t) => sameTaskId(t.id, taskId));
   if (!task) return;
 
   // If it's a recurring task, show options for deletion scope
@@ -243,7 +244,7 @@ function handleDeleteTask(taskId, segment) {
     });
   } else {
     // Non-recurring task - delete immediately
-    const deletedTask = tasks[segment].find((t) => t.id === taskId);
+    const deletedTask = tasks[segment].find((t) => sameTaskId(t.id, taskId));
     deleteTask(taskId, segment);
     syncDelete(taskId, segment);
     renderTasksWithCallbacks();
@@ -326,7 +327,7 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
  */
 function handleReorderTask(taskId, segment, direction) {
   // Find current index
-  const currentIndex = tasks[segment].findIndex((t) => t.id === taskId);
+  const currentIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
   if (currentIndex === -1) return;
 
   // Calculate new index based on direction
@@ -366,7 +367,7 @@ function handleReorderTask(taskId, segment, direction) {
  */
 function handleToggleTask(taskId, segment) {
   // Store previous state for undo
-  const task = tasks[segment]?.find((t) => t.id === taskId);
+  const task = tasks[segment]?.find((t) => sameTaskId(t.id, taskId));
   const wasChecked = task ? task.checked : false;
 
   const result = toggleTask(taskId, segment);
@@ -410,7 +411,7 @@ function handleEditRecurring(task) {
     (taskId, newRecurringConfig) => {
       // Find the task
       for (const segment in tasks) {
-        const taskIndex = tasks[segment].findIndex((t) => t.id === taskId);
+        const taskIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
         if (taskIndex !== -1) {
           if (newRecurringConfig === 'DELETE') {
             // Delete task permanently
