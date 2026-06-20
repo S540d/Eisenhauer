@@ -175,14 +175,28 @@ export async function loadUserTasks(userId, db) {
     // Initialize empty tasks structure
     const tasks = { 1: [], 2: [], 3: [], 4: [], 5: [] };
 
+    // Guard against the same logical task appearing in more than one quadrant.
+    // Historically this could happen when an unstable float ID drifted between
+    // Number and String and a failed move left a stray duplicate document
+    // behind, so the task rendered in several quadrants at once.
+    const seenIds = new Set();
+
     // Load tasks from Firestore
     snapshot.forEach((docSnap) => {
       const task = docSnap.data();
-      task.id = docSnap.id; // Use Firestore document ID
+      task.id = String(docSnap.id); // Firestore document ID is the source of truth
 
-      // Ensure segment exists
-      if (tasks[task.segment]) {
-        tasks[task.segment].push(task);
+      // Skip duplicates (defensive: a task must live in exactly one quadrant)
+      if (seenIds.has(task.id)) {
+        return;
+      }
+
+      // Normalise the segment so a string/number mismatch still routes correctly
+      const segment = Number(task.segment);
+      if (tasks[segment]) {
+        task.segment = segment;
+        seenIds.add(task.id);
+        tasks[segment].push(task);
       }
     });
 

@@ -1447,6 +1447,80 @@ body.dark-mode .search-highlight {
   border-radius: 8px;
   padding: 10px;
 }
+
+/* Matrix Stats Bars */
+.matrix-stats-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.matrix-stats-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 70px;
+  align-items: center;
+  gap: 10px;
+}
+
+.matrix-stats-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.matrix-stats-bar-wrap {
+  background: var(--border-color);
+  border-radius: 4px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.matrix-stats-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  min-width: 4px;
+}
+
+.matrix-stats-count {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.matrix-stats-pct {
+  font-weight: 400;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.matrix-stats-empty {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 12px 0;
+}
+
+/* Smart Suggest Hint */
+.smart-suggest-hint {
+  margin-top: 6px;
+  padding: 5px 10px;
+  background: rgba(102, 126, 234, 0.1);
+  border-left: 3px solid #667eea;
+  border-radius: 0 4px 4px 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Extra export buttons row */
+.settings-export-extra {
+  margin-top: 8px;
+}
+
 /* Settings Coffee Link */
 .settings-coffee-link {
   display: block;
@@ -2733,7 +2807,8 @@ body.dark-mode .undo-toast {
 
 /* Focus Mode Active - Hide Q3 and Q4 */
 body.focus-mode .segment[data-segment='3'],
-body.focus-mode .segment[data-segment='4'] {
+body.focus-mode .segment[data-segment='4'],
+body.focus-mode .segment[data-segment='5'] {
   display: none;
 }
 

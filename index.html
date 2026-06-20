@@ -294,6 +294,14 @@
           />
           <span id="quickAddCharCount" class="char-counter">0/140</span>
         </div>
+        <div
+          id="smartSuggestHint"
+          class="smart-suggest-hint"
+          style="display: none"
+          aria-live="polite"
+        >
+          <span id="smartSuggestText"></span>
+        </div>
 
         <!-- Recurring Task Configuration -->
         <div class="recurring-config-quick">
@@ -518,6 +526,10 @@
             <button id="exportJsonBtn" class="btn">Export</button>
             <button id="importGuestTasksBtn" class="btn">Import</button>
           </div>
+          <div class="settings-data-buttons settings-export-extra">
+            <button id="exportCsvBtn" class="btn">Export CSV</button>
+            <button id="exportMarkdownBtn" class="btn">Export Markdown</button>
+          </div>
         </div>
 
         <div class="settings-separator"></div>
@@ -534,6 +546,10 @@
         <!-- Q4 Detox -->
         <div class="settings-section">
           <h4 id="q4DetoxTitle" class="settings-section-title">Q4-DETOX</h4>
+          <p class="settings-info" id="q4DetoxDesc">
+            Archiviert alle Aufgaben aus „Später!" (Q4) auf einmal – ideal, um nicht dringende und
+            unwichtige Aufgaben aufzuräumen.
+          </p>
           <button id="q4DetoxBtn" class="btn">Q4 aufräumen</button>
         </div>
 
@@ -809,6 +825,12 @@
           <div class="metrics-section">
             <h4 id="metricsDistributionTitle">Distribution by segments</h4>
             <canvas id="segmentDistributionChart"></canvas>
+          </div>
+
+          <!-- Matrix Distribution (Smart Features) -->
+          <div id="matrixStatsSection" class="metrics-section" style="display: none">
+            <h4 id="matrixStatsTitle" class="settings-section-title">MATRIX DISTRIBUTION</h4>
+            <div id="matrixStatsBars" class="matrix-stats-bars"></div>
           </div>
         </div>
         <button id="metricsCancelBtn" class="btn cancel-btn">Close</button>

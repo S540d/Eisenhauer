@@ -54,6 +54,7 @@ import {
   reorderTask,
   applySmartRules,
   filterByCategory,
+  sameTaskId,
 } from './js/modules/tasks.js';
 import {
   initStorage,
@@ -83,6 +84,8 @@ import {
   updateSyncStatus,
   setupDropZones,
 } from './js/modules/ui.js';
+import { exportCsv, exportMarkdown } from './js/modules/export.js';
+import { suggestSegment, SEGMENT_SUGGEST_LABELS } from './js/modules/smart-suggest.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
 import {
@@ -211,7 +214,7 @@ function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null
  */
 function handleDeleteTask(taskId, segment) {
   // Find the task to check if it's recurring
-  const task = tasks[segment].find((t) => t.id === taskId);
+  const task = tasks[segment].find((t) => sameTaskId(t.id, taskId));
   if (!task) return;
 
   // If it's a recurring task, show options for deletion scope
@@ -241,7 +244,7 @@ function handleDeleteTask(taskId, segment) {
     });
   } else {
     // Non-recurring task - delete immediately
-    const deletedTask = tasks[segment].find((t) => t.id === taskId);
+    const deletedTask = tasks[segment].find((t) => sameTaskId(t.id, taskId));
     deleteTask(taskId, segment);
     syncDelete(taskId, segment);
     renderTasksWithCallbacks();
@@ -324,7 +327,7 @@ function handleMoveTask(taskId, fromSegment, toSegment) {
  */
 function handleReorderTask(taskId, segment, direction) {
   // Find current index
-  const currentIndex = tasks[segment].findIndex((t) => t.id === taskId);
+  const currentIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
   if (currentIndex === -1) return;
 
   // Calculate new index based on direction
@@ -364,7 +367,7 @@ function handleReorderTask(taskId, segment, direction) {
  */
 function handleToggleTask(taskId, segment) {
   // Store previous state for undo
-  const task = tasks[segment]?.find((t) => t.id === taskId);
+  const task = tasks[segment]?.find((t) => sameTaskId(t.id, taskId));
   const wasChecked = task ? task.checked : false;
 
   const result = toggleTask(taskId, segment);
@@ -408,7 +411,7 @@ function handleEditRecurring(task) {
     (taskId, newRecurringConfig) => {
       // Find the task
       for (const segment in tasks) {
-        const taskIndex = tasks[segment].findIndex((t) => t.id === taskId);
+        const taskIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
         if (taskIndex !== -1) {
           if (newRecurringConfig === 'DELETE') {
             // Delete task permanently
@@ -500,6 +503,50 @@ function rescheduleRemindersIfActive() {
   }
 }
 
+function renderMatrixStats(allTasks, lang) {
+  const barsEl = document.getElementById('matrixStatsBars');
+  if (!barsEl) return;
+
+  const t = translations[lang] || translations.en;
+  const segLabels = {
+    1: t.segments[1].title,
+    2: t.segments[2].title,
+    3: t.segments[3].title,
+    4: t.segments[4].title,
+  };
+
+  // Count only active (non-completed, non-checked) tasks in Q1-Q4
+  const counts = {};
+  let total = 0;
+  for (const segId of [1, 2, 3, 4]) {
+    const count = (allTasks[segId] || []).filter((task) => !task.checked).length;
+    counts[segId] = count;
+    total += count;
+  }
+
+  if (total === 0) {
+    barsEl.innerHTML = `<p class="matrix-stats-empty">${t.metrics.noTasks}</p>`;
+    return;
+  }
+
+  const segColors = { 1: '#ef4444', 2: '#667eea', 3: '#f59e0b', 4: '#6b7280' };
+
+  barsEl.innerHTML = [1, 2, 3, 4]
+    .map((segId) => {
+      const count = counts[segId];
+      const pct = Math.round((count / total) * 100);
+      return `
+        <div class="matrix-stats-row">
+          <div class="matrix-stats-label">${segLabels[segId]}</div>
+          <div class="matrix-stats-bar-wrap">
+            <div class="matrix-stats-bar" style="width: ${pct}%; background: ${segColors[segId]}"></div>
+          </div>
+          <div class="matrix-stats-count">${count} <span class="matrix-stats-pct">(${pct}%)</span></div>
+        </div>`;
+    })
+    .join('');
+}
+
 // ============================================
 // Event Handlers
 // ============================================
@@ -548,6 +595,33 @@ function setupEventListeners() {
 
     // Enforce max length
     taskInput.maxLength = MAX_TASK_LENGTH;
+  }
+
+  // Smart Suggest – live quadrant hint in Quick Add Modal
+  const quickAddInput = document.getElementById('quickAddInput');
+  if (quickAddInput) {
+    quickAddInput.addEventListener('input', () => {
+      const smartEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
+      const hint = document.getElementById('smartSuggestHint');
+      const hintText = document.getElementById('smartSuggestText');
+      if (!hint || !hintText) return;
+
+      if (!smartEnabled || !quickAddInput.value.trim()) {
+        hint.style.display = 'none';
+        return;
+      }
+
+      const suggested = suggestSegment(quickAddInput.value);
+      if (suggested) {
+        const lang = getCurrentLanguage();
+        const labels = SEGMENT_SUGGEST_LABELS[lang] || SEGMENT_SUGGEST_LABELS.en;
+        const prefix = translations[lang]?.smartSuggest?.prefix || 'Suggestion:';
+        hintText.textContent = `${prefix} ${labels[suggested]}`;
+        hint.style.display = '';
+      } else {
+        hint.style.display = 'none';
+      }
+    });
   }
 
   // Segment add buttons (+) - Open Quick Add Modal
@@ -793,6 +867,22 @@ function setupEventListeners() {
     });
   }
 
+  // Export CSV button
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+  if (exportCsvBtn) {
+    exportCsvBtn.addEventListener('click', () => {
+      exportCsv(tasks, getCurrentLanguage());
+    });
+  }
+
+  // Export Markdown button
+  const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
+  if (exportMarkdownBtn) {
+    exportMarkdownBtn.addEventListener('click', () => {
+      exportMarkdown(tasks, getCurrentLanguage());
+    });
+  }
+
   // Q4 Detox button - Archive all Q4 tasks
   const q4DetoxBtn = document.getElementById('q4DetoxBtn');
   if (q4DetoxBtn) {
@@ -912,14 +1002,20 @@ function setupEventListeners() {
   if (metricsBtn) {
     metricsBtn.addEventListener('click', () => {
       openMetricsModal(() => {
-        // Calculate metrics
-        // This is a placeholder - real implementation in metrics module
-        return {
-          totalCompleted: getTasks(SEGMENTS.DONE).length,
-          currentStreak: 0,
-          avgTime: '-',
-          chartData: [],
-        };
+        // Fill overview stats
+        const totalCompleted = getTasks(SEGMENTS.DONE).length;
+        const totalEl = document.getElementById('metricTotalCompleted');
+        if (totalEl) totalEl.textContent = totalCompleted;
+
+        // Matrix stats section (Smart Features only)
+        const smartEnabled = localStorage.getItem('smartFunctionsEnabled') === 'true';
+        const matrixSection = document.getElementById('matrixStatsSection');
+        if (matrixSection) {
+          matrixSection.style.display = smartEnabled ? '' : 'none';
+          if (smartEnabled) {
+            renderMatrixStats(tasks, getCurrentLanguage());
+          }
+        }
       });
     });
   }

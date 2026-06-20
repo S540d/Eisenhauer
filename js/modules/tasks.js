@@ -18,6 +18,44 @@ export let tasks = {
 export let currentTask = null;
 
 /**
+ * Generate a stable, collision-free task ID.
+ *
+ * The previous scheme (`Date.now() + Math.random()`) produced a floating point
+ * number that (a) only had ~12 bits of fractional resolution at the current
+ * timestamp magnitude (collision risk when several tasks are created in the
+ * same millisecond) and (b) was stored as a Firestore document ID via
+ * `.toString()` and then read back as a *string* on load. That made the task
+ * identity drift between Number and String, so strict `===` lookups in
+ * move/toggle/delete/reorder could silently miss the task and leave duplicate
+ * documents behind (the same task showing up in several quadrants).
+ *
+ * A UUID string is stable across create → save → reload and never collides.
+ * @returns {string} Unique task ID
+ */
+export function generateTaskId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  // Fallback for environments without crypto.randomUUID (older browsers/tests)
+  return `task-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+/**
+ * Compare two task IDs irrespective of their type.
+ *
+ * IDs created in-memory may be strings while IDs loaded from Firestore are the
+ * (string) document IDs; legacy data may even hold numbers. Comparing them as
+ * strings guarantees a move/toggle/delete always finds its task instead of
+ * silently failing and corrupting state.
+ * @param {string|number} a
+ * @param {string|number} b
+ * @returns {boolean}
+ */
+export function sameTaskId(a, b) {
+  return String(a) === String(b);
+}
+
+/**
  * Set current task (used by modal)
  */
 export function setCurrentTask(task) {
@@ -122,7 +160,7 @@ function createTaskObject(
   category = null
 ) {
   const task = {
-    id: Date.now() + Math.random(), // Add random to avoid ID collisions
+    id: generateTaskId(), // Stable, collision-free string ID (see generateTaskId)
     text: taskText,
     segment: segmentId,
     checked: false,
@@ -233,7 +271,7 @@ export function restoreTask(taskObject, saveCallback = null) {
  * @returns {boolean} True if task was deleted
  */
 export function deleteTask(taskId, segmentId, deleteCallback = null) {
-  const taskIndex = tasks[segmentId].findIndex((t) => t.id === taskId);
+  const taskIndex = tasks[segmentId].findIndex((t) => sameTaskId(t.id, taskId));
   if (taskIndex === -1) return false;
 
   tasks[segmentId].splice(taskIndex, 1);
@@ -266,7 +304,7 @@ export function moveTask(taskId, fromSegment, toSegment, saveCallback = null) {
     throw new Error('Task ID cannot be null or undefined');
   }
 
-  const taskIndex = tasks[fromSegment].findIndex((t) => t.id === taskId);
+  const taskIndex = tasks[fromSegment].findIndex((t) => sameTaskId(t.id, taskId));
   if (taskIndex === -1) return null;
 
   const task = tasks[fromSegment][taskIndex];
@@ -334,7 +372,7 @@ export function reorderTask(taskId, segment, newIndex, saveCallback = null) {
     throw new Error('New index must be a non-negative integer');
   }
 
-  const taskIndex = tasks[segment].findIndex((t) => t.id === taskId);
+  const taskIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
   if (taskIndex === -1) return null;
 
   // If task is already at the target position, no need to reorder
@@ -363,7 +401,7 @@ export function reorderTask(taskId, segment, newIndex, saveCallback = null) {
  * @returns {object|null} Result object with task and action info
  */
 export function toggleTask(taskId, segmentId, saveCallback = null) {
-  const taskIndex = tasks[segmentId].findIndex((t) => t.id === taskId);
+  const taskIndex = tasks[segmentId].findIndex((t) => sameTaskId(t.id, taskId));
   if (taskIndex === -1) return null;
 
   const task = tasks[segmentId][taskIndex];
@@ -467,7 +505,7 @@ export function getTasks(segmentId) {
  * @returns {object|null} Task object or null if not found
  */
 export function getTask(taskId, segmentId) {
-  return tasks[segmentId].find((t) => t.id === taskId) || null;
+  return tasks[segmentId].find((t) => sameTaskId(t.id, taskId)) || null;
 }
 
 /**
@@ -517,7 +555,7 @@ export function getTotalTaskCount() {
  * @returns {object|null} Updated task or null if not found
  */
 export function updateTask(taskId, segmentId, updates) {
-  const task = tasks[segmentId].find((t) => t.id === taskId);
+  const task = tasks[segmentId].find((t) => sameTaskId(t.id, taskId));
   if (!task) return null;
 
   Object.assign(task, updates);
