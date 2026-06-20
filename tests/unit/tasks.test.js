@@ -27,6 +27,8 @@ import {
   clearCompletedTasks,
   getRecurringDescription,
   applySmartRules,
+  generateTaskId,
+  sameTaskId,
 } from '../../js/modules/tasks.js';
 
 const createEmptyTasks = () => ({
@@ -525,6 +527,49 @@ describe('Tasks', () => {
       const clearedTasks = applySmartRules(tasksToProcess, false);
       expect(clearedTasks[1][0].isUrgent).toBeUndefined();
       expect(clearedTasks[1][1].isUrgent).toBeUndefined();
+    });
+  });
+
+  describe('task identity (generateTaskId / sameTaskId)', () => {
+    it('should generate unique string IDs (no float collisions)', () => {
+      const ids = new Set();
+      for (let i = 0; i < 1000; i++) {
+        const id = generateTaskId();
+        expect(typeof id).toBe('string');
+        ids.add(id);
+      }
+      // All 1000 IDs must be distinct, even when created in the same tick
+      expect(ids.size).toBe(1000);
+    });
+
+    it('addTaskToSegment assigns a stable string ID', () => {
+      const task = addTaskToSegment('Stable id', SEGMENTS.DO);
+      expect(typeof task.id).toBe('string');
+      expect(task.id.length).toBeGreaterThan(0);
+    });
+
+    it('sameTaskId compares ids irrespective of type', () => {
+      expect(sameTaskId(1, 1)).toBe(true);
+      expect(sameTaskId(1, '1')).toBe(true); // Number (in-memory) vs String (after reload)
+      expect(sameTaskId('abc', 'abc')).toBe(true);
+      expect(sameTaskId(1, 2)).toBe(false);
+      expect(sameTaskId('abc', 'abcd')).toBe(false);
+    });
+
+    it('moveTask finds a task even when the lookup id type differs', () => {
+      // Simulates the real bug: task was loaded with a string id, but the
+      // drag layer passes the numeric variant (or vice versa).
+      setAllTasks({
+        ...createEmptyTasks(),
+        [SEGMENTS.DO]: [{ id: '12345', text: 'Drifted id', segment: SEGMENTS.DO, checked: false }],
+      });
+
+      const moved = moveTask(12345, SEGMENTS.DO, SEGMENTS.SCHEDULE);
+
+      expect(moved).not.toBeNull();
+      // Original must be removed (no duplicate left behind in another quadrant)
+      expect(getAllTasks()[SEGMENTS.DO]).toHaveLength(0);
+      expect(getAllTasks()[SEGMENTS.SCHEDULE]).toHaveLength(1);
     });
   });
 });
