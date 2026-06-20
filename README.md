@@ -5,9 +5,6 @@ A modern, mobile-first Progressive Web App for task management using the Eisenho
 ## Live
 
 - **Web App:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) ✅
-- Available as Android TWA via Google Play Store
-
-📝 **[Changelog](docs/CHANGELOG.md)** | ♿ **[Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)** | 📐 **[Architecture](docs/ARCHITECTURE.md)**
 
 ## Tech Stack
 
@@ -20,65 +17,6 @@ A modern, mobile-first Progressive Web App for task management using the Eisenho
 | Cloud Firestore | Real-time database with security rules |
 | Service Worker | Offline functionality |
 | Web App Manifest | PWA installability |
-
-## Setup
-
-### 1. Firebase Setup (required for login)
-
-The app requires Firebase for user authentication and cloud sync.
-
-1. Follow the detailed guide in [FIREBASE-SETUP.md](docs/FIREBASE-SETUP.md)
-2. Create a free Firebase project
-3. Enable Google Sign-In
-4. Set up Firestore Database
-5. Copy `firebase-config.example.js` to `firebase-config.js`
-6. Enter your Firebase credentials in `firebase-config.js`
-
-Note: `firebase-config.js` is in `.gitignore` and will not be committed — your credentials stay private.
-
-### 2. Local Development
-
-```bash
-git clone https://github.com/S540d/Eisenhauer.git
-cd Eisenhauer
-npm install
-```
-
-Then open `index.html` in a browser or start a local server:
-```bash
-python3 -m http.server 8000
-# or
-npx http-server
-```
-
-### 3. npm Scripts
-
-```bash
-# Formatting & linting
-npm run format          # Format code with Prettier
-npm run format:check    # Check code formatting (no changes)
-npm run lint            # ESLint linting
-npm run lint:fix        # Auto-fix ESLint errors
-
-# Testing
-npm run test            # Unit tests with Vitest
-npm run test:coverage   # Tests with coverage report
-npm run test:e2e        # End-to-end tests (Playwright)
-
-# Deployment
-npm run deploy          # Deploy to GitHub Pages
-npm run validate        # Release validation checklist
-```
-
-### 4. Install as iOS App
-
-The app can be installed as a Progressive Web App on iOS:
-
-1. Generate icons: Open `icons/generate-icons.html` and download all icons
-2. Host the app on GitHub Pages (see [INSTALL.md](INSTALL.md))
-3. Open in Safari → "Share" → "Add to Home Screen"
-
-📱 **Detailed guide:** See [INSTALL.md](INSTALL.md)
 
 ## Features
 
