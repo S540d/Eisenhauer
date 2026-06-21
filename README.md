@@ -1,154 +1,69 @@
-# Eisenhauer Matrix - Task Management App
+# Eisenhauer Matrix
 
-A modern, mobile-first Progressive Web App for task management using the Eisenhower Matrix method.
+A task management Progressive Web App based on the Eisenhower Matrix method.
 
 ## Live
 
-- **Web App:** [https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/) ✅
+[https://s540d.github.io/Eisenhauer/](https://s540d.github.io/Eisenhauer/)
 
 ## Tech Stack
 
-| Technology | Role |
-|---|---|
-| HTML5, CSS3 (Flexbox, Grid, CSS Variables) | Frontend |
-| Vanilla JavaScript ES6+ | Application logic (no framework) |
-| IndexedDB via localForage | Guest mode storage (~50 MB+) |
-| Firebase Authentication | Google Sign-In |
-| Cloud Firestore | Real-time database with security rules |
-| Service Worker | Offline functionality |
-| Web App Manifest | PWA installability |
+| Technology                                    | Role                       |
+| --------------------------------------------- | -------------------------- |
+| HTML5, CSS3 (Flexbox, Grid, CSS Variables)    | Frontend                   |
+| Vanilla JavaScript ES6+                       | Application logic          |
+| IndexedDB via localForage                     | Guest mode storage (~50MB) |
+| Firebase Authentication                       | Google/Apple Sign-In       |
+| Cloud Firestore                               | Real-time database         |
+| Service Worker                                | Offline functionality      |
+| Web App Manifest                              | PWA installability         |
 
 ## Features
 
-### 5 Segments
-- **Do!** - Urgent & Important (handle immediately)
-- **Schedule!** - Not urgent & Important (plan)
-- **Delegate!** - Urgent & Not important (delegate)
-- **Ignore!** - Not urgent & Not important (eliminate)
-- **Done!** - Completed tasks
+### 5 Matrix Segments
+- **Do!** — Urgent & Important
+- **Schedule!** — Not urgent & Important
+- **Delegate!** — Urgent & Not important
+- **Ignore!** — Not urgent & Not important
+- **Done!** — Completed tasks
 
-### Core Functions
-- ✅ Create tasks with max. 140 characters
-- ✅ **Recurring Tasks** - Time-based automatic recreation (⭐ NEW: v1.6.0)
-  - Daily, Weekly, Monthly, or Custom
-  - Appear only when due (e.g., daily tomorrow at 00:00)
-  - Delete entire series via Edit Modal
-  - Flexible interval configuration
-- ✅ Automatic forwarding to next category (↓ button)
-- ✅ Checkboxes to mark done (automatically moves to "Done!")
-- ✅ **Drag & Drop between segments** - 3 modes:
-  - **Mouse:** Click & Drag
-  - **Touch:** Tap & Hold, then drag (Mobile)
-  - **Keyboard:** Space → Arrow Keys → Enter (⭐ NEW: Accessibility)
-- ✅ **Swipe-to-Delete** - Delete tasks with swipe gesture (Mobile)
-- ✅ **Delete Button** - Desktop-friendly delete option (Done tasks only)
+### Task Management
+- Create tasks with max. 140 characters
+- **Recurring tasks** — daily, weekly, monthly, or custom intervals; appear only when due
+- Drag & drop between segments (mouse, touch tap-and-hold, keyboard)
+- Swipe-to-delete on mobile
+- Due dates with optional smart urgency (auto-mark urgent ≤ 3 days before)
+- Web Push reminders for tasks with due dates
+- **Export** — CSV and Markdown export
+- **Matrix Stats** — overview of task distribution across segments
+- **Smart Suggest** — suggestions based on existing task patterns
+- **Focus Mode** — hide Q3/Q4 for concentrated work
+- **Category filter** — Private / Work separation (opt-in)
+- Search tasks
 
 ### Cloud & Sync
-- ✅ **Cloud synchronization** with Firebase
-- ✅ **User accounts** (Google/Apple Sign-In)
-- ✅ **Auth persistence** - Stay permanently signed in (⭐ NEW: IndexedDB Persistence for Android TWA)
-- ✅ **Guest mode** - Test without login using local storage
-- ✅ **Explicit data import** (⭐ NEW v1.7.0)
-- ✅ **Data loss protection** (⭐ NEW v1.7.0)
-- ✅ **Cache-busting system** (⭐ NEW v1.7.0)
-- ✅ **Cross-device sync** (with cloud login)
-- ✅ **Offline-First Architecture** with OfflineQueue
-- ✅ **Persistent storage** with IndexedDB
-- ✅ **Offline indicator** shows connection status
+- Cloud synchronization via Firebase (with login)
+- Guest mode — test without login using local IndexedDB storage
+- Cross-device sync (with login)
+- Offline-first architecture with OfflineQueue
+- Explicit data import and data loss protection
 
-### Design & UX
-- ✅ **Dark Mode** - Automatic based on system setting
-- ✅ **Mobile-First Design** - Optimized for smartphones
-- ✅ **Responsive Layout** - Works on desktop & tablet
-- ✅ **Progressive Web App (PWA)** - Installable as app
-- ✅ **iOS-optimized** with special meta tags
+### Accessibility
+- WCAG 2.1 Level AA compliant
+- Full keyboard control
+- Screen reader support (VoiceOver, NVDA, JAWS, TalkBack)
 
-### 🌍 Language Support
-- ✅ **German** - Full localization
-- ✅ **English** - Complete English translation
-- ✅ **Dynamic language sync** (⭐ NEW: v1.6.2-RC)
+### Design
+- Dark mode (automatic based on system setting)
+- Mobile-first, responsive layout
+- PWA — installable as standalone app
 
-### ♿ Accessibility
-- ✅ **WCAG 2.1 Level AA Fully Compliant**
-- ✅ **Full keyboard control**
-- ✅ **Screen reader support** (VoiceOver, NVDA, JAWS, TalkBack)
-- 📊 **Audit:** [Accessibility Audit](tests/accessibility/ACCESSIBILITY_AUDIT.md)
-
-### Data Management
-- ✅ **Export/Import** - Export and import data as JSON
-- ✅ **Search** - Search tasks via settings menu
-- ✅ **Due Dates** - Optional due dates for tasks
-- ✅ **Web Push Reminders** - Push notifications for tasks with due dates
-- ✅ **Smart Urgency Rules** - Auto-mark as urgent when due ≤3 days (opt-in)
-- ✅ **Focus Mode** - Hide Q3/Q4 for more focused work
-- ✅ **Category Filter** - Private/Work categorization (opt-in)
-
-## Usage
-
-### Desktop/Browser
-1. Enter a new task and click "+"
-2. Select segment
-3. **Optional:** Configure recurring task
-4. Manage tasks:
-   - **Click checkbox** → Task moves to "Done!"
-   - **Drag & Drop** → Move task to another segment
-   - **↓ Button** → Move task to next category
-   - **✕ Button** → Delete task (with confirmation)
-
-### Mobile (Touch)
-- **Swipe left** on task → Delete with animation feedback
-- All other features available as on desktop
-- **Pull down** on task list → Refresh
-- **Tap & Hold** → Drag & Drop
-
-## Data Storage
-
-### Guest Mode (without login)
-- **Location:** IndexedDB (via localForage)
-- **Capacity:** ~50 MB+ (much larger than localStorage)
-- **Persistence:** Persistent Storage API prevents automatic deletion
-
-### Cloud Mode (with login)
-- **Location:** Firebase Cloud Firestore
-- **Sync:** Automatic on all devices
-- **Security:** Firebase Security Rules, XSS protection, user-isolated data
-
-## Browser Compatibility
-
-- ✅ Chrome/Edge (recommended)
-- ✅ Firefox
-- ✅ Safari (Desktop & iOS)
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Roadmap
-
-Planned features (see [Issues](https://github.com/S540d/Eisenhauer/issues)):
-
-- [ ] Archive for deleted tasks
-- [ ] More authentication providers
-- [ ] CSV Export (for Excel/Sheets)
-- [ ] PDF Export (for printing)
-- [ ] Categories/Tags
+### Language
+- German and English
 
 ## License
 
-This project is licensed under Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0).
-
-- ✅ You may use, copy, and modify the project
-- ✅ You may use it for private/personal purposes
-- ❌ Commercial use is **not** permitted
-- ℹ️ Attribution required when using
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0).
+Personal and private use allowed. Commercial use not permitted. Attribution required.
 
 See [LICENSE](LICENSE) for details.
-
-## Contributing
-
-Pull Requests are welcome! For larger changes, please open an issue first.
-
-## Contact
-
-For questions or feedback: [GitHub Issues](https://github.com/S540d/Eisenhauer/issues)
-
----
-
-Made with ❤️ and [Claude Code](https://claude.com/claude-code)
