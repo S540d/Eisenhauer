@@ -824,6 +824,39 @@ function setupEventListeners() {
     });
   }
 
+  // Purge Done button - permanently delete all completed tasks
+  const purgeBtn = document.getElementById('purgeBtn');
+  if (purgeBtn) {
+    purgeBtn.addEventListener('click', () => {
+      const lang = getTranslation();
+      const doneTasks = getTasks(SEGMENTS.DONE);
+
+      if (doneTasks.length === 0) {
+        showWarning(
+          lang.settings?.purgeEmpty ||
+            (getCurrentLanguage() === 'de' ? 'Keine erledigten Aufgaben' : 'No completed tasks')
+        );
+        return;
+      }
+
+      const confirmMsg =
+        getCurrentLanguage() === 'de'
+          ? `${doneTasks.length} erledigte Aufgabe(n) endgültig löschen?`
+          : `Permanently delete ${doneTasks.length} completed task(s)?`;
+      if (!confirm(confirmMsg)) return;
+
+      for (const task of [...doneTasks]) {
+        deleteTask(task.id, SEGMENTS.DONE);
+        syncDelete(task.id);
+      }
+
+      renderTasksWithCallbacks();
+      showSuccess(
+        getCurrentLanguage() === 'de' ? 'Erledigte Aufgaben gelöscht' : 'Completed tasks deleted'
+      );
+    });
+  }
+
   // Import guest tasks button
   const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
   if (importGuestTasksBtn) {
