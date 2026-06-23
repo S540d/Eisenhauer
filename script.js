@@ -479,8 +479,10 @@ function renderTasksWithCallbacks() {
       : tasks;
 
     // Apply category filter based on the active calendar switcher
+    // (only when the category filter feature is enabled in Personalize)
+    const categoryFilterEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
     const categoryFilter = localStorage.getItem('categoryFilter');
-    if (categoryFilter) {
+    if (categoryFilterEnabled && categoryFilter) {
       tasksToRender = filterByCategory(tasksToRender, categoryFilter);
     }
 
@@ -670,6 +672,14 @@ function setupEventListeners() {
   // Calendar Switcher (Umschalter zwischen Privat- und Arbeits-Kalender)
   const categorySwitcher = document.getElementById('categorySwitcher');
   if (categorySwitcher) {
+    // Show/hide the header switcher based on the personalize toggle
+    const updateCategorySwitcherVisibility = () => {
+      const enabled = localStorage.getItem('categoryFilterEnabled') === 'true';
+      categorySwitcher.style.display = enabled ? '' : 'none';
+    };
+    updateCategorySwitcherVisibility();
+    window.updateCategorySwitcherVisibility = updateCategorySwitcherVisibility;
+
     const switchButtons = categorySwitcher.querySelectorAll('.category-switch-btn');
 
     // Restore the active calendar from the saved state ('' = all)
