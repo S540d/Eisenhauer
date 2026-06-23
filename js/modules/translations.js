@@ -73,9 +73,10 @@ export const translations = {
       smartFunctionsDesc:
         'Automatisch Aufgaben als dringend markieren, wenn sie in 3 Tagen fällig sind. Aktiviert auch Quadranten-Vorschläge und Matrix-Statistiken.',
       categoryFilter: 'KATEGORIE-FILTER',
+      categoryFilterLabel: 'Kategorie-Filter aktivieren',
       categoryFilterDesc:
         'Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
-      reminders: 'ERINNERUNGEN',
+      reminders: 'ERINNERUNGEN (BETA)',
       remindersLabel: 'Erinnerungen aktivieren',
       remindersDesc: 'Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum',
       remindersBefore: 'Erinnerung',
@@ -263,9 +264,10 @@ export const translations = {
       smartFunctionsDesc:
         'Automatically mark tasks as urgent when due within 3 days. Also enables quadrant suggestions and matrix statistics.',
       categoryFilter: 'CATEGORY FILTER',
+      categoryFilterLabel: 'Enable Category Filter',
       categoryFilterDesc:
         'Switch between All, Private and Business using the header switcher. New tasks are assigned to the active category.',
-      reminders: 'REMINDERS',
+      reminders: 'REMINDERS (BETA)',
       remindersLabel: 'Enable Reminders',
       remindersDesc: 'Native notifications for tasks with due dates',
       remindersBefore: 'Remind me',
@@ -754,6 +756,11 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const personalizeCategoryFilterTitle = document.getElementById('personalizeCategoryFilterTitle');
   if (personalizeCategoryFilterTitle) {
     personalizeCategoryFilterTitle.textContent = lang.personalize.categoryFilter;
+  }
+
+  const categoryFilterLabel = document.getElementById('categoryFilterLabel');
+  if (categoryFilterLabel) {
+    categoryFilterLabel.textContent = lang.personalize.categoryFilterLabel;
   }
 
   const categoryFilterDesc = document.getElementById('categoryFilterDesc');
