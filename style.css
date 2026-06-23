@@ -771,6 +771,34 @@ header h1,
   display: none;
 }
 
+/* Purge button in Done segment header */
+.segment-purge-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--text-secondary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.segment-purge-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.segment-purge-btn:active {
+  transform: scale(0.95);
+}
+
 /* Drag over feedback */
 .task-list.drag-over {
   background: rgba(102, 126, 234, 0.25);
