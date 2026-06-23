@@ -742,6 +742,12 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     smartFunctionsToggle.checked = localStorage.getItem('smartFunctionsEnabled') === 'true';
   }
 
+  // Category filter toggle reflects whether the header switcher is enabled
+  const categoryFilterToggle = document.getElementById('categoryFilterToggle');
+  if (categoryFilterToggle) {
+    categoryFilterToggle.checked = localStorage.getItem('categoryFilterEnabled') === 'true';
+  }
+
   // Update reminders toggle + dropdown state
   const remindersToggle = document.getElementById('remindersToggle');
   const remindersDaysContainer = document.getElementById('remindersDaysContainer');
@@ -815,6 +821,20 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       localStorage.setItem('smartFunctionsEnabled', isEnabled.toString());
 
       // Trigger re-render if callback is provided
+      if (window.renderTasksCallback) {
+        window.renderTasksCallback();
+      }
+      return;
+    }
+
+    // Handle category filter toggle (show/hide the header switcher)
+    if (target.id === 'categoryFilterToggle') {
+      const isEnabled = target.checked;
+      localStorage.setItem('categoryFilterEnabled', isEnabled.toString());
+
+      if (window.updateCategorySwitcherVisibility) {
+        window.updateCategorySwitcherVisibility();
+      }
       if (window.renderTasksCallback) {
         window.renderTasksCallback();
       }
@@ -1203,10 +1223,12 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     dueDateInput.value = '';
   }
 
-  // Show category selector and preselect the active calendar (Privat/Beruflich)
+  // Show category selector only when the category filter feature is enabled,
+  // and preselect the active calendar (Privat/Beruflich)
   const categoryConfig = document.getElementById('quickAddCategoryConfig');
   if (categoryConfig) {
-    categoryConfig.style.display = '';
+    const categoryFilterEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
+    categoryConfig.style.display = categoryFilterEnabled ? '' : 'none';
     // Preselect the active calendar so new tasks land in the current view;
     // the user can still override it (incl. "Keine") per task.
     const activeCategory = localStorage.getItem('categoryFilter') || '';
