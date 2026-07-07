@@ -1588,9 +1588,23 @@ body.dark-mode .search-highlight {
   font-weight: 500;
 }
 
+.quick-add-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .quick-add-input-wrapper {
   position: relative;
-  margin-bottom: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.btn.quick-add-ok-btn {
+  flex-shrink: 0;
+  width: auto;
+  padding: 8px 16px;
 }
 
 .quick-add-input-wrapper input {
@@ -1627,33 +1641,78 @@ body.dark-mode .search-highlight {
   color: #ef4444;
 }
 
-.recurring-config-quick {
-  background: var(--task-bg);
-  padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
-.recurring-config-quick .recurring-options {
+#quickRecurringOptions.recurring-options {
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.28s ease-out;
 }
 
-.recurring-config-quick .recurring-options.expanded {
+#quickRecurringOptions.recurring-options.expanded {
+  background: var(--task-bg);
+  padding: 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
   max-height: 350px;
 }
 
-.recurring-config-quick .weekdays-container,
-.recurring-config-quick #quickMonthDayContainer {
+#quickRecurringOptions .weekdays-container,
+#quickRecurringOptions #quickMonthDayContainer {
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.2s ease-out;
 }
 
-.recurring-config-quick .weekdays-container.expanded,
-.recurring-config-quick #quickMonthDayContainer.expanded {
+#quickRecurringOptions .weekdays-container.expanded,
+#quickRecurringOptions #quickMonthDayContainer.expanded {
   max-height: 80px;
+}
+
+/* Compact icon toggles (recurring / due date) in Quick Add modal */
+.quick-add-toggles {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.icon-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--task-bg);
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+}
+
+.icon-toggle.icon-toggle-checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.icon-toggle-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.icon-toggle input[type='checkbox'] {
+  cursor: pointer;
+  margin: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .recurring-enable {
@@ -1738,13 +1797,6 @@ body.dark-mode .search-highlight {
 }
 
 /* Due Date Configuration */
-.due-date-config {
-  background: var(--task-bg);
-  padding: 8px;
-  border-radius: 4px;
-  margin-bottom: 10px;
-}
-
 .due-date-label {
   display: block;
   font-weight: 500;
@@ -1762,6 +1814,8 @@ body.dark-mode .search-highlight {
   color: var(--text-primary);
   font-size: 0.9rem;
   font-family: inherit;
+  margin-bottom: 10px;
+  box-sizing: border-box;
 }
 
 .due-date-input:focus {

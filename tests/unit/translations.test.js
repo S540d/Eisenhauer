@@ -273,8 +273,12 @@ describe('updateLanguageUI', () => {
       <h2 id="quickAddTitle">Old Quick Add Title</h2>
       <input id="quickAddInput" placeholder="Old Quick Add Placeholder">
       <button id="quickAddSubmitBtn">Old Submit</button>
-      <button id="quickAddCancelBtn">Old Cancel</button>
-      <span id="quickRecurringEnableText">Old Quick Enable</span>
+      <label id="quickRecurringToggle">
+        <span id="quickRecurringEnableText">Old Quick Enable</span>
+      </label>
+      <label id="quickDueDateToggle">
+        <span id="quickAddDueDateLabel">Old Due Date</span>
+      </label>
       <span id="quickRecurringDaily">Old Quick Daily</span>
       <span id="quickRecurringWeekly">Old Quick Weekly</span>
       <span id="quickRecurringMonthly">Old Quick Monthly</span>
@@ -456,15 +460,24 @@ describe('updateLanguageUI', () => {
       expect(input.placeholder).toBe('What do you want to do?');
     });
 
-    it('should update quick add buttons to German', () => {
+    it('should update quick add submit button to German OK label', () => {
       setLanguage('de');
       updateLanguageUI(mockCallback);
 
       const submitBtn = document.getElementById('quickAddSubmitBtn');
-      const cancelBtn = document.getElementById('quickAddCancelBtn');
 
-      expect(submitBtn.textContent).toBe('Hinzufügen');
-      expect(cancelBtn.textContent).toBe('Abbrechen');
+      expect(submitBtn.textContent).toBe('OK');
+    });
+
+    it('should update quick add due date label and toggle title', () => {
+      setLanguage('de');
+      updateLanguageUI(mockCallback);
+
+      const dueDateLabel = document.getElementById('quickAddDueDateLabel');
+      const dueDateToggle = document.getElementById('quickDueDateToggle');
+
+      expect(dueDateLabel.textContent).toBe('Fällig am');
+      expect(dueDateToggle.title).toBe('Fällig am');
     });
 
     it('should update quick recurring labels to English', () => {

@@ -1102,12 +1102,39 @@ function setupEventListeners() {
   // Quick add recurring toggle (Fix for Issue #76, smooth expand #314)
   const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
   const quickRecurringOptions = document.getElementById('quickRecurringOptions');
+  const quickRecurringToggle = document.getElementById('quickRecurringToggle');
   if (quickRecurringEnabled && quickRecurringOptions) {
     quickRecurringEnabled.addEventListener('change', () => {
       quickRecurringOptions.classList.toggle('expanded', quickRecurringEnabled.checked);
+      quickRecurringToggle?.classList.toggle('icon-toggle-checked', quickRecurringEnabled.checked);
       if (!quickRecurringEnabled.checked) {
         document.getElementById('quickWeekdaysContainer')?.classList.remove('expanded');
         document.getElementById('quickMonthDayContainer')?.classList.remove('expanded');
+      }
+    });
+  }
+
+  // Quick add due date toggle: reveal the date input and open the native picker
+  const quickDueDateEnabled = document.getElementById('quickDueDateEnabled');
+  const quickAddDueDate = document.getElementById('quickAddDueDate');
+  const quickDueDateToggle = document.getElementById('quickDueDateToggle');
+  if (quickDueDateEnabled && quickAddDueDate) {
+    quickDueDateEnabled.addEventListener('change', () => {
+      const checked = quickDueDateEnabled.checked;
+      quickAddDueDate.style.display = checked ? '' : 'none';
+      quickDueDateToggle?.classList.toggle('icon-toggle-checked', checked);
+      if (checked) {
+        if (typeof quickAddDueDate.showPicker === 'function') {
+          try {
+            quickAddDueDate.showPicker();
+          } catch {
+            quickAddDueDate.focus();
+          }
+        } else {
+          quickAddDueDate.focus();
+        }
+      } else {
+        quickAddDueDate.value = '';
       }
     });
   }
