@@ -1201,9 +1201,9 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   const quickAddCategory = document.getElementById('quickAddCategory');
   const quickAddTitle = document.getElementById('quickAddTitle');
   const quickAddSubmitBtn = document.getElementById('quickAddSubmitBtn');
-  const quickAddCancelBtn = document.getElementById('quickAddCancelBtn');
   const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
   const quickRecurringOptions = document.getElementById('quickRecurringOptions');
+  const quickDueDateEnabled = document.getElementById('quickDueDateEnabled');
 
   if (!quickAddModal || !quickAddInput) {
     return;
@@ -1213,6 +1213,7 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   quickAddInput.value = '';
   quickRecurringEnabled.checked = false;
   quickRecurringOptions.classList.remove('expanded');
+  document.getElementById('quickRecurringToggle')?.classList.remove('icon-toggle-checked');
   document.getElementById('quickWeekdaysContainer')?.classList.remove('expanded');
   document.getElementById('quickMonthDayContainer')?.classList.remove('expanded');
   document.querySelector('input[name="quickRecurringType"][value="daily"]').checked = true;
@@ -1221,7 +1222,12 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   const dueDateInput = document.getElementById('quickAddDueDate');
   if (dueDateInput) {
     dueDateInput.value = '';
+    dueDateInput.style.display = 'none';
   }
+  if (quickDueDateEnabled) {
+    quickDueDateEnabled.checked = false;
+  }
+  document.getElementById('quickDueDateToggle')?.classList.remove('icon-toggle-checked');
 
   // Show category selector only when the category filter feature is enabled,
   // and preselect the active calendar (Privat/Beruflich)
@@ -1270,6 +1276,20 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   const quickRecurringEnableText = document.getElementById('quickRecurringEnableText');
   if (quickRecurringEnableText) {
     quickRecurringEnableText.textContent = lang.recurring.enableLabel;
+  }
+  const quickRecurringToggle = document.getElementById('quickRecurringToggle');
+  if (quickRecurringToggle) {
+    quickRecurringToggle.title = lang.recurring.enableLabel;
+  }
+
+  // Update due date label
+  const quickAddDueDateLabel = document.getElementById('quickAddDueDateLabel');
+  if (quickAddDueDateLabel) {
+    quickAddDueDateLabel.textContent = lang.quickAddModal.dueDate;
+  }
+  const quickDueDateToggle = document.getElementById('quickDueDateToggle');
+  if (quickDueDateToggle) {
+    quickDueDateToggle.title = lang.quickAddModal.dueDate;
   }
 
   // Update recurring interval labels
@@ -1352,15 +1372,8 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   // Remove old listeners and add new ones
   const newSubmitBtn = quickAddSubmitBtn.cloneNode(true);
   quickAddSubmitBtn.parentNode.replaceChild(newSubmitBtn, quickAddSubmitBtn);
-  newSubmitBtn.textContent = lang.buttons.add;
+  newSubmitBtn.textContent = lang.buttons.ok;
   newSubmitBtn.addEventListener('click', handleSubmit);
-
-  const newCancelBtn = quickAddCancelBtn.cloneNode(true);
-  quickAddCancelBtn.parentNode.replaceChild(newCancelBtn, quickAddCancelBtn);
-  newCancelBtn.textContent = lang.buttons.cancel;
-  newCancelBtn.addEventListener('click', () => {
-    quickAddModal.style.display = 'none';
-  });
 
   // Handle Enter key
   const handleKeyPress = (e) => {
