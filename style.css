@@ -1667,40 +1667,42 @@ body.dark-mode .search-highlight {
   max-height: 80px;
 }
 
-/* Compact icon toggles (recurring / due date) in Quick Add modal */
+/* Compact icon toggles (recurring / due date) in Quick Add modal.
+   Same clean bordered-square SVG-icon style as the focus-mode toggle (header). */
 .quick-add-toggles {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 10px;
 }
 
 .icon-toggle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   cursor: pointer;
-  padding: 6px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background: var(--task-bg);
-  transition:
-    background 0.2s,
-    border-color 0.2s;
+  background: var(--card-bg);
+  border: 2px solid var(--grid-color);
+  border-radius: 8px;
+  padding: 6px 8px;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+}
+
+.icon-toggle:hover {
+  border-color: #667eea;
+}
+
+/* Explicitly set SVG stroke via CSS to fix currentColor inheritance bug on older Android WebView */
+.icon-toggle-icon {
+  stroke: currentColor;
+  transition: stroke 0.2s ease;
 }
 
 .icon-toggle.icon-toggle-checked {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.icon-toggle-icon {
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.icon-toggle input[type='checkbox'] {
-  cursor: pointer;
-  margin: 0;
+  background: #667eea;
+  border-color: #667eea;
+  color: white;
+  box-shadow: 0 0 12px rgba(102, 126, 234, 0.4);
 }
 
 .sr-only {
