@@ -34,6 +34,7 @@ export const translations = {
       add: 'Hinzufügen',
       cancel: 'Abbrechen',
       close: 'Schließen',
+      ok: 'OK',
     },
     settings: {
       title: 'Einstellungen',
@@ -225,6 +226,7 @@ export const translations = {
       add: 'Add',
       cancel: 'Cancel',
       close: 'Close',
+      ok: 'OK',
     },
     settings: {
       title: 'Settings',
@@ -599,12 +601,7 @@ export function updateLanguageUI(renderAllTasksCallback) {
 
   const quickAddSubmitBtn = document.getElementById('quickAddSubmitBtn');
   if (quickAddSubmitBtn) {
-    quickAddSubmitBtn.textContent = lang.buttons.add;
-  }
-
-  const quickAddCancelBtn = document.getElementById('quickAddCancelBtn');
-  if (quickAddCancelBtn) {
-    quickAddCancelBtn.textContent = lang.buttons.cancel;
+    quickAddSubmitBtn.textContent = lang.buttons.ok;
   }
 
   // Update Quick Add Due Date label
@@ -612,11 +609,19 @@ export function updateLanguageUI(renderAllTasksCallback) {
   if (quickAddDueDateLabel) {
     quickAddDueDateLabel.textContent = lang.quickAddModal.dueDate;
   }
+  const quickDueDateToggle = document.getElementById('quickDueDateToggle');
+  if (quickDueDateToggle) {
+    quickDueDateToggle.title = lang.quickAddModal.dueDate;
+  }
 
   // Update Quick Add Recurring texts
   const quickRecurringEnableText = document.getElementById('quickRecurringEnableText');
   if (quickRecurringEnableText) {
     quickRecurringEnableText.textContent = lang.recurring.enableLabel;
+  }
+  const quickRecurringToggle = document.getElementById('quickRecurringToggle');
+  if (quickRecurringToggle) {
+    quickRecurringToggle.title = lang.recurring.enableLabel;
   }
 
   const quickRecurringDaily = document.getElementById('quickRecurringDaily');

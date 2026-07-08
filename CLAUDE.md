@@ -93,6 +93,16 @@ Balkendiagramm im Metriken-Dialog, hinter **Smart Features**-Flag:
 - CSS-Klassen in `style.css`: `.matrix-stats-bars`, `.matrix-stats-row`, `.matrix-stats-bar-wrap`, `.matrix-stats-bar`
 - i18n: `metrics.matrixStats` in `translations.js`
 
+### Quick-Add-Modal: kompaktes Layout (PR #346)
+
+Das „Neue Aufgabe"-Fenster (`#quickAddModal` in `index.html`, geöffnet via `openQuickAddModal()` in `js/modules/ui.js`) wurde verschlankt, weil selten genutzte Optionen zu viel Platz beanspruchten:
+
+- **Wiederholung** (`#quickRecurringEnabled`) und **Fälligkeit** (`#quickDueDateEnabled`) sind jetzt Checkbox+Icon-Buttons (`.icon-toggle`, `#quickRecurringToggle` / `#quickDueDateToggle`) im selben cleanen SVG-Stil wie der Fokus-Modus-Toggle (`#focusModeToggle`, Feather-Icons mit `stroke="currentColor"`, Rahmen aus `--card-bg`/`--grid-color`). Aktiv-Zustand: Klasse `icon-toggle-checked`, Akzentfarbe `#667eea` + Glow (Listener in `script.js`, `setupEventListeners()`).
+- Checkbox-Fälligkeit blendet `#quickAddDueDate` ein und ruft `showPicker()` auf, um den nativen Kalender direkt zu öffnen.
+- **Abbrechen**-Button entfernt (Schließen weiterhin per Klick außerhalb des Modals).
+- **Hinzufügen**-Button entfernt; stattdessen ein **OK**-Button (`#quickAddSubmitBtn`, Text aus `lang.buttons.ok`) direkt neben dem Eingabefeld (`.quick-add-input-row`).
+- Neuer i18n-Key `buttons.ok` (de/en) in `translations.js`.
+
 ### Kategorien / Kalender-Umschalter (Issue #198 + #259, PR #260)
 
 Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` oder `'business'` (siehe `filterByCategory` in `js/modules/tasks.js`). Aufgaben ohne Kategorie werden beim Filtern wie `'private'` behandelt.
@@ -129,6 +139,7 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 
 ### Kürzlich erledigt
 
+- **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
 - **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)
 - **#257** – `docs/last-backup.txt` mit letztem manuellen Export-Datum erstellt
 - **#264** – Test-Coverage auf 80%+ angehoben; vitest-Schwellenwerte auf 80%; Badge in README
@@ -140,3 +151,4 @@ Epic #95 (Production-Grade Dev Setup) wurde am 2026-05-30 als `completed` geschl
 ## Bekannte Eigenheiten
 
 - Beim Rebase von `main`-basierten Branches auf `testing` gibt es Konflikte in `AndroidManifest.xml` und `colors.xml`, weil `testing` die Farb-Struktur grundlegend überarbeitet hat (alles `#000000`, keine `colorPrimary` mehr).
+- In `style.css` werden an mehreren Stellen (`.focus-mode-toggle.active`, `.category-select-btn.active` u.a.) die CSS-Variablen `--primary-color`, `--primary`, `--primary-rgb` und `--hover-bg` referenziert, die aber nirgends in `:root` definiert sind – diese Deklarationen sind aktuell wirkungslos (No-ops). Der tatsächlich sichtbare Akzentton der App ist der Literal-Hex-Wert `#667eea` (siehe `.btn.active`). Beim nächsten CSS-Aufräumen entweder die Variablen in `:root` definieren oder die toten `var(...)`-Referenzen durch `#667eea` ersetzen.
