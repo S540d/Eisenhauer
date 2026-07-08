@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.12.1 (5e09022c) built at 1783237171812 -->
+<!-- Cache-Busting Info: v1.12.1 (768c4cf7) built at 1783498634639 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="5e09022c" /><meta name="build-time" content="1783237171812" />
+    <meta name="build-hash" content="768c4cf7" /><meta name="build-time" content="1783498634639" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/Eisenhauer/assets/manifest-mY7TwnO1.json" />
@@ -46,9 +46,9 @@
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-DP_Zzbv6.js?v=5e09022c"></script>
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-gKxRyvR4.js?v=768c4cf7"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-CUAKsCJq.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-Dcf-f8jH.css">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-DJ6gGgzK.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
   <body>
     <!-- Splash Screen -->
@@ -312,15 +312,18 @@
         <h3 id="quickAddTitle">New Task</h3>
         <p id="quickAddCategory" class="quick-add-category"></p>
 
-        <div class="quick-add-input-wrapper">
-          <input
-            type="text"
-            id="quickAddInput"
-            placeholder="What do you want to do?"
-            maxlength="140"
-            autocomplete="off"
-          />
-          <span id="quickAddCharCount" class="char-counter">0/140</span>
+        <div class="quick-add-input-row">
+          <div class="quick-add-input-wrapper">
+            <input
+              type="text"
+              id="quickAddInput"
+              placeholder="What do you want to do?"
+              maxlength="140"
+              autocomplete="off"
+            />
+            <span id="quickAddCharCount" class="char-counter">0/140</span>
+          </div>
+          <button id="quickAddSubmitBtn" class="btn quick-add-ok-btn">OK</button>
         </div>
         <div
           id="smartSuggestHint"
@@ -331,82 +334,116 @@
           <span id="smartSuggestText"></span>
         </div>
 
-        <!-- Recurring Task Configuration -->
-        <div class="recurring-config-quick">
-          <label class="recurring-enable">
-            <input type="checkbox" id="quickRecurringEnabled" />
-            <span id="quickRecurringEnableText">🔁 Make recurring</span>
+        <!-- Compact icon toggles for recurring + due date (same clean SVG-icon style as the focus-mode toggle) -->
+        <div class="quick-add-toggles">
+          <label class="icon-toggle" id="quickRecurringToggle">
+            <input type="checkbox" id="quickRecurringEnabled" class="sr-only" />
+            <svg
+              class="icon-toggle-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="17 1 21 5 17 9" />
+              <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+              <polyline points="7 23 3 19 7 15" />
+              <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+            </svg>
+            <span id="quickRecurringEnableText" class="sr-only">Make recurring</span>
           </label>
+          <label class="icon-toggle" id="quickDueDateToggle">
+            <input type="checkbox" id="quickDueDateEnabled" class="sr-only" />
+            <svg
+              class="icon-toggle-icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span id="quickAddDueDateLabel" class="sr-only">Due Date</span>
+          </label>
+        </div>
 
-          <div id="quickRecurringOptions" class="recurring-options">
-            <div class="recurring-option">
-              <label>
-                <input type="radio" name="quickRecurringType" value="daily" checked />
-                <span id="quickRecurringDaily">Daily</span>
-              </label>
+        <!-- Recurring Task Configuration -->
+        <div id="quickRecurringOptions" class="recurring-options">
+          <div class="recurring-option">
+            <label>
+              <input type="radio" name="quickRecurringType" value="daily" checked />
+              <span id="quickRecurringDaily">Daily</span>
+            </label>
+          </div>
+          <div class="recurring-option">
+            <label>
+              <input type="radio" name="quickRecurringType" value="weekly" />
+              <span id="quickRecurringWeekly">Weekly</span>
+            </label>
+            <div id="quickWeekdaysContainer" class="weekdays-container">
+              <label
+                ><input type="checkbox" class="weekday-check" value="1" />
+                <span id="quickMon">Mon</span></label
+              >
+              <label
+                ><input type="checkbox" class="weekday-check" value="2" />
+                <span id="quickTue">Tue</span></label
+              >
+              <label
+                ><input type="checkbox" class="weekday-check" value="3" />
+                <span id="quickWed">Wed</span></label
+              >
+              <label
+                ><input type="checkbox" class="weekday-check" value="4" />
+                <span id="quickThu">Thu</span></label
+              >
+              <label
+                ><input type="checkbox" class="weekday-check" value="5" />
+                <span id="quickFri">Fri</span></label
+              >
+              <label
+                ><input type="checkbox" class="weekday-check" value="6" />
+                <span id="quickSat">Sat</span></label
+              >
+              <label
+                ><input type="checkbox" class="weekday-check" value="0" />
+                <span id="quickSun">Sun</span></label
+              >
             </div>
-            <div class="recurring-option">
-              <label>
-                <input type="radio" name="quickRecurringType" value="weekly" />
-                <span id="quickRecurringWeekly">Weekly</span>
-              </label>
-              <div id="quickWeekdaysContainer" class="weekdays-container">
-                <label
-                  ><input type="checkbox" class="weekday-check" value="1" />
-                  <span id="quickMon">Mon</span></label
-                >
-                <label
-                  ><input type="checkbox" class="weekday-check" value="2" />
-                  <span id="quickTue">Tue</span></label
-                >
-                <label
-                  ><input type="checkbox" class="weekday-check" value="3" />
-                  <span id="quickWed">Wed</span></label
-                >
-                <label
-                  ><input type="checkbox" class="weekday-check" value="4" />
-                  <span id="quickThu">Thu</span></label
-                >
-                <label
-                  ><input type="checkbox" class="weekday-check" value="5" />
-                  <span id="quickFri">Fri</span></label
-                >
-                <label
-                  ><input type="checkbox" class="weekday-check" value="6" />
-                  <span id="quickSat">Sat</span></label
-                >
-                <label
-                  ><input type="checkbox" class="weekday-check" value="0" />
-                  <span id="quickSun">Sun</span></label
-                >
-              </div>
-            </div>
-            <div class="recurring-option">
-              <label>
-                <input type="radio" name="quickRecurringType" value="monthly" />
-                <span id="quickRecurringMonthly">Monthly</span>
-              </label>
-              <div id="quickMonthDayContainer">
-                <input
-                  type="number"
-                  id="quickMonthDay"
-                  min="1"
-                  max="31"
-                  value="1"
-                  placeholder="Day (1-31)"
-                />
-              </div>
+          </div>
+          <div class="recurring-option">
+            <label>
+              <input type="radio" name="quickRecurringType" value="monthly" />
+              <span id="quickRecurringMonthly">Monthly</span>
+            </label>
+            <div id="quickMonthDayContainer">
+              <input
+                type="number"
+                id="quickMonthDay"
+                min="1"
+                max="31"
+                value="1"
+                placeholder="Day (1-31)"
+              />
             </div>
           </div>
         </div>
 
-        <!-- Due Date Configuration -->
-        <div class="due-date-config">
-          <label for="quickAddDueDate" class="due-date-label">
-            <span id="quickAddDueDateLabel">Due Date</span>
-          </label>
-          <input type="date" id="quickAddDueDate" class="due-date-input" />
-        </div>
+        <!-- Due Date Configuration (opens when the calendar toggle above is checked) -->
+        <input type="date" id="quickAddDueDate" class="due-date-input" style="display: none" />
 
         <!-- Category Selection (shown only when feature enabled) -->
         <div id="quickAddCategoryConfig" class="category-config" style="display: none">
@@ -436,11 +473,6 @@
               <span id="quickAddCategoryBusiness">Beruflich</span>
             </button>
           </div>
-        </div>
-
-        <div class="modal-buttons">
-          <button id="quickAddSubmitBtn" class="btn submit-btn">Add</button>
-          <button id="quickAddCancelBtn" class="btn cancel-btn">Cancel</button>
         </div>
       </div>
     </div>
