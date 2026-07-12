@@ -9,6 +9,7 @@ import { getRecurringDescription } from './tasks.js';
 import { DragManager } from './drag-manager.js';
 import { announceDragStart, announceDragEnd } from './accessibility.js';
 import { translations } from './translations.js';
+import { shouldShowSegmentDemo } from './onboarding.js';
 
 /**
  * Create a task DOM element
@@ -46,10 +47,21 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
   checkbox.className = 'task-checkbox';
   checkbox.checked = task.checked;
 
-  // Checkbox event listener
+  // Checkbox event listener. When a task is being marked done (not restored),
+  // play a brief "completing" animation before handing off to the callback,
+  // which re-renders the matrix and moves the task into "Done!" (Issue #352 B3).
   if (callbacks.onToggle) {
     checkbox.addEventListener('change', () => {
-      callbacks.onToggle(task.id, task.segment);
+      const justCompleted = checkbox.checked && !task.checked;
+      if (!justCompleted) {
+        callbacks.onToggle(task.id, task.segment);
+        return;
+      }
+
+      const prefersReducedMotion =
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      div.classList.add('task-completing');
+      setTimeout(() => callbacks.onToggle(task.id, task.segment), prefersReducedMotion ? 0 : 220);
     });
   }
 
@@ -254,6 +266,60 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
 }
 
 /**
+ * Build the placeholder shown in an empty segment: either a dismissible demo
+ * task with a short quadrant explanation (new users, Issue #352 B2) or a
+ * friendly empty-state message once onboarding has been dismissed.
+ * @param {number} segmentId - Segment ID (1-5)
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ * @param {object} callbacks - Event callbacks
+ * @returns {HTMLElement}
+ */
+function createEmptyStateElement(segmentId, translations, currentLanguage, callbacks = {}) {
+  const t = translations[currentLanguage] || translations.en;
+  const wrapper = document.createElement('div');
+
+  if (shouldShowSegmentDemo(segmentId)) {
+    wrapper.className = 'segment-empty-state segment-demo-task';
+
+    const badge = document.createElement('span');
+    badge.className = 'segment-demo-badge';
+    badge.textContent = t.onboarding.demoBadge;
+    wrapper.appendChild(badge);
+
+    const demoText = document.createElement('p');
+    demoText.className = 'segment-demo-text';
+    demoText.textContent = t.onboarding.demoTasks[segmentId];
+    wrapper.appendChild(demoText);
+
+    const explanation = document.createElement('p');
+    explanation.className = 'segment-empty-explanation';
+    explanation.textContent = t.onboarding.explanations[segmentId];
+    wrapper.appendChild(explanation);
+
+    const dismissBtn = document.createElement('button');
+    dismissBtn.type = 'button';
+    dismissBtn.className = 'segment-demo-dismiss';
+    dismissBtn.setAttribute('aria-label', t.onboarding.dismissLabel);
+    dismissBtn.title = t.onboarding.dismissLabel;
+    dismissBtn.textContent = '✕';
+    dismissBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (callbacks.onDismissDemo) callbacks.onDismissDemo(segmentId);
+    });
+    wrapper.appendChild(dismissBtn);
+  } else {
+    wrapper.className = 'segment-empty-state';
+    const message = document.createElement('p');
+    message.className = 'segment-empty-message';
+    message.textContent = t.emptyState[segmentId];
+    wrapper.appendChild(message);
+  }
+
+  return wrapper;
+}
+
+/**
  * Render tasks in a specific segment
  * @param {number} segmentId - Segment ID (1-5)
  * @param {object} tasks - Tasks object
@@ -268,6 +334,13 @@ export function renderSegment(segmentId, tasks, translations, currentLanguage, c
   segmentElement.innerHTML = '';
 
   const segmentTasks = tasks[segmentId] || [];
+
+  if (segmentTasks.length === 0) {
+    segmentElement.appendChild(
+      createEmptyStateElement(segmentId, translations, currentLanguage, callbacks)
+    );
+    return;
+  }
 
   // Phase 1: build elements, skipping any task that fails to render. A single
   // corrupt task (e.g. an invalid dueDate or a malformed recurring object) must

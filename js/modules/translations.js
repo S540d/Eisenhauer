@@ -174,6 +174,29 @@ export const translations = {
       4: { title: 'Später!', subtitle: 'optional' },
       5: { title: 'Fertig!', subtitle: '' },
     },
+    onboarding: {
+      demoBadge: 'Beispiel',
+      dismissLabel: 'Beispiel entfernen',
+      explanations: {
+        1: 'Wichtig und dringend – das packst du direkt an.',
+        2: 'Wichtig, aber nicht dringend – dafür planst du dir bewusst Zeit ein.',
+        3: 'Dringend, aber nicht wichtig – das kannst du oft abgeben.',
+        4: 'Weder wichtig noch dringend – das darf warten oder ganz entfallen.',
+      },
+      demoTasks: {
+        1: 'Beispiel: Rechnung heute bezahlen',
+        2: 'Beispiel: Nächste Woche Sport einplanen',
+        3: 'Beispiel: Meeting-Termin abstimmen lassen',
+        4: 'Beispiel: Irgendwann Schreibtisch aufräumen',
+      },
+    },
+    emptyState: {
+      1: 'Hier ist gerade nichts Dringendes – gut so!',
+      2: 'Noch nichts geplant. Was ist dir wichtig?',
+      3: 'Nichts zum Abgeben da.',
+      4: 'Leer – auch das darf mal so bleiben.',
+      5: 'Noch keine Aufgabe erledigt.',
+    },
     recurring: {
       title: 'Wiederkehrende Aufgabe',
       enableLabel: 'Als wiederkehrende Aufgabe',
@@ -365,6 +388,29 @@ export const translations = {
       3: { title: 'Delegate!', subtitle: '' },
       4: { title: 'Ignore!', subtitle: '' },
       5: { title: 'Done!', subtitle: '' },
+    },
+    onboarding: {
+      demoBadge: 'Example',
+      dismissLabel: 'Remove example',
+      explanations: {
+        1: 'Important and urgent — tackle this right away.',
+        2: 'Important, but not urgent — schedule dedicated time for it.',
+        3: 'Urgent, but not important — this is often best delegated.',
+        4: 'Neither important nor urgent — let it wait, or drop it.',
+      },
+      demoTasks: {
+        1: 'Example: Pay an overdue bill today',
+        2: "Example: Plan next week's workout",
+        3: 'Example: Have someone else schedule the meeting',
+        4: 'Example: Tidy the desk someday',
+      },
+    },
+    emptyState: {
+      1: 'Nothing urgent right now — nice!',
+      2: 'Nothing planned yet. What matters to you?',
+      3: 'Nothing to delegate right now.',
+      4: "Empty — and that's fine too.",
+      5: 'No tasks completed yet.',
     },
     recurring: {
       title: 'Recurring Task',

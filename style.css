@@ -15,6 +15,12 @@
   --grid-color: #e5e7eb;
   --task-bg: #fafafa;
   --input-border: #e0e0e0;
+
+  /* Accent / brand token (Issue #352 B1) */
+  --primary-color: #667eea;
+  --primary: var(--primary-color);
+  --primary-rgb: 102, 126, 234;
+  --hover-bg: rgba(102, 126, 234, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,6 +35,7 @@
     --grid-color: #404040;
     --task-bg: #1f1f1f;
     --input-border: #4b5563;
+    --hover-bg: rgba(102, 126, 234, 0.2);
   }
 }
 
@@ -358,7 +365,7 @@ header h1,
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, #764ba2 100%);
 }
 
 .login-container {
@@ -1538,7 +1545,7 @@ body.dark-mode .search-highlight {
   margin-top: 6px;
   padding: 5px 10px;
   background: rgba(102, 126, 234, 0.1);
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--primary-color);
   border-radius: 0 4px 4px 0;
   font-size: 0.8rem;
   color: var(--text-secondary);
@@ -1689,7 +1696,7 @@ body.dark-mode .search-highlight {
 }
 
 .icon-toggle:hover {
-  border-color: #667eea;
+  border-color: var(--primary-color);
 }
 
 /* Explicitly set SVG stroke via CSS to fix currentColor inheritance bug on older Android WebView */
@@ -1699,8 +1706,8 @@ body.dark-mode .search-highlight {
 }
 
 .icon-toggle.icon-toggle-checked {
-  background: #667eea;
-  border-color: #667eea;
+  background: var(--primary-color);
+  border-color: var(--primary-color);
   color: white;
   box-shadow: 0 0 12px rgba(102, 126, 234, 0.4);
 }
@@ -2039,7 +2046,7 @@ body {
 
 /* Drop zone highlighting */
 .task-list.drag-over {
-  border: 2px dashed var(--segment-color, #667eea);
+  border: 2px dashed var(--segment-color, var(--primary-color));
   background: linear-gradient(
     to bottom,
     rgba(var(--segment-color-rgb, 102, 126, 234), 0.05),
@@ -2196,13 +2203,30 @@ body {
 
 /* Accessibility: Focus indicators for keyboard navigation */
 .task-item:focus-visible {
-  outline: 2px solid #667eea;
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .task-list:focus-visible {
-  outline: 2px dashed #667eea;
+  outline: 2px dashed var(--primary-color);
   outline-offset: 4px;
+}
+
+/* Clearer drag feedback between quadrants (Issue #352 B3):
+   dim non-target segments and lift the one currently under the drag. */
+body.is-dragging .segment {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+body.is-dragging .segment:not(.drag-target-segment) {
+  opacity: 0.55;
+}
+
+.segment.drag-target-segment {
+  opacity: 1;
+  transform: scale(1.01);
 }
 
 /* ============================================
@@ -2380,8 +2404,8 @@ body.dark-mode .segment.keyboard-target::before {
   width: 100%;
   padding: 8px 12px;
   background: transparent;
-  color: #667eea;
-  border: 1.5px solid #667eea;
+  color: var(--primary-color);
+  border: 1.5px solid var(--primary-color);
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -2402,13 +2426,13 @@ body.dark-mode .segment.keyboard-target::before {
 }
 
 .btn.active {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
-  border-color: #667eea;
+  border-color: var(--primary-color);
 }
 
 .btn:visited {
-  color: #667eea;
+  color: var(--primary-color);
 }
 
 /* Toggle group: row of equal-width toggle buttons */
@@ -2438,9 +2462,9 @@ body.dark-mode .btn:hover {
 }
 
 body.dark-mode .btn.active {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
-  border-color: #667eea;
+  border-color: var(--primary-color);
 }
 
 .settings-separator {
@@ -2573,7 +2597,7 @@ body.dark-mode .settings-warning {
 }
 
 .undo-toast-btn {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
   border: none;
   padding: 6px 16px;
@@ -2707,7 +2731,7 @@ body.dark-mode .undo-toast {
 .tutorial-demo-task {
   background: var(--task-bg);
   border: 1px solid var(--border-color);
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--primary-color);
   padding: 12px 16px;
   border-radius: 6px;
   font-size: 14px;
@@ -2717,7 +2741,7 @@ body.dark-mode .undo-toast {
 .tutorial-demo-arrow,
 .tutorial-demo-swipe {
   font-size: 32px;
-  color: #667eea;
+  color: var(--primary-color);
   animation: slide 1.5s ease-in-out infinite;
 }
 
@@ -2762,7 +2786,7 @@ body.dark-mode .undo-toast {
 }
 
 .tutorial-dot.active {
-  background: #667eea;
+  background: var(--primary-color);
   width: 24px;
   border-radius: 4px;
 }
@@ -2790,7 +2814,7 @@ body.dark-mode .undo-toast {
 }
 
 .tutorial-btn-primary {
-  background: #667eea;
+  background: var(--primary-color);
   color: white;
 }
 
@@ -2952,6 +2976,82 @@ body.focus-mode .segments {
 }
 
 /* ============================================================
+   Onboarding: Empty States & Demo Tasks (Issue #352 B2)
+   ============================================================ */
+
+.segment-empty-state {
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.segment-empty-message {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.85rem;
+  padding: 8px 4px;
+}
+
+.segment-demo-task {
+  position: relative;
+  background: var(--task-bg);
+  border: 1.5px dashed var(--grid-color);
+  text-align: left;
+}
+
+.segment-demo-badge {
+  display: inline-block;
+  background: var(--hover-bg);
+  color: var(--primary-color);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-bottom: 6px;
+}
+
+.segment-demo-text {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.segment-empty-explanation {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  padding-right: 20px;
+}
+
+.segment-demo-dismiss {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-light);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.segment-demo-dismiss:hover {
+  background: var(--hover-bg);
+  color: var(--primary-color);
+}
+
+/* ============================================================
    UX Animations (Issue #242)
    All wrapped in prefers-reduced-motion guard at the bottom.
    ============================================================ */
@@ -3001,6 +3101,43 @@ body.focus-mode .segments {
   animation: taskFadeIn 0.18s ease-out both;
 }
 
+/* --- "Done!" completion micro-interaction (Issue #352 B3) --- */
+@keyframes taskCompletePulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.015);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes taskCompleteCheckGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(var(--primary-rgb), 0);
+  }
+}
+
+.task-completing {
+  animation: taskCompletePulse 0.22s ease-out both;
+}
+
+.task-completing .task-checkbox {
+  animation: taskCompleteCheckGlow 0.3s ease-out both;
+  border-radius: 4px;
+}
+
+.task-completing .task-text {
+  text-decoration: line-through;
+  opacity: 0.65;
+  transition: opacity 0.18s ease-out;
+}
+
 /* --- Modal slide-up --- */
 @keyframes modalSlideUp {
   from {
@@ -3047,6 +3184,19 @@ body.focus-mode .segments {
   .segment-add-btn:active,
   .settings-btn:active,
   .category-switch-btn:active {
+    transform: none;
+  }
+
+  .task-completing,
+  .task-completing .task-checkbox {
+    animation: none;
+  }
+
+  body.is-dragging .segment {
+    transition: none;
+  }
+
+  .segment.drag-target-segment {
     transform: none;
   }
 }

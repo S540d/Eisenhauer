@@ -111,6 +111,14 @@ Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` od
 - **#259/#260:** Sichtbarer, segmentierter **Umschalter** im Header (`#categorySwitcher`, Buttons `Alle / Privat / Beruflich`). Persistiert in `localStorage` unter `categoryFilter` (`''` = Alle). Filtert beim Render und der Quick-Add-Dialog wählt die aktive Kategorie vor (pro Aufgabe überschreibbar, inkl. „Keine"). Es gibt **keinen** separaten Auto-Assign-Schalter mehr – die sichtbare Quick-Add-Vorauswahl ist die einzige Quelle der Wahrheit (alle Adds laufen über das Modal).
 - i18n: `categoryFilter.{switcherLabel,all,private,business,...}` in `js/modules/translations.js`; `updateLanguageUI` aktualisiert Button-Texte **und** das barrierefreie `aria-label` des Switchers.
 
+### Design-Tokens, Onboarding & Micro-Interactions (Issue #352 B1–B3)
+
+**B1 – Design-Tokens konsolidieren:** Die zuvor toten CSS-Variablen `--primary-color`, `--primary`, `--primary-rgb` und `--hover-bg` sind jetzt in `:root` (und im `prefers-color-scheme: dark`-Block für `--hover-bg`) echt definiert (`#667eea` / `102, 126, 234`). Alle Literal-Hex-Vorkommen von `#667eea` in `style.css` (außer der Segment-Farbmap in `script.js`, die eine andere Bedeutung hat) wurden durch `var(--primary-color)` ersetzt.
+
+**B2 – Onboarding & Empty States:** Neues Modul `js/modules/onboarding.js`. Solange eine Aufgaben-Matrix komplett leer ist (kein Task je hinzugefügt) und Onboarding nicht dismissed wurde, zeigt `renderSegment()` in `js/modules/ui.js` pro leerem Segment 1–4 einen dismissable Demo-Task samt kurzer Quadranten-Erklärung (`translations.js` → `onboarding.{demoTasks,explanations,demoBadge,dismissLabel}`). Nach dem ersten echten `handleAddTask()`-Aufruf (script.js) wird Onboarding dauerhaft über `dismissOnboarding()` beendet (localStorage `onboardingDismissed`), damit es nicht wiederkehrt, wenn die Matrix später erneut leer wird. Einzelne Demo-Tasks lassen sich per ✕ ausblenden (`dismissSegmentDemo()`, localStorage `onboardingDemoDismissed`); sind alle vier dismissed, gilt Onboarding ebenfalls als beendet. Danach (und für Segment 5 „Fertig!") zeigt jedes leere Segment eine freundliche Empty-State-Message (`translations.js` → `emptyState.{1-5}`).
+
+**B3 – Micro-Interactions & Motion:** „Erledigt"-Häkchen lösen eine kurze Puls-/Glow-Animation aus (`createTaskElement()` in `ui.js` fügt `task-completing` hinzu, `callbacks.onToggle` wird erst nach ~220ms aufgerufen; bei `prefers-reduced-motion: reduce` sofort ohne Delay). Drag & Drop dimmt jetzt alle Nicht-Ziel-Quadranten (`body.is-dragging .segment:not(.drag-target-segment)`) sowohl im Touch-Pfad (`DragManager#activateDragMode`/`#detectDropTarget`) als auch im Desktop-HTML5-DnD-Pfad (`#handleDragStart`/`#handleDragEnd`/`setupDropZone()` in `drag-manager.js`). Alle neuen Animationen sind im bestehenden `@media (prefers-reduced-motion: reduce)`-Block am Ende von `style.css` deaktiviert.
+
 ## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
@@ -139,6 +147,7 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 
 ### Kürzlich erledigt
 
+- **#352 B1–B3** – Design-Tokens konsolidiert (`--primary-color`/`--primary`/`--primary-rgb`/`--hover-bg` echt definiert), Onboarding mit dismissable Demo-Tasks + Quadranten-Erklärung + freundlichen Empty States (`js/modules/onboarding.js`), „Erledigt"-Micro-Interaction + klareres Drag-Feedback (Segment-Dimming), siehe Abschnitt „Design-Tokens, Onboarding & Micro-Interactions" oben
 - **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
 - **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)
 - **#257** – `docs/last-backup.txt` mit letztem manuellen Export-Datum erstellt
@@ -151,4 +160,3 @@ Epic #95 (Production-Grade Dev Setup) wurde am 2026-05-30 als `completed` geschl
 ## Bekannte Eigenheiten
 
 - Beim Rebase von `main`-basierten Branches auf `testing` gibt es Konflikte in `AndroidManifest.xml` und `colors.xml`, weil `testing` die Farb-Struktur grundlegend überarbeitet hat (alles `#000000`, keine `colorPrimary` mehr).
-- In `style.css` werden an mehreren Stellen (`.focus-mode-toggle.active`, `.category-select-btn.active` u.a.) die CSS-Variablen `--primary-color`, `--primary`, `--primary-rgb` und `--hover-bg` referenziert, die aber nirgends in `:root` definiert sind – diese Deklarationen sind aktuell wirkungslos (No-ops). Der tatsächlich sichtbare Akzentton der App ist der Literal-Hex-Wert `#667eea` (siehe `.btn.active`). Beim nächsten CSS-Aufräumen entweder die Variablen in `:root` definieren oder die toten `var(...)`-Referenzen durch `#667eea` ersetzen.

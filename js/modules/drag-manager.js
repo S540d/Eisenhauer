@@ -327,6 +327,9 @@ export class DragManager {
     // Visual feedback
     this.element.style.opacity = '0.5';
 
+    // Dim non-target segments for clearer drop feedback (Issue #352 B3)
+    document.body.classList.add('is-dragging');
+
     // Update store
     store.setState(
       {
@@ -363,6 +366,10 @@ export class DragManager {
   #handleDragEnd(_e) {
     // Reset visual state
     this.element.style.opacity = this.state.originalOpacity;
+    document.body.classList.remove('is-dragging');
+    document
+      .querySelectorAll('.segment.drag-target-segment')
+      .forEach((el) => el.classList.remove('drag-target-segment'));
 
     // Update store
     store.setState(
@@ -397,6 +404,9 @@ export class DragManager {
 
     // Prevent pull-to-refresh
     document.body.style.overflow = 'hidden';
+
+    // Dim non-target segments for clearer drop feedback (Issue #352 B3)
+    document.body.classList.add('is-dragging');
 
     // Update store
     store.setState(
@@ -502,11 +512,13 @@ export class DragManager {
       // Remove highlight from old target
       if (this.state.dropTarget) {
         this.state.dropTarget.classList.remove('drag-over');
+        this.state.dropTarget.closest('.segment')?.classList.remove('drag-target-segment');
       }
 
       // Add highlight to new target
       if (dropZone) {
         dropZone.classList.add('drag-over');
+        dropZone.closest('.segment')?.classList.add('drag-target-segment');
       }
 
       this.state.dropTarget = dropZone;
@@ -535,10 +547,12 @@ export class DragManager {
 
     // Re-enable scrolling
     document.body.style.overflow = '';
+    document.body.classList.remove('is-dragging');
 
     // Remove drop zone highlighting
     if (this.state.dropTarget) {
       this.state.dropTarget.classList.remove('drag-over');
+      this.state.dropTarget.closest('.segment')?.classList.remove('drag-target-segment');
     }
 
     // Haptic feedback on drop
@@ -637,9 +651,11 @@ export class DragManager {
 
     this.element.style.opacity = this.state.originalOpacity;
     document.body.style.overflow = '';
+    document.body.classList.remove('is-dragging');
 
     if (this.state.dropTarget) {
       this.state.dropTarget.classList.remove('drag-over');
+      this.state.dropTarget.closest('.segment')?.classList.remove('drag-target-segment');
     }
 
     store.setState(
@@ -744,15 +760,18 @@ export function setupDropZone(dropZone, onDrop) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     dropZone.classList.add('drag-over');
+    dropZone.closest('.segment')?.classList.add('drag-target-segment');
   });
 
   dropZone.addEventListener('dragleave', () => {
     dropZone.classList.remove('drag-over');
+    dropZone.closest('.segment')?.classList.remove('drag-target-segment');
   });
 
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.classList.remove('drag-over');
+    dropZone.closest('.segment')?.classList.remove('drag-target-segment');
 
     try {
       const data = JSON.parse(e.dataTransfer.getData('application/json'));
