@@ -190,18 +190,84 @@ cp icons/icon-512x512.png Android/play-store-assets/icon-512x512.png
 
 ### 🔲 Store Listing Text
 
-Alle Texte (App Name, Short/Full Description) sowie Kategorie & Tags, Content Rating, Privacy Policy, Data Safety und Contact & Support sind zentral gepflegt in:
+#### App Name (50 Zeichen max)
+```
+Eisenhauer Matrix
+```
 
-**→ [docs/PLAYSTORE_LISTING.md](../docs/PLAYSTORE_LISTING.md)**
+#### Short Description (80 Zeichen)
+```
+Task-Management nach der Eisenhauer-Matrix-Methode
+```
 
-- [ ] App Name übernommen
-- [ ] Short Description übernommen
-- [ ] Full Description übernommen
-- [ ] Kategorie & Tags übernommen
-- [ ] Content Rating Questionnaire ausgefüllt
-- [ ] Privacy-Policy-URL in Play Console verlinkt
-- [ ] Data Safety Form ausgefüllt
-- [ ] Contact & Support hinterlegt
+#### Full Description (4000 Zeichen)
+```
+Eisenhauer Matrix ist eine moderne Task-Management-App basierend auf der
+Eisenhauer-Matrix-Methode zur Priorisierung von Aufgaben.
+
+🎯 FEATURES:
+• 5 Segmente: Do, Schedule, Delegate, Ignore, Done
+• Wiederkehrende Aufgaben (täglich, wöchentlich, monatlich)
+• Drag & Drop zwischen Segmenten (Maus, Touch, Keyboard)
+• Cloud-Synchronisation mit Firebase
+• Offline-First Architecture mit automatischer Sync
+• Benutzer-Accounts (Google/Apple Sign-In) oder Gastmodus
+• Export/Import (JSON Backups)
+• Dark Mode (automatisch basierend auf System)
+• Vollständige Tastatursteuerung (Accessibility)
+• Screen Reader Support (VoiceOver, TalkBack)
+
+📱 OFFLINE-FUNKTIONALITÄT:
+Die App funktioniert vollständig offline. Alle Änderungen werden lokal
+gespeichert und automatisch synchronisiert, sobald eine Verbindung besteht.
+Keine Datenverluste!
+
+♿ BARRIEREFREIHEIT:
+WCAG 2.1 Level AA konform mit vollständiger Tastatursteuerung und
+Screen Reader Support.
+
+🔒 DATENSCHUTZ:
+Ihre Daten werden sicher in Firebase Cloud Firestore gespeichert (bei Anmeldung)
+oder lokal auf Ihrem Gerät (Gastmodus mit IndexedDB). Keine Tracking,
+keine Werbung, keine Weitergabe an Dritte.
+
+🌐 CROSS-PLATFORM:
+Als Progressive Web App (PWA) auch im Browser nutzbar unter:
+https://s540d.github.io/Eisenhauer/
+
+📖 OPEN SOURCE:
+Der komplette Quellcode ist auf GitHub verfügbar:
+https://github.com/S540d/Eisenhauer
+
+---
+
+Made with ❤️ by S540d
+```
+
+### 🔲 Kategorie & Tags
+- [ ] Kategorie: **Productivity**
+- [ ] Tags: task management, productivity, eisenhower matrix, todo, gtd
+
+### 🔲 Content Rating
+- [ ] Questionnaire ausgefüllt
+- [ ] Rating: **Everyone (3+)**
+
+### 🔲 Privacy Policy
+- [ ] URL: `https://s540d.github.io/Eisenhauer/privacy-policy.html`
+- [ ] Policy aktuell und vollständig
+- [ ] In Play Console verlinkt
+
+### 🔲 Data Safety Section
+- [ ] Datenerfassung: Ja (Email für Login, Tasks)
+- [ ] Datentypen: Personal Info (Email), App Activity (Tasks)
+- [ ] Weitergabe: Nein
+- [ ] Verschlüsselung: Ja (HTTPS, Firebase)
+- [ ] Datenlöschung: Ja (Account-Löschung in App möglich)
+- [ ] Keine Ads, kein Tracking
+
+### 🔲 Contact & Support
+- [ ] Developer Email: [Deine Email]
+- [ ] Support URL (optional): `https://github.com/S540d/Eisenhauer/issues`
 
 ---
 
@@ -220,7 +286,21 @@ Alle Texte (App Name, Short/Full Description) sowie Kategorie & Tags, Content Ra
 - [ ] Bugs behoben
 
 ### 🔲 Release Notes
-Vorlage siehe [docs/PLAYSTORE_LISTING.md](../docs/PLAYSTORE_LISTING.md#release-notes-vorlage-für-versions-updates).
+```
+🎉 Erste Veröffentlichung der Eisenhauer Matrix App!
+
+✨ Features:
+• Task-Management nach Eisenhauer-Matrix-Methode
+• Wiederkehrende Aufgaben (täglich, wöchentlich, monatlich)
+• Cloud-Sync und Offline-Support
+• Dark Mode
+• Export/Import für Backups
+• Vollständig barrierefrei (WCAG 2.1 AA)
+
+🙏 Wir freuen uns über Feedback und Bewertungen!
+
+📧 Support: https://github.com/S540d/Eisenhauer/issues
+```
 
 ### 🔲 Rollout Strategie
 - [ ] **Option 1:** 100% Direct Launch (empfohlen für erste Version)
