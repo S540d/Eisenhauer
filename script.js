@@ -105,6 +105,7 @@ import {
   markAutoBackupCompleted,
   trackBackupFailure,
 } from './js/modules/backup.js';
+import { dismissOnboarding, dismissSegmentDemo } from './js/modules/onboarding.js';
 // Old drag-drop.js is now deprecated - using DragManager instead
 // import {
 // setupDragAndDrop,
@@ -192,6 +193,10 @@ async function loadAllTasks() {
 function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null, category = null) {
   if (!taskText || taskText.trim() === '') return;
 
+  // First real task ends onboarding for good, so demo tasks/explanations
+  // don't reappear later just because the matrix becomes empty again.
+  dismissOnboarding();
+
   // The Quick Add modal already encodes the category choice (it preselects the
   // active calendar and lets the user override it, including "Keine"), so the
   // explicitly passed category is used as-is and never silently overridden.
@@ -206,6 +211,14 @@ function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null
     saveGuestTasks(tasks);
   }
 
+  renderTasksWithCallbacks();
+}
+
+/**
+ * Dismiss the onboarding demo task for a single segment (Issue #352 B2)
+ */
+function handleDismissDemo(segmentId) {
+  dismissSegmentDemo(segmentId);
   renderTasksWithCallbacks();
 }
 
@@ -469,6 +482,7 @@ function renderTasksWithCallbacks() {
     onSwipeDelete: handleDeleteTask,
     onEditRecurring: handleEditRecurring,
     onReorder: handleReorderTask,
+    onDismissDemo: handleDismissDemo,
   };
 
   try {
