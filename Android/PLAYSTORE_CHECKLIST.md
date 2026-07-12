@@ -192,7 +192,7 @@ cp icons/icon-512x512.png Android/play-store-assets/icon-512x512.png
 
 Alle Texte (App Name, Short/Full Description) sowie Kategorie & Tags, Content Rating, Privacy Policy, Data Safety und Contact & Support sind zentral gepflegt in:
 
-**→ [docs/PLAYSTORE_LISTING.md](../docs/PLAYSTORE_LISTING.md)**
+**→ `docs/private/PLAY_STORE_METADATA_EN.md`** (lokal only, nicht in Git — siehe `.gitignore`)
 
 - [ ] App Name übernommen
 - [ ] Short Description übernommen
@@ -220,7 +220,7 @@ Alle Texte (App Name, Short/Full Description) sowie Kategorie & Tags, Content Ra
 - [ ] Bugs behoben
 
 ### 🔲 Release Notes
-Vorlage siehe [docs/PLAYSTORE_LISTING.md](../docs/PLAYSTORE_LISTING.md#release-notes-vorlage-für-versions-updates).
+Vorlage siehe `docs/private/PLAY_STORE_METADATA_EN.md` (Abschnitt „What's New").
 
 ### 🔲 Rollout Strategie
 - [ ] **Option 1:** 100% Direct Launch (empfohlen für erste Version)

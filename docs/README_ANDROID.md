@@ -94,7 +94,7 @@ Android/app/build/outputs/bundle/release/app-release.aab
 
 - **Setup Guide:** [Android/README.md](Android/README.md) (10k+ words)
 - **Play Store Checklist:** [Android/PLAYSTORE_CHECKLIST.md](Android/PLAYSTORE_CHECKLIST.md)
-- **Play Store Listing (Texts & Metadata):** [PLAYSTORE_LISTING.md](PLAYSTORE_LISTING.md)
+- **Play Store Listing (Texts & Metadata):** `docs/private/PLAY_STORE_METADATA_EN.md` (local only, not in Git — see `.gitignore`)
 - **Keystore Info:** `Android/KEYSTORE_INFO.md` (local only, not in Git)
 - **Complete Status:** [ANDROID_STATUS.md](ANDROID_STATUS.md)
 
