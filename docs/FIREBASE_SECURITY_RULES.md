@@ -174,7 +174,12 @@ service firebase.storage {
     }
 
     // User backup files
-    match /backups/{userId}/{backupFile} {
+    // NOTE: Path must match js/modules/backup.js exactly (`users/{userId}/backups/{filename}`).
+    // A mismatch here (e.g. `backups/{userId}/...`) means the rule never
+    // actually applies to the app's real upload path, and every write falls
+    // through to the deny-all rule below — backups then fail with
+    // "permission-denied" no matter how the rule body looks (Issue #355).
+    match /users/{userId}/backups/{backupFile} {
       // Allow read if authenticated and owner
       allow read: if isAuthenticated() && isOwner(userId);
 
@@ -214,7 +219,7 @@ service firebase.storage {
 
 ```javascript
 // Testing/Staging: Increased file size limits
-match /backups/{userId}/{backupFile} {
+match /users/{userId}/backups/{backupFile} {
   allow write: if isAuthenticated()
                 && isOwner(userId)
                 && request.resource.size < 10 * 1024 * 1024; // 10MB for testing
@@ -398,6 +403,10 @@ npm run test:firebase-rules
 1. User not authenticated → Check `request.auth != null`
 2. User trying to access another user's data → Check `isOwner(userId)`
 3. Data validation failed → Check task structure matches schema
+4. Storage rule path doesn't match the app's actual upload path → For backups,
+   the deployed Storage rule must match `users/{userId}/backups/{backupFile}`
+   exactly (see `uploadBackup()` in `js/modules/backup.js`); any other path
+   pattern silently falls through to the deny-all rule (Issue #355)
 
 **Debug:**
 ```javascript
@@ -453,8 +462,8 @@ allow read: if debug(isAuthenticated()) && debug(isOwner(userId));
 
 ---
 
-**Version:** 1.0.0
-**Last Updated:** 2026-01-29
+**Version:** 1.0.1
+**Last Updated:** 2026-07-12
 **Maintainer:** S540d
 
 **⚠️ CRITICAL:** After any rule changes, always deploy to Testing → Staging → Production in that order. Never deploy untested rules to Production.

@@ -80,11 +80,34 @@ export async function uploadBackup(
     return filename;
   } catch (error) {
     console.error('Backup upload failed:', error);
+    reportBackupError(error, userId);
     if (showNotification) {
       const message = currentLanguage === 'de' ? 'Backup fehlgeschlagen' : 'Backup failed';
       showError(message);
     }
     throw error;
+  }
+}
+
+/**
+ * Report a backup failure to the configured error tracker (Sentry), if any.
+ * Auto-backup failures are otherwise only logged to the console (see
+ * `showNotification` above), so without this, the actual cause (e.g. a
+ * Storage Rules permission mismatch) is invisible outside the user's devtools.
+ * @param {Error} error - The error that occurred
+ * @param {string} userId - User ID the backup was attempted for
+ */
+function reportBackupError(error, userId) {
+  if (typeof window === 'undefined') return;
+  if (typeof window.errorTracker?.captureException !== 'function') return;
+
+  try {
+    window.errorTracker.captureException(error, {
+      context: { operation: 'uploadBackup', userId },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (_trackingError) {
+    // Tracking failure must not interrupt application flow
   }
 }
 

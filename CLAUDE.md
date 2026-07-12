@@ -103,6 +103,13 @@ Das „Neue Aufgabe"-Fenster (`#quickAddModal` in `index.html`, geöffnet via `o
 - **Hinzufügen**-Button entfernt; stattdessen ein **OK**-Button (`#quickAddSubmitBtn`, Text aus `lang.buttons.ok`) direkt neben dem Eingabefeld (`.quick-add-input-row`).
 - Neuer i18n-Key `buttons.ok` (de/en) in `translations.js`.
 
+### Cloud-Backup: Storage-Rules-Pfad-Mismatch + Fehler-Tracking (Issue #355)
+
+Der Bug-Report „Cloud-Backup schlägt wieder fehl" kam ohne Repro-Details (Backup-Fehler landen nur in `console.error`, nirgends sonst sichtbar). Zwei konkrete Bugs dazu behoben:
+
+- **`docs/FIREBASE_SECURITY_RULES.md` dokumentierte einen falschen Storage-Pfad:** `match /backups/{userId}/{backupFile}`, während `uploadBackup()` in `js/modules/backup.js` tatsächlich nach `users/{userId}/backups/{filename}` schreibt. Da Storage-Rules laut Doku nur über die Firebase Console gepflegt werden (nicht im Repo), führt dieser Pfad-Mismatch dazu, dass die Regel nie greift und jeder Upload auf die Deny-all-Regel fällt (`permission-denied`). Doku korrigiert (Pfad + Troubleshooting-Hinweis); die **Regel muss zusätzlich in der Firebase Console für alle drei Projekte (production/staging/testing) manuell auf den korrigierten Pfad aktualisiert werden** – das kann Claude Code nicht selbst deployen.
+- **Keine Fehler-Sichtbarkeit:** Backup-Fehler (manuell wie automatisch) gingen nur in die Browser-Konsole, nicht an Sentry. Neue Funktion `reportBackupError()` in `backup.js` meldet Fehler jetzt an `window.errorTracker.captureException()` (Sentry-Hook aus `sentry.js`), sodass künftige Fehlschläge (Ursache, Stacktrace) in Sentry auswertbar sind statt nur in Nutzer-Devtools.
+
 ### Kategorien / Kalender-Umschalter (Issue #198 + #259, PR #260)
 
 Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` oder `'business'` (siehe `filterByCategory` in `js/modules/tasks.js`). Aufgaben ohne Kategorie werden beim Filtern wie `'private'` behandelt.
@@ -147,6 +154,8 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 
 ### Kürzlich erledigt
 
+- **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes
+- **#355** – Cloud-Backup-Fix: falschen Storage-Rules-Pfad in `docs/FIREBASE_SECURITY_RULES.md` korrigiert (`users/{userId}/backups/...` statt `backups/{userId}/...`) + Backup-Fehler werden jetzt an Sentry gemeldet (`reportBackupError()` in `backup.js`), siehe Abschnitt „Cloud-Backup" oben. **Firebase-Console-Regel muss noch manuell auf allen drei Projekten aktualisiert werden.**
 - **#352 B1–B3** – Design-Tokens konsolidiert (`--primary-color`/`--primary`/`--primary-rgb`/`--hover-bg` echt definiert), Onboarding mit dismissable Demo-Tasks + Quadranten-Erklärung + freundlichen Empty States (`js/modules/onboarding.js`), „Erledigt"-Micro-Interaction + klareres Drag-Feedback (Segment-Dimming), siehe Abschnitt „Design-Tokens, Onboarding & Micro-Interactions" oben
 - **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
 - **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)

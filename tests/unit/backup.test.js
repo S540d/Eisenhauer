@@ -100,6 +100,36 @@ describe('Backup Module', () => {
       );
     });
 
+    it('should report failures to window.errorTracker when configured', async () => {
+      const { uploadBytes } = await import('firebase/storage');
+      const mockError = new Error('storage/unauthorized');
+      uploadBytes.mockRejectedValueOnce(mockError);
+      window.errorTracker = { captureException: vi.fn() };
+
+      try {
+        await uploadBackup(mockStorage, mockUserId, mockTasks, 'en');
+      } catch (error) {
+        // Expected to throw
+      }
+
+      expect(window.errorTracker.captureException).toHaveBeenCalledWith(
+        mockError,
+        expect.objectContaining({ context: { operation: 'uploadBackup', userId: mockUserId } })
+      );
+
+      delete window.errorTracker;
+    });
+
+    it('should not throw when window.errorTracker is not configured', async () => {
+      const { uploadBytes } = await import('firebase/storage');
+      uploadBytes.mockRejectedValueOnce(new Error('Upload failed'));
+      delete window.errorTracker;
+
+      await expect(uploadBackup(mockStorage, mockUserId, mockTasks, 'en')).rejects.toThrow(
+        'Upload failed'
+      );
+    });
+
     it('should validate required parameters', async () => {
       await expect(uploadBackup(null, mockUserId, mockTasks, 'en')).rejects.toThrow(
         'Storage and userId are required'
