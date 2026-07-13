@@ -19,6 +19,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   security-scan:
     uses: S540d/project-templates/.github/workflows/reusable-security-scan.yml@v1
