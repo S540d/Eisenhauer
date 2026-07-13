@@ -64,6 +64,14 @@ Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeig
 - Metriken einsehbar im **Firebase Console → Analytics → Events** (DAU/WAU/MAU unter „Active users")
 - Voraussetzung: `VITE_FIREBASE_MEASUREMENT_ID` muss als GitHub Actions Secret gesetzt sein (production environment)
 
+### Cloud-Backup: blockiert durch Firebase-Tarif (Issue #355, #359)
+
+Cloud-Backup (`js/modules/backup.js`, Firebase **Storage**) schlägt aktuell fehl. Root-Cause-Analyse zu #355 fand einen Pfad-Mismatch zwischen dem tatsächlichen Upload-Pfad (`users/{userId}/backups/{filename}`) und dem in `docs/FIREBASE_SECURITY_RULES.md` dokumentierten Storage-Rule-Pfad (`backups/{userId}/{backupFile}`) – **das ist aber nicht der eigentliche Blocker**: Seit Oktober 2024 verlangt Firebase für Cloud Storage grundsätzlich den kostenpflichtigen **Blaze-Tarif** (Projekt läuft auf Spark, siehe #254). Ein reiner Pfad-Fix lässt sich ohne Blaze-Upgrade nicht mal in der Firebase Console deployen/testen.
+
+- **Nicht erneut versuchen:** einen reinen Storage-Rules-Pfad-Fix zu implementieren (siehe PR #358, verworfen) – löst das Problem nicht.
+- **Architekturentscheidung offen in #359:** Firestore-Migration (empfohlen, bleibt im kostenlosen Spark-Tarif) vs. Feature entfernen vs. So lassen. Details, Trade-offs und TODO-Checkliste stehen in #359.
+- Bis zur Entscheidung: `reportBackupError()`-Ansatz (Fehler an Sentry statt nur `console.error`) wurde in PR #358 skizziert, aber ebenfalls verworfen – bei Umsetzung von #359 erneut aufgreifen.
+
 ### Export CSV & Markdown (Issue #179, PR #332)
 
 Export-Buttons in den Einstellungen unter „Daten" (kein Feature-Flag):
@@ -144,9 +152,12 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 | #256 | Dependency Updates (firebase, vite, vitest, playwright, eslint) | Low |
 | #245 | Security-Header (CSP) – Phase 2 & 3 ausstehend | Medium |
 | #254 | Firebase Spark-Tarif prüfen | – |
+| #355 | Cloud-Backup schlägt fehl – blockiert durch #359 (siehe unten), kein reiner Code-Fix möglich | Medium |
+| #359 | Cloud-Backup: Firebase Storage erfordert Blaze-Tarif – Architekturentscheidung (Firestore-Migration vs. Feature-Entfernung) offen | Medium |
 
 ### Kürzlich erledigt
 
+- **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes (PR #360)
 - **#352 B1–B3** – Design-Tokens konsolidiert (`--primary-color`/`--primary`/`--primary-rgb`/`--hover-bg` echt definiert), Onboarding mit dismissable Demo-Tasks + Quadranten-Erklärung + freundlichen Empty States (`js/modules/onboarding.js`), „Erledigt"-Micro-Interaction + klareres Drag-Feedback (Segment-Dimming), siehe Abschnitt „Design-Tokens, Onboarding & Micro-Interactions" oben
 - **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
 - **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)
