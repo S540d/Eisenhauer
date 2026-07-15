@@ -64,6 +64,14 @@ Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeig
 - Metriken einsehbar im **Firebase Console → Analytics → Events** (DAU/WAU/MAU unter „Active users")
 - Voraussetzung: `VITE_FIREBASE_MEASUREMENT_ID` muss als GitHub Actions Secret gesetzt sein (production environment)
 
+### Cloud-Backup: blockiert durch Firebase-Tarif (Issue #355, #359)
+
+Cloud-Backup (`js/modules/backup.js`, Firebase **Storage**) schlägt aktuell fehl. Root-Cause-Analyse zu #355 fand einen Pfad-Mismatch zwischen dem tatsächlichen Upload-Pfad (`users/{userId}/backups/{filename}`) und dem in `docs/FIREBASE_SECURITY_RULES.md` dokumentierten Storage-Rule-Pfad (`backups/{userId}/{backupFile}`) – **das ist aber nicht der eigentliche Blocker**: Seit Oktober 2024 verlangt Firebase für Cloud Storage grundsätzlich den kostenpflichtigen **Blaze-Tarif** (Projekt läuft auf Spark, siehe #254). Ein reiner Pfad-Fix lässt sich ohne Blaze-Upgrade nicht mal in der Firebase Console deployen/testen.
+
+- **Nicht erneut versuchen:** einen reinen Storage-Rules-Pfad-Fix zu implementieren (siehe PR #358, verworfen) – löst das Problem nicht.
+- **Architekturentscheidung offen in #359:** Firestore-Migration (empfohlen, bleibt im kostenlosen Spark-Tarif) vs. Feature entfernen vs. So lassen. Details, Trade-offs und TODO-Checkliste stehen in #359.
+- Bis zur Entscheidung: `reportBackupError()`-Ansatz (Fehler an Sentry statt nur `console.error`) wurde in PR #358 skizziert, aber ebenfalls verworfen – bei Umsetzung von #359 erneut aufgreifen.
+
 ### Export CSV & Markdown (Issue #179, PR #332)
 
 Export-Buttons in den Einstellungen unter „Daten" (kein Feature-Flag):
@@ -111,6 +119,14 @@ Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` od
 - **#259/#260:** Sichtbarer, segmentierter **Umschalter** im Header (`#categorySwitcher`, Buttons `Alle / Privat / Beruflich`). Persistiert in `localStorage` unter `categoryFilter` (`''` = Alle). Filtert beim Render und der Quick-Add-Dialog wählt die aktive Kategorie vor (pro Aufgabe überschreibbar, inkl. „Keine"). Es gibt **keinen** separaten Auto-Assign-Schalter mehr – die sichtbare Quick-Add-Vorauswahl ist die einzige Quelle der Wahrheit (alle Adds laufen über das Modal).
 - i18n: `categoryFilter.{switcherLabel,all,private,business,...}` in `js/modules/translations.js`; `updateLanguageUI` aktualisiert Button-Texte **und** das barrierefreie `aria-label` des Switchers.
 
+### Design-Tokens, Onboarding & Micro-Interactions (Issue #352 B1–B3)
+
+**B1 – Design-Tokens konsolidieren:** Die zuvor toten CSS-Variablen `--primary-color`, `--primary`, `--primary-rgb` und `--hover-bg` sind jetzt in `:root` (und im `prefers-color-scheme: dark`-Block für `--hover-bg`) echt definiert (`#667eea` / `102, 126, 234`). Alle Literal-Hex-Vorkommen von `#667eea` in `style.css` (außer der Segment-Farbmap in `script.js`, die eine andere Bedeutung hat) wurden durch `var(--primary-color)` ersetzt.
+
+**B2 – Onboarding & Empty States:** Neues Modul `js/modules/onboarding.js`. Solange eine Aufgaben-Matrix komplett leer ist (kein Task je hinzugefügt) und Onboarding nicht dismissed wurde, zeigt `renderSegment()` in `js/modules/ui.js` pro leerem Segment 1–4 einen dismissable Demo-Task samt kurzer Quadranten-Erklärung (`translations.js` → `onboarding.{demoTasks,explanations,demoBadge,dismissLabel}`). Nach dem ersten echten `handleAddTask()`-Aufruf (script.js) wird Onboarding dauerhaft über `dismissOnboarding()` beendet (localStorage `onboardingDismissed`), damit es nicht wiederkehrt, wenn die Matrix später erneut leer wird. Einzelne Demo-Tasks lassen sich per ✕ ausblenden (`dismissSegmentDemo()`, localStorage `onboardingDemoDismissed`); sind alle vier dismissed, gilt Onboarding ebenfalls als beendet. Danach (und für Segment 5 „Fertig!") zeigt jedes leere Segment eine freundliche Empty-State-Message (`translations.js` → `emptyState.{1-5}`).
+
+**B3 – Micro-Interactions & Motion:** „Erledigt"-Häkchen lösen eine kurze Puls-/Glow-Animation aus (`createTaskElement()` in `ui.js` fügt `task-completing` hinzu, `callbacks.onToggle` wird erst nach ~220ms aufgerufen; bei `prefers-reduced-motion: reduce` sofort ohne Delay). Drag & Drop dimmt jetzt alle Nicht-Ziel-Quadranten (`body.is-dragging .segment:not(.drag-target-segment)`) sowohl im Touch-Pfad (`DragManager#activateDragMode`/`#detectDropTarget`) als auch im Desktop-HTML5-DnD-Pfad (`#handleDragStart`/`#handleDragEnd`/`setupDropZone()` in `drag-manager.js`). Alle neuen Animationen sind im bestehenden `@media (prefers-reduced-motion: reduce)`-Block am Ende von `style.css` deaktiviert.
+
 ## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
@@ -136,9 +152,13 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 | #256 | Dependency Updates (firebase, vite, vitest, playwright, eslint) | Low |
 | #245 | Security-Header (CSP) – Phase 2 & 3 ausstehend | Medium |
 | #254 | Firebase Spark-Tarif prüfen | – |
+| #355 | Cloud-Backup schlägt fehl – blockiert durch #359 (siehe unten), kein reiner Code-Fix möglich | Medium |
+| #359 | Cloud-Backup: Firebase Storage erfordert Blaze-Tarif – Architekturentscheidung (Firestore-Migration vs. Feature-Entfernung) offen | Medium |
 
 ### Kürzlich erledigt
 
+- **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes (PR #360)
+- **#352 B1–B3** – Design-Tokens konsolidiert (`--primary-color`/`--primary`/`--primary-rgb`/`--hover-bg` echt definiert), Onboarding mit dismissable Demo-Tasks + Quadranten-Erklärung + freundlichen Empty States (`js/modules/onboarding.js`), „Erledigt"-Micro-Interaction + klareres Drag-Feedback (Segment-Dimming), siehe Abschnitt „Design-Tokens, Onboarding & Micro-Interactions" oben
 - **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
 - **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)
 - **#257** – `docs/last-backup.txt` mit letztem manuellen Export-Datum erstellt
@@ -151,4 +171,31 @@ Epic #95 (Production-Grade Dev Setup) wurde am 2026-05-30 als `completed` geschl
 ## Bekannte Eigenheiten
 
 - Beim Rebase von `main`-basierten Branches auf `testing` gibt es Konflikte in `AndroidManifest.xml` und `colors.xml`, weil `testing` die Farb-Struktur grundlegend überarbeitet hat (alles `#000000`, keine `colorPrimary` mehr).
-- In `style.css` werden an mehreren Stellen (`.focus-mode-toggle.active`, `.category-select-btn.active` u.a.) die CSS-Variablen `--primary-color`, `--primary`, `--primary-rgb` und `--hover-bg` referenziert, die aber nirgends in `:root` definiert sind – diese Deklarationen sind aktuell wirkungslos (No-ops). Der tatsächlich sichtbare Akzentton der App ist der Literal-Hex-Wert `#667eea` (siehe `.btn.active`). Beim nächsten CSS-Aufräumen entweder die Variablen in `:root` definieren oder die toten `var(...)`-Referenzen durch `#667eea` ersetzen.
+
+<!-- GLOBAL POLICY:START -->
+## [GLOBAL POLICY]
+
+> Automatisch synchronisiert aus project-templates (Issue #7). Nicht manuell editieren –
+> Änderungen hier werden beim nächsten Sync überschrieben. Quelle anpassen statt lokal.
+
+- PRs immer gegen `testing`, nie direkt gegen `staging` oder `main`
+- Merge auf `main` nur mit expliziter schriftlicher Freigabe
+- `--delete-branch` nur für Feature-Branches (nie staging/testing)
+- **Lokales Branch-Cleanup:** `main` und `testing` NIE löschen — auch nicht beim Bulk-Delete verwaister `[gone]`-Branches. Ein fehlender `origin/main`/`origin/testing` ist ein **wiederherzustellender Defekt** (lokal behalten, nach origin zurückpushen), kein Aufräum-Signal.
+- `--no-verify` nur auf explizite Bitte
+- **Vor jedem Push: lokale Tests ausführen** (`npm test` bzw. projektspezifischer Test-Befehl) – kein Push ohne grüne lokale Tests
+- **Kein Merge bei CI-Fail** – Branch Protection erzwingt das technisch; nie mit `--admin` umgehen außer auf explizite Bitte
+
+## [ANDROID BUILD – PFLICHTREGELN]
+
+- **Git-Tag** nach jedem Play-Store-Upload setzen: `git tag vX.Y.Z && git push origin vX.Y.Z` – der Tag markiert den tatsächlich veröffentlichten Stand und dient als Changelog-Baseline für den nächsten Build
+- **EAS Local Build (DrawFromMemory):** Workingdir vor jedem Build leeren: `rm -rf ~/tmp/eas-build && mkdir -p ~/tmp/eas-build` – ein nicht-leeres Verzeichnis bricht den Build sofort ab
+- **Disk-Check vor EAS Build:** Skia-Libraries benötigen ~5–8 GB. Bei < 5 GB frei: `npm cache clean --force && rm -rf ~/.npm/_npx` (~13 GB, sicher löschbar)
+- **JAVA_HOME** für EAS/Expo-Builds explizit auf Android Studio JBR setzen: `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
+- **Gradle-Lock nach Absturz:** Bei "Cannot lock file hash cache"-Fehler Daemons stoppen: `pkill -f GradleDaemon`, dann Workingdir leeren und neu starten
+- **AAB-Archiv:** Gebaute Release-AABs in einem **gitignored** `aab-archive/`-Verzeichnis im Repo-Root ablegen (in `.gitignore` aufnehmen – AABs sind 3–110 MB und gehören nie in die Git-History). Benennung: `<Projekt>-vX.Y.Z-vc<versionCode>-YYYY-MM-DD.aab`. **Retention: max. 2 Dateien** (aktuelles Release + ein Vorgänger für schnelles Rollback); ältere AABs löschen. Der Git-Tag `vX.Y.Z` ist die eigentliche Release-Baseline – ältere AABs lassen sich daraus jederzeit neu bauen.
+
+## [CI – CACHE-CLEANUP]
+
+- **Cache-Cleanup-Workflow** (`.github/workflows/cache-cleanup.yml`) in jedem Repo mit GitHub-Actions-Caches: löscht wöchentlich (So 03:00 UTC) bzw. on-demand alle Action-Caches älter als der jeweils letzte Lauf. GitHub-Limit ist 10 GB pro Repo – ohne Cleanup laufen Build-Caches (node_modules, Gradle, Expo) voll und verdrängen frische Einträge. Vorlage: `cache-cleanup.yml` in project-templates.
+<!-- GLOBAL POLICY:END -->
