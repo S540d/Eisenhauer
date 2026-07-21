@@ -4,13 +4,13 @@ plugins {
 
 android {
     namespace 'com.sven4321.eisenhauer'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.sven4321.eisenhauer"
         minSdk 21  // Android 5.0 Lollipop (per project-templates requirement)
-        targetSdk 35
-        versionCode 25
+        targetSdk 36  // Android 16 – Google Play target API requirement (deadline 2026-08-31)
+        versionCode 26
         versionName "1.12.1"  // Match PWA version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
