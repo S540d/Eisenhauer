@@ -1138,6 +1138,10 @@ function setupEventListeners() {
       quickAddDueDate.style.display = checked ? '' : 'none';
       quickDueDateToggle?.classList.toggle('icon-toggle-checked', checked);
       if (checked) {
+        // Force a layout flush so the browser registers the input as
+        // rendered before showPicker() checks for it, otherwise it can
+        // throw InvalidStateError right after toggling display:none off.
+        void quickAddDueDate.offsetHeight;
         if (typeof quickAddDueDate.showPicker === 'function') {
           try {
             quickAddDueDate.showPicker();
