@@ -42,6 +42,14 @@ Der alte TWA-Splash-Screen (Gradient-Drawable `splash_background.xml` mit Icon i
 
 Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeigt.
 
+### Edge-to-Edge / Android 15 API-Deprecations (Issue #367, #368)
+
+Play Console meldete die Verwendung nicht mehr unterstützter Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`/`LAYOUT_IN_DISPLAY_CUTOUT_MODE_*`, seit Android 15 deprecated). Die gemeldeten Stacktraces zeigen ausschließlich auf `com.google.androidbrowserhelper`-Klassen (`EdgeToEdgeUtils`, `LauncherActivity`) – die App selbst ruft keine dieser APIs direkt auf (Konfiguration läuft rein über `STATUS_BAR_COLOR`/`NAVIGATION_BAR_COLOR`-Metadaten in `AndroidManifest.xml`, siehe oben).
+
+- `com.google.androidbrowserhelper:androidbrowserhelper` **2.5.0 → 2.7.2** angehoben (`Android/app/build.gradle`) – Version 2.7.1 behebt laut Changelog explizit „Deprecations in launcher activity“, 2.7.0 bringt zusätzlich Edge-to-Edge-Support für den Splash-Screen.
+- Kein eigener App-Code betroffen, daher keine weiteren Änderungen nötig.
+- Nach dem nächsten Play-Store-Upload prüfen, ob die Play-Console-Warnung (#367) verschwindet.
+
 ## Features
 
 ### Sentry Error Monitoring (Issue #263)
@@ -127,6 +135,15 @@ Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` od
 
 **B3 – Micro-Interactions & Motion:** „Erledigt"-Häkchen lösen eine kurze Puls-/Glow-Animation aus (`createTaskElement()` in `ui.js` fügt `task-completing` hinzu, `callbacks.onToggle` wird erst nach ~220ms aufgerufen; bei `prefers-reduced-motion: reduce` sofort ohne Delay). Drag & Drop dimmt jetzt alle Nicht-Ziel-Quadranten (`body.is-dragging .segment:not(.drag-target-segment)`) sowohl im Touch-Pfad (`DragManager#activateDragMode`/`#detectDropTarget`) als auch im Desktop-HTML5-DnD-Pfad (`#handleDragStart`/`#handleDragEnd`/`setupDropZone()` in `drag-manager.js`). Alle neuen Animationen sind im bestehenden `@media (prefers-reduced-motion: reduce)`-Block am Ende von `style.css` deaktiviert.
 
+### Performance: `saveAllTasks()` per Firestore-Batch (Issue #337)
+
+`saveAllTasks()` in `script.js` (genutzt bei Reorder und Import) schrieb für angemeldete Nutzer bisher jede Aufgabe einzeln sequentiell mit `await saveTaskToFirestore(...)` – bei vielen Aufgaben spürbar blockierend.
+
+- Neue Funktion `saveAllTasksToFirestore(tasksBySegment, userId, db)` in `js/modules/storage.js` – schreibt alle Tasks über `writeBatch`, in Chunks à max. 500 Operationen (Firestore-Batch-Limit), analog zum bestehenden Muster in `importGuestTasksToFirestore`.
+- `saveAllTasks()` ruft jetzt `saveAllTasksToFirestore()` statt der Einzel-Write-Schleife auf.
+- **Bestehende Exports bleiben unverändert importierbar:** `saveTaskToFirestore`, `updateTaskInFirestore`, `deleteTaskFromFirestore` und alle anderen Storage-Exports wurden nicht entfernt oder umbenannt – einzelne Task-Operationen (Add/Update/Delete) laufen weiterhin über diese Funktionen inkl. Offline-Queue/Retry-Logik. `saveAllTasksToFirestore` ist ein rein additiver neuer Export.
+- Gast-Modus (`saveGuestTasks`) unverändert.
+
 ## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
@@ -154,10 +171,13 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 | #254 | Firebase Spark-Tarif prüfen | – |
 | #355 | Cloud-Backup schlägt fehl – blockiert durch #359 (siehe unten), kein reiner Code-Fix möglich | Medium |
 | #359 | Cloud-Backup: Firebase Storage erfordert Blaze-Tarif – Architekturentscheidung (Firestore-Migration vs. Feature-Entfernung) offen | Medium |
+| #367 | Playstore fordert Verbesserungen (Sammel-Issue, Detail in #368) | Medium |
 
 ### Kürzlich erledigt
 
-- **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes (PR #360)
+- **#368/#367** – `androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`) in der TWA-Library; kein eigener App-Code betroffen; siehe Abschnitt „Edge-to-Edge / Android 15 API-Deprecations" oben
+- **#337** – `saveAllTasks()` nutzt jetzt `saveAllTasksToFirestore()` (Firestore `writeBatch`, gechunkt à 500 Ops) statt sequentieller Einzel-Writes; bestehende Storage-Exports unverändert importierbar, siehe Abschnitt „Performance: saveAllTasks() per Firestore-Batch" oben
+- **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes (PR #360). Umsetzung bereits auf `testing`; das GitHub-Issue war nur nicht geschlossen worden.
 - **#352 B1–B3** – Design-Tokens konsolidiert (`--primary-color`/`--primary`/`--primary-rgb`/`--hover-bg` echt definiert), Onboarding mit dismissable Demo-Tasks + Quadranten-Erklärung + freundlichen Empty States (`js/modules/onboarding.js`), „Erledigt"-Micro-Interaction + klareres Drag-Feedback (Segment-Dimming), siehe Abschnitt „Design-Tokens, Onboarding & Micro-Interactions" oben
 - **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
 - **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)

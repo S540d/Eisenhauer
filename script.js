@@ -68,6 +68,7 @@ import {
   loadGuestTasks,
   loadUserTasks,
   saveTaskToFirestore,
+  saveAllTasksToFirestore,
   updateTaskInFirestore,
   deleteTaskFromFirestore,
   saveGuestNotes,
@@ -167,17 +168,13 @@ window.importGuestTasksToFirestore = importGuestTasksToFirestore;
  * Save all tasks (Guest or Firebase)
  * Note: For Firebase users, this function is not typically called since
  * individual task operations (add/update/delete) save directly to Firestore.
- * This function is mainly used for bulk operations like import.
+ * This function is mainly used for bulk operations like reorder and import,
+ * where it writes all tasks in one or more Firestore batches instead of
+ * sequential per-task writes (see saveAllTasksToFirestore).
  */
 async function saveAllTasks() {
   if (currentUser && db && !isGuestMode) {
-    // For logged-in users, save each task individually to Firestore
-    const { saveTaskToFirestore } = await import('./js/modules/storage.js');
-    for (const segmentId in tasks) {
-      for (const task of tasks[segmentId]) {
-        await saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
-      }
-    }
+    await saveAllTasksToFirestore(tasks, currentUser.uid, db);
   } else {
     await saveGuestTasks(tasks);
   }

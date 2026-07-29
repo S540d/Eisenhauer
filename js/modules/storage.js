@@ -281,6 +281,68 @@ export async function saveTaskToFirestore(task, userId, db) {
 }
 
 /**
+ * Save all tasks for a user in one or more Firestore batches (chunked at 500 ops/batch,
+ * the Firestore writeBatch limit). Used for bulk operations (reorder, import) where saving
+ * every task sequentially via saveTaskToFirestore would serialize N round-trips and block
+ * the UI. Individual add/update/delete operations keep using saveTaskToFirestore/
+ * updateTaskInFirestore/deleteTaskFromFirestore with their offline-queue retry logic.
+ * @param {object} tasksBySegment - Tasks keyed by segment id, e.g. { 1: [...], 2: [...] }
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ */
+export async function saveAllTasksToFirestore(tasksBySegment, userId, db) {
+  if (!userId || !db) return;
+
+  const allTasks = Object.values(tasksBySegment).flat();
+  if (allTasks.length === 0) return;
+
+  const BATCH_LIMIT = 500;
+
+  for (let i = 0; i < allTasks.length; i += BATCH_LIMIT) {
+    const chunk = allTasks.slice(i, i + BATCH_LIMIT);
+    const batch = writeBatch(db);
+
+    chunk.forEach((task) => {
+      if (!task || typeof task.text !== 'string' || !task.segment) {
+        return;
+      }
+
+      const docRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
+      const taskData = {
+        text: task.text,
+        segment: task.segment,
+        checked: task.checked || false,
+        createdAt: task.createdAt || serverTimestamp(),
+      };
+
+      if (task.completedAt) {
+        taskData.completedAt = task.completedAt;
+      }
+
+      if (task.recurring) {
+        taskData.recurring = task.recurring;
+      }
+
+      if (task.dueDate) {
+        taskData.dueDate = task.dueDate;
+      }
+
+      if (task.category) {
+        taskData.category = task.category;
+      }
+
+      if (task.notes) {
+        taskData.notes = task.notes;
+      }
+
+      batch.set(docRef, taskData);
+    });
+
+    await batch.commit();
+  }
+}
+
+/**
  * Update a task in Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID
