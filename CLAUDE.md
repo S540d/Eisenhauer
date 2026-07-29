@@ -159,19 +159,39 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-06-19)
+## Offene Issues (Backlog-Stand 2026-07-29, nach Konsolidierung)
+
+Der Backlog wurde am 2026-07-29 von 19 auf 8 offene Issues konsolidiert (erledigte geschlossen, Duplikate zusammengeführt, Alt-Issues aus 2025 abgeräumt).
 
 | # | Titel | Prio |
 |---|-------|------|
-| #263 | Sentry-Integration (Error Monitoring) | Medium |
-| #265 | CONTRIBUTING.md erstellen | Low |
+| #359 | **Cloud-Backup: Blaze-Tarif nötig** – Architekturentscheidung offen (Firestore-Migration empfohlen). Bündelt auch die allgemeine Spark-/Blaze-Tarif-Frage (vormals #254) | Medium |
+| #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
+| #367 | Android: R8-Optimierung greift nicht – ProGuard-Regeln entschlacken (Play-Console-Empfehlung) | Medium |
+| #348 | Meta: Rest-Punkte aus Cleanup 2026-07-08 – nur noch lokaler Stash + Dependency-Update-PR | Low |
+| #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
+| #296 | Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) | Low |
+| #351 | Import von Apple Reminders (.ics) – gehört unter #352 „Capture" | Low |
 | #266 | JSDoc-Kommentare für alle public functions | Low |
-| #256 | Dependency Updates (firebase, vite, vitest, playwright, eslint) | Low |
-| #245 | Security-Header (CSP) – Phase 2 & 3 ausstehend | Medium |
-| #254 | Firebase Spark-Tarif prüfen | – |
-| #355 | Cloud-Backup schlägt fehl – blockiert durch #359 (siehe unten), kein reiner Code-Fix möglich | Medium |
-| #359 | Cloud-Backup: Firebase Storage erfordert Blaze-Tarif – Architekturentscheidung (Firestore-Migration vs. Feature-Entfernung) offen | Medium |
-| #367 | Playstore fordert Verbesserungen (Sammel-Issue, Detail in #368) | Medium |
+
+> **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
+
+### Backlog-Konsolidierung 2026-07-29
+
+Geschlossen und warum – damit nicht später erneut aufgemacht:
+
+| # | Grund |
+|---|-------|
+| #369, #371 | bereits umgesetzt (PR #372 bzw. #373, beide auf `testing`), Issues nur nie geschlossen |
+| #330 | bereits seit PR #360 auf `testing` umgesetzt |
+| #337, #368 | umgesetzt in PR #374 |
+| #179 | abgelöst durch #352 (sagt das im eigenen Body) |
+| #355 | Duplikat von #359 (Symptom vs. Root Cause) |
+| #254 | mit #359 zusammengeführt – gleiche Tarif-Entscheidung |
+| #126 | wontfix, entsprechend der Empfehlung im Issue selbst („Do Nothing") |
+| #55 | wontfix – GitHub-Pages-Pfade sind inhärent case-sensitive, ohne eigene Domain nicht lösbar |
+| #36 | Gamification kollidiert mit der Anti-Bloat-Regel aus #352 |
+| #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
 
