@@ -42,13 +42,23 @@ Der alte TWA-Splash-Screen (Gradient-Drawable `splash_background.xml` mit Icon i
 
 Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeigt.
 
-### Edge-to-Edge / Android 15 API-Deprecations (Issue #367, #368)
+### Edge-to-Edge / Android 15 API-Deprecations (Issue #368, PR #374, gemerged)
 
 Play Console meldete die Verwendung nicht mehr unterstützter Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`/`LAYOUT_IN_DISPLAY_CUTOUT_MODE_*`, seit Android 15 deprecated). Die gemeldeten Stacktraces zeigen ausschließlich auf `com.google.androidbrowserhelper`-Klassen (`EdgeToEdgeUtils`, `LauncherActivity`) – die App selbst ruft keine dieser APIs direkt auf (Konfiguration läuft rein über `STATUS_BAR_COLOR`/`NAVIGATION_BAR_COLOR`-Metadaten in `AndroidManifest.xml`, siehe oben).
 
 - `com.google.androidbrowserhelper:androidbrowserhelper` **2.5.0 → 2.7.2** angehoben (`Android/app/build.gradle`) – Version 2.7.1 behebt laut Changelog explizit „Deprecations in launcher activity“, 2.7.0 bringt zusätzlich Edge-to-Edge-Support für den Splash-Screen.
 - Kein eigener App-Code betroffen, daher keine weiteren Änderungen nötig.
-- Nach dem nächsten Play-Store-Upload prüfen, ob die Play-Console-Warnung (#367) verschwindet.
+- Nach dem nächsten Play-Store-Upload prüfen, ob die Play-Console-Warnung verschwindet.
+
+### R8/ProGuard-Optimierung (Issue #367, PR #375, gemerged – Verifikation offen)
+
+Play Console meldete für Release 25 (1.12.1), dass die R8-Optimierung nicht greift. Ursache: `Android/app/proguard-rules.pro` enthielt `-keep class androidx.** { *; }`, was **jede** AndroidX-Klasse pauschal vor Shrinking/Optimierung/Obfuskation schützte – da AndroidX den Großteil des TWA-Codes ausmacht, blieb R8 praktisch nichts zu tun übrig.
+
+- Die Regel wurde entfernt. Bewusst **unverändert** blieben `-keep class com.google.androidbrowserhelper.** { *; }` (Reflection) und `-keep class androidx.browser.** { *; }` (prozessübergreifende Bindung, TWA-kritisch) sowie das breite `-dontwarn androidx.**` (als `TODO(#367)` im File markiert, bis ein sauberer Release-Build zeigt, welche Warnungen real sind).
+- **⚠️ Nicht auf einem echten Gerät getestet.** Kein CI-Check baut einen Android-Release (die Workflows bauen die PWA + Playwright-E2E gegen den Browser) – grünes CI im gemergten PR #375 sagt zu diesem Fix nichts aus. Zu aggressiv entfernte Keep-Regeln brechen erst zur Laufzeit (TWA startet nicht, Splash hängt, Deep Links tot), nicht beim Build.
+- **Vor dem nächsten Play-Store-Upload zwingend:** `cd Android && ./gradlew bundleRelease` bauen und auf einem echten Gerät testen (App-Start, Splash, Deep Links, Status-/Navigationsleisten-Farbe). Ein Debug-Build genügt nicht – `minifyEnabled` gilt nur für `release`.
+- **Bei einem Laufzeit-Crash:** keine pauschale `-keep class androidx.** { *; }`-Regel wiedereinsetzen (macht den Fix wirkungslos), sondern eine gezielte Regel für die konkret betroffene Klasse ergänzen.
+- Issue #367 bleibt bis zum erfolgreichen Gerätetest offen.
 
 ## Features
 
@@ -161,13 +171,13 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 
 ## Offene Issues (Backlog-Stand 2026-07-29, nach Konsolidierung)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 8 offene Issues konsolidiert (erledigte geschlossen, Duplikate zusammengeführt, Alt-Issues aus 2025 abgeräumt).
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert (erledigte geschlossen, Duplikate zusammengeführt, Alt-Issues aus 2025 abgeräumt).
 
 | # | Titel | Prio |
 |---|-------|------|
 | #359 | **Cloud-Backup: Blaze-Tarif nötig** – Architekturentscheidung offen (Firestore-Migration empfohlen). Bündelt auch die allgemeine Spark-/Blaze-Tarif-Frage (vormals #254) | Medium |
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
-| #367 | Android: R8-Optimierung greift nicht – ProGuard-Regeln entschlacken (Play-Console-Empfehlung) | Medium |
+| #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
 | #348 | Meta: Rest-Punkte aus Cleanup 2026-07-08 – nur noch lokaler Stash + Dependency-Update-PR | Low |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
 | #296 | Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) | Low |
@@ -195,8 +205,9 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 
 ### Kürzlich erledigt
 
-- **#368/#367** – `androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`) in der TWA-Library; kein eigener App-Code betroffen; siehe Abschnitt „Edge-to-Edge / Android 15 API-Deprecations" oben
-- **#337** – `saveAllTasks()` nutzt jetzt `saveAllTasksToFirestore()` (Firestore `writeBatch`, gechunkt à 500 Ops) statt sequentieller Einzel-Writes; bestehende Storage-Exports unverändert importierbar, siehe Abschnitt „Performance: saveAllTasks() per Firestore-Batch" oben
+- **#368** – `androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`) in der TWA-Library; kein eigener App-Code betroffen; siehe Abschnitt „Edge-to-Edge / Android 15 API-Deprecations" oben (PR #374, gemerged)
+- **#337** – `saveAllTasks()` nutzt jetzt `saveAllTasksToFirestore()` (Firestore `writeBatch`, gechunkt à 500 Ops) statt sequentieller Einzel-Writes; bestehende Storage-Exports unverändert importierbar, siehe Abschnitt „Performance: saveAllTasks() per Firestore-Batch" oben (PR #374, gemerged)
+- **#367 (Code-Teil)** – blanket `-keep class androidx.** { *; }` aus `proguard-rules.pro` entfernt (PR #375, gemerged); Issue bleibt offen bis zum Gerätetest, siehe Abschnitt „R8/ProGuard-Optimierung" oben
 - **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes (PR #360). Umsetzung bereits auf `testing`; das GitHub-Issue war nur nicht geschlossen worden.
 - **#352 B1–B3** – Design-Tokens konsolidiert (`--primary-color`/`--primary`/`--primary-rgb`/`--hover-bg` echt definiert), Onboarding mit dismissable Demo-Tasks + Quadranten-Erklärung + freundlichen Empty States (`js/modules/onboarding.js`), „Erledigt"-Micro-Interaction + klareres Drag-Feedback (Segment-Dimming), siehe Abschnitt „Design-Tokens, Onboarding & Micro-Interactions" oben
 - **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
