@@ -192,6 +192,17 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     }
   }
 
+  // Click on the task content re-opens the Quick Add dialog prefilled for
+  // editing (text, due date, recurring, category, notes). Inner controls
+  // (checkbox, recurring/notes indicator, delete button) already stop
+  // propagation, so they don't trigger this.
+  if (callbacks.onEditTask) {
+    content.classList.add('task-content-editable');
+    content.addEventListener('click', () => {
+      callbacks.onEditTask(task);
+    });
+  }
+
   div.appendChild(checkbox);
   div.appendChild(content);
 
@@ -1314,13 +1325,23 @@ export function updateMetricsLanguage(translations, currentLanguage) {
 }
 
 /**
- * Open Quick Add Modal for a specific segment
+ * Open Quick Add Modal for a specific segment. Pass `existingTask` to reuse
+ * the same dialog for editing: the fields are prefilled from the task and
+ * `onAddTask` is called with the task's id as a trailing argument so the
+ * caller can tell an edit apart from a fresh add (Issue: edit existing tasks).
  * @param {number} segmentId - Segment ID (1-5)
- * @param {function} onAddTask - Callback when task is added
+ * @param {function} onAddTask - Callback when task is added/edited: (text, segmentId, recurring, dueDate, category, notes, taskId)
  * @param {object} translations - Translations object
  * @param {string} currentLanguage - Current language
+ * @param {object|null} existingTask - Task to edit, or null to create a new task
  */
-export function openQuickAddModal(segmentId, onAddTask, translations, currentLanguage) {
+export function openQuickAddModal(
+  segmentId,
+  onAddTask,
+  translations,
+  currentLanguage,
+  existingTask = null
+) {
   const quickAddModal = document.getElementById('quickAddModal');
   const quickAddInput = document.getElementById('quickAddInput');
   const quickAddCategory = document.getElementById('quickAddCategory');
@@ -1335,7 +1356,7 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   }
 
   // Reset modal
-  quickAddInput.value = '';
+  quickAddInput.value = existingTask ? existingTask.text : '';
   quickRecurringEnabled.checked = false;
   quickRecurringOptions.classList.remove('expanded');
   document.getElementById('quickRecurringToggle')?.classList.remove('icon-toggle-checked');
@@ -1354,21 +1375,59 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   }
   document.getElementById('quickDueDateToggle')?.classList.remove('icon-toggle-checked');
 
-  // Reset notes field (always visible, not gated by any flag)
+  // Prefill recurring settings from the task being edited
+  if (existingTask?.recurring?.enabled) {
+    quickRecurringEnabled.checked = true;
+    quickRecurringOptions.classList.add('expanded');
+    document.getElementById('quickRecurringToggle')?.classList.add('icon-toggle-checked');
+
+    const recurringType = existingTask.recurring.interval || 'daily';
+    const typeRadio = document.querySelector(
+      `input[name="quickRecurringType"][value="${recurringType}"]`
+    );
+    if (typeRadio) typeRadio.checked = true;
+
+    if (recurringType === 'weekly') {
+      document.getElementById('quickWeekdaysContainer')?.classList.add('expanded');
+      const weekdays = existingTask.recurring.weekdays || [];
+      document.querySelectorAll('#quickWeekdaysContainer .weekday-check').forEach((cb) => {
+        cb.checked = weekdays.includes(parseInt(cb.value));
+      });
+    } else if (recurringType === 'monthly') {
+      document.getElementById('quickMonthDayContainer')?.classList.add('expanded');
+      const monthDayInput = document.getElementById('quickMonthDay');
+      if (monthDayInput) monthDayInput.value = existingTask.recurring.dayOfMonth || 1;
+    } else if (recurringType === 'custom') {
+      const customDaysInput = document.getElementById('quickCustomDays');
+      if (customDaysInput) customDaysInput.value = existingTask.recurring.customDays || 1;
+    }
+  }
+
+  // Prefill due date from the task being edited
+  if (existingTask?.dueDate && dueDateInput) {
+    dueDateInput.value = existingTask.dueDate;
+    dueDateInput.style.display = '';
+    if (quickDueDateEnabled) quickDueDateEnabled.checked = true;
+    document.getElementById('quickDueDateToggle')?.classList.add('icon-toggle-checked');
+  }
+
+  // Reset notes field (always visible, not gated by any flag), prefilled
+  // from the task being edited when applicable.
   const quickAddNotes = document.getElementById('quickAddNotes');
   if (quickAddNotes) {
-    quickAddNotes.value = '';
+    quickAddNotes.value = existingTask?.notes || '';
   }
 
   // Show category selector only when the category filter feature is enabled,
-  // and preselect the active calendar (Privat/Beruflich)
+  // and preselect the active calendar (Privat/Beruflich) — or the task's own
+  // category when editing.
   const categoryConfig = document.getElementById('quickAddCategoryConfig');
   if (categoryConfig) {
     const categoryFilterEnabled = localStorage.getItem('categoryFilterEnabled') === 'true';
     categoryConfig.style.display = categoryFilterEnabled ? '' : 'none';
-    // Preselect the active calendar so new tasks land in the current view;
-    // the user can still override it (incl. "Keine") per task.
-    const activeCategory = localStorage.getItem('categoryFilter') || '';
+    const activeCategory = existingTask
+      ? existingTask.category || ''
+      : localStorage.getItem('categoryFilter') || '';
     const categoryBtns = categoryConfig.querySelectorAll('.category-select-btn');
     categoryBtns.forEach((btn) => {
       btn.classList.toggle('active', (btn.dataset.category || '') === activeCategory);
@@ -1398,7 +1457,9 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
 
   // Update title and labels based on current language
   const lang = translations[currentLanguage];
-  quickAddTitle.textContent = currentLanguage === 'de' ? 'Neue Aufgabe' : 'New Task';
+  quickAddTitle.textContent = existingTask
+    ? lang.quickAddModal.editTitle
+    : lang.quickAddModal.title;
 
   // Update input placeholder
   quickAddInput.placeholder = lang.taskInputPlaceholder;
@@ -1501,9 +1562,17 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
     const notesInput = document.getElementById('quickAddNotes');
     const notes = notesInput && notesInput.value.trim() ? notesInput.value.trim() : null;
 
-    // Call callback with due date, category and notes
+    // Call callback with due date, category, notes and (when editing) the task id
     if (onAddTask) {
-      onAddTask(text, segmentId, recurringConfig, dueDate, category, notes);
+      onAddTask(
+        text,
+        segmentId,
+        recurringConfig,
+        dueDate,
+        category,
+        notes,
+        existingTask?.id ?? null
+      );
     }
 
     // Close modal
@@ -1513,7 +1582,7 @@ export function openQuickAddModal(segmentId, onAddTask, translations, currentLan
   // Remove old listeners and add new ones
   const newSubmitBtn = quickAddSubmitBtn.cloneNode(true);
   quickAddSubmitBtn.parentNode.replaceChild(newSubmitBtn, quickAddSubmitBtn);
-  newSubmitBtn.textContent = lang.buttons.ok;
+  newSubmitBtn.textContent = existingTask ? lang.buttons.save : lang.buttons.ok;
   newSubmitBtn.addEventListener('click', handleSubmit);
 
   // Handle Enter key

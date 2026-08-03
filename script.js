@@ -55,6 +55,7 @@ import {
   applySmartRules,
   filterByCategory,
   sameTaskId,
+  updateTask,
 } from './js/modules/tasks.js';
 import {
   addNote,
@@ -244,6 +245,42 @@ function handleAddTask(
   }
 
   renderTasksWithCallbacks();
+}
+
+/**
+ * Edit an existing task's text, due date, recurring config, category and notes.
+ * Reuses the Quick Add modal, so the callback signature matches handleAddTask
+ * with a trailing taskId.
+ */
+function handleEditTask(taskText, segment, recurringConfig, dueDate, category, notes, taskId) {
+  if (!taskId || !taskText || taskText.trim() === '') return;
+
+  const updatedTask = updateTask(taskId, segment, {
+    text: taskText.trim(),
+    dueDate: dueDate || null,
+    recurring: recurringConfig,
+    category,
+    notes,
+  });
+
+  if (!updatedTask) return;
+
+  // Save to storage based on mode
+  if (currentUser && db && !isGuestMode) {
+    updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
+  } else {
+    saveGuestTasks(tasks);
+  }
+
+  renderTasksWithCallbacks();
+}
+
+/**
+ * Open the Quick Add modal prefilled for editing a task
+ * @param {object} task - Task to edit
+ */
+function handleOpenEditTask(task) {
+  openQuickAddModal(task.segment, handleEditTask, translations, getCurrentLanguage(), task);
 }
 
 /**
@@ -550,6 +587,7 @@ function renderTasksWithCallbacks() {
     onEditNotes: handleEditNotes,
     onReorder: handleReorderTask,
     onDismissDemo: handleDismissDemo,
+    onEditTask: handleOpenEditTask,
   };
 
   try {
