@@ -154,6 +154,17 @@ Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` od
 - **Bestehende Exports bleiben unverändert importierbar:** `saveTaskToFirestore`, `updateTaskInFirestore`, `deleteTaskFromFirestore` und alle anderen Storage-Exports wurden nicht entfernt oder umbenannt – einzelne Task-Operationen (Add/Update/Delete) laufen weiterhin über diese Funktionen inkl. Offline-Queue/Retry-Logik. `saveAllTasksToFirestore` ist ein rein additiver neuer Export.
 - Gast-Modus (`saveGuestTasks`) unverändert.
 
+### Bestehende Aufgaben bearbeiten (PR #378)
+
+Klick auf den Task-Text öffnet das bestehende Quick-Add-Modal (`openQuickAddModal()` in `js/modules/ui.js`) wieder – vorausgefüllt statt leer – und speichert Änderungen per `updateTask()` (`js/modules/tasks.js`) statt eine neue Aufgabe anzulegen. Kein separates Edit-Modal.
+
+- `openQuickAddModal(segmentId, onAddTask, translations, currentLanguage, existingTask = null)` – neuer optionaler 5. Parameter `existingTask`. Ist er gesetzt: Text/Fälligkeit/Wiederholung/Kategorie/Notiz werden vorausgefüllt, Titel wird zu `lang.quickAddModal.editTitle` ("Aufgabe bearbeiten"/"Edit Task"), der Submit-Button zu `lang.buttons.save` ("Speichern"/"Save") statt `lang.buttons.ok`.
+- **Callback-Signatur erweitert:** `onAddTask(text, segmentId, recurring, dueDate, category, notes, taskId)` – `taskId` ist der neue, angehängte 7. Parameter (`existingTask?.id ?? null`), analog zu `notes` (Issue #371/PR #372, gemergt kurz vor #378 – deshalb Merge-Konflikt in `ui.js` beim Zusammenführen der beiden Feature-Branches, siehe unten). Bestehende Aufrufer, die `onAddTask` mit der alten (kürzeren) Signatur implementieren, funktionieren unverändert weiter – der zusätzliche Parameter wird einfach ignoriert, wenn nicht referenziert.
+- `createTaskElement()` in `ui.js`: Klick auf `.task-content` (nicht auf Checkbox/Wiederholungs-Icon/Notiz-Icon/Löschen-Button – die stoppen weiterhin `event.propagation`) ruft `callbacks.onEditTask(task)`. Neue CSS-Klasse `.task-content-editable` (`cursor: pointer`) als visueller Hinweis.
+- `script.js`: `handleEditTask(taskText, segment, recurringConfig, dueDate, category, notes, taskId)` ruft `updateTask()` auf und speichert je nach Modus (Firestore/`saveGuestTasks`); `handleOpenEditTask(task)` öffnet das Modal im Edit-Modus; beide über `onEditTask: handleOpenEditTask` in `renderTasksWithCallbacks()` verdrahtet.
+- **Kein Segment-Wechsel im Edit-Modus** – das Modal hat keinen Segment-Picker, Editieren ändert nur Text/Fälligkeit/Wiederholung/Kategorie/Notiz im selben Quadranten.
+- i18n: neue Keys `buttons.save` und `quickAddModal.editTitle` in `translations.js` (de/en).
+
 ## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
@@ -205,6 +216,7 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 
 ### Kürzlich erledigt
 
+- **PR #378** – Bestehende Aufgaben lassen sich per Klick auf den Task-Text im wiederverwendeten Quick-Add-Modal bearbeiten (Prefill + `updateTask()` statt neuer Aufgabe); siehe Abschnitt „Bestehende Aufgaben bearbeiten" oben
 - **#368** – `androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`) in der TWA-Library; kein eigener App-Code betroffen; siehe Abschnitt „Edge-to-Edge / Android 15 API-Deprecations" oben (PR #374, gemerged)
 - **#337** – `saveAllTasks()` nutzt jetzt `saveAllTasksToFirestore()` (Firestore `writeBatch`, gechunkt à 500 Ops) statt sequentieller Einzel-Writes; bestehende Storage-Exports unverändert importierbar, siehe Abschnitt „Performance: saveAllTasks() per Firestore-Batch" oben (PR #374, gemerged)
 - **#367 (Code-Teil)** – blanket `-keep class androidx.** { *; }` aus `proguard-rules.pro` entfernt (PR #375, gemerged); Issue bleibt offen bis zum Gerätetest, siehe Abschnitt „R8/ProGuard-Optimierung" oben
