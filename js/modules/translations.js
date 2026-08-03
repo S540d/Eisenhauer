@@ -35,6 +35,7 @@ export const translations = {
       cancel: 'Abbrechen',
       close: 'Schließen',
       ok: 'OK',
+      save: 'Speichern',
     },
     settings: {
       title: 'Einstellungen',
@@ -127,6 +128,7 @@ export const translations = {
     },
     quickAddModal: {
       title: 'Neue Aufgabe',
+      editTitle: 'Aufgabe bearbeiten',
       inputPlaceholder: 'Was möchtest du tun?',
       monthDayLabel: 'Tag (1-31)',
       dueDate: 'Fällig am',
@@ -250,6 +252,7 @@ export const translations = {
       cancel: 'Cancel',
       close: 'Close',
       ok: 'OK',
+      save: 'Save',
     },
     settings: {
       title: 'Settings',
@@ -342,6 +345,7 @@ export const translations = {
     },
     quickAddModal: {
       title: 'New Task',
+      editTitle: 'Edit Task',
       inputPlaceholder: 'What do you want to do?',
       monthDayLabel: 'Day (1-31)',
       dueDate: 'Due Date',
