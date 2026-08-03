@@ -58,13 +58,25 @@ import {
   updateTask,
 } from './js/modules/tasks.js';
 import {
+  addNote,
+  deleteNote,
+  getAllNotes,
+  setAllNotes as setAllNotesState,
+} from './js/modules/notes.js';
+import {
   initStorage,
   saveGuestTasks,
   loadGuestTasks,
   loadUserTasks,
   saveTaskToFirestore,
+  saveAllTasksToFirestore,
   updateTaskInFirestore,
   deleteTaskFromFirestore,
+  saveGuestNotes,
+  loadGuestNotes,
+  loadUserNotes,
+  saveNoteToFirestore,
+  deleteNoteFromFirestore,
   exportData,
   importData,
   requestPersistentStorage,
@@ -78,6 +90,10 @@ import {
   openSettingsModal,
   openMetricsModal,
   openEditRecurringModal,
+  openEditNotesModal,
+  openNotesModal,
+  closeNotesModal,
+  renderNotesList,
   openTutorialModal,
   shouldShowTutorial,
   showDragHint,
@@ -153,17 +169,13 @@ window.importGuestTasksToFirestore = importGuestTasksToFirestore;
  * Save all tasks (Guest or Firebase)
  * Note: For Firebase users, this function is not typically called since
  * individual task operations (add/update/delete) save directly to Firestore.
- * This function is mainly used for bulk operations like import.
+ * This function is mainly used for bulk operations like reorder and import,
+ * where it writes all tasks in one or more Firestore batches instead of
+ * sequential per-task writes (see saveAllTasksToFirestore).
  */
 async function saveAllTasks() {
   if (currentUser && db && !isGuestMode) {
-    // For logged-in users, save each task individually to Firestore
-    const { saveTaskToFirestore } = await import('./js/modules/storage.js');
-    for (const segmentId in tasks) {
-      for (const task of tasks[segmentId]) {
-        await saveTaskToFirestore(task, currentUser.uid, db, window.firebase);
-      }
-    }
+    await saveAllTasksToFirestore(tasks, currentUser.uid, db);
   } else {
     await saveGuestTasks(tasks);
   }
@@ -189,9 +201,29 @@ async function loadAllTasks() {
 }
 
 /**
+ * Load all standalone notes (Guest or Firebase)
+ */
+async function loadAllNotes() {
+  if (currentUser && db && !isGuestMode) {
+    const loadedNotes = await loadUserNotes(currentUser.uid, db);
+    setAllNotesState(loadedNotes);
+  } else {
+    const loadedNotes = await loadGuestNotes();
+    setAllNotesState(loadedNotes);
+  }
+}
+
+/**
  * Add task handler
  */
-function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null, category = null) {
+function handleAddTask(
+  taskText,
+  segment,
+  recurringConfig = null,
+  dueDate = null,
+  category = null,
+  notes = null
+) {
   if (!taskText || taskText.trim() === '') return;
 
   // First real task ends onboarding for good, so demo tasks/explanations
@@ -201,7 +233,7 @@ function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null
   // The Quick Add modal already encodes the category choice (it preselects the
   // active calendar and lets the user override it, including "Keine"), so the
   // explicitly passed category is used as-is and never silently overridden.
-  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate, category);
+  const task = addTaskToSegment(taskText, segment, recurringConfig, null, dueDate, category, notes);
 
   // Save to storage based on mode
   if (currentUser && db && !isGuestMode) {
@@ -216,11 +248,11 @@ function handleAddTask(taskText, segment, recurringConfig = null, dueDate = null
 }
 
 /**
- * Edit an existing task's text, due date, recurring config and category.
+ * Edit an existing task's text, due date, recurring config, category and notes.
  * Reuses the Quick Add modal, so the callback signature matches handleAddTask
  * with a trailing taskId.
  */
-function handleEditTask(taskText, segment, recurringConfig, dueDate, category, taskId) {
+function handleEditTask(taskText, segment, recurringConfig, dueDate, category, notes, taskId) {
   if (!taskId || !taskText || taskText.trim() === '') return;
 
   const updatedTask = updateTask(taskId, segment, {
@@ -228,6 +260,7 @@ function handleEditTask(taskText, segment, recurringConfig, dueDate, category, t
     dueDate: dueDate || null,
     recurring: recurringConfig,
     category,
+    notes,
   });
 
   if (!updatedTask) return;
@@ -508,6 +541,40 @@ function handleEditRecurring(task) {
 }
 
 /**
+ * Handle edit task notes (always available, not gated by any flag, Issue #371)
+ * @param {object} task - Task to edit
+ */
+function handleEditNotes(task) {
+  openEditNotesModal(
+    task,
+    (taskId, newNotes) => {
+      for (const segment in tasks) {
+        const taskIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
+        if (taskIndex !== -1) {
+          if (newNotes === null) {
+            delete tasks[segment][taskIndex].notes;
+          } else {
+            tasks[segment][taskIndex].notes = newNotes;
+          }
+
+          const updatedTask = tasks[segment][taskIndex];
+          if (currentUser && db && !isGuestMode) {
+            updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
+          } else {
+            saveGuestTasks(tasks);
+          }
+
+          renderTasksWithCallbacks();
+          break;
+        }
+      }
+    },
+    translations,
+    getCurrentLanguage()
+  );
+}
+
+/**
  * Render all tasks with all callbacks (Drag & Drop 2.0)
  */
 function renderTasksWithCallbacks() {
@@ -517,6 +584,7 @@ function renderTasksWithCallbacks() {
     onDragEnd: handleMoveTask,
     onSwipeDelete: handleDeleteTask,
     onEditRecurring: handleEditRecurring,
+    onEditNotes: handleEditNotes,
     onReorder: handleReorderTask,
     onDismissDemo: handleDismissDemo,
     onEditTask: handleOpenEditTask,
@@ -626,8 +694,8 @@ function setupEventListeners() {
         // Open Quick Add Modal with Q1 (Do!) pre-selected
         openQuickAddModal(
           1, // Segment 1 (Do!)
-          (text, selectedSegment, recurring, dueDate, category) => {
-            handleAddTask(text, selectedSegment || 1, recurring, dueDate, category);
+          (text, selectedSegment, recurring, dueDate, category, notes) => {
+            handleAddTask(text, selectedSegment || 1, recurring, dueDate, category, notes);
           },
           translations,
           getCurrentLanguage()
@@ -684,8 +752,8 @@ function setupEventListeners() {
       const segment = parseInt(e.target.dataset.segment);
       openQuickAddModal(
         segment,
-        (text, selectedSegment, recurring, dueDate, category) => {
-          handleAddTask(text, selectedSegment || segment, recurring, dueDate, category);
+        (text, selectedSegment, recurring, dueDate, category, notes) => {
+          handleAddTask(text, selectedSegment || segment, recurring, dueDate, category, notes);
         },
         translations,
         getCurrentLanguage()
@@ -761,6 +829,75 @@ function setupEventListeners() {
         renderTasksWithCallbacks();
       });
     });
+  }
+
+  // Notes collection menu entry (Issue #371) - visibility only, task-notes stay
+  // available regardless of this flag.
+  const notesSection = document.getElementById('notesSection');
+  const notesSeparator = document.getElementById('notesSeparator');
+  if (notesSection) {
+    const updateNotesMenuVisibility = () => {
+      const enabled = localStorage.getItem('notesCollectionEnabled') === 'true';
+      notesSection.style.display = enabled ? '' : 'none';
+      if (notesSeparator) notesSeparator.style.display = enabled ? '' : 'none';
+    };
+    updateNotesMenuVisibility();
+    window.updateNotesMenuVisibility = updateNotesMenuVisibility;
+  }
+
+  // Standalone notes modal (Issue #371)
+  const renderNotesListWithCallbacks = () => {
+    renderNotesList(getAllNotes(), translations, getCurrentLanguage(), {
+      onDelete: handleDeleteNote,
+    });
+  };
+  window.openNotesModalWithData = () => {
+    openNotesModal();
+    renderNotesListWithCallbacks();
+  };
+
+  const notesCancelBtn = document.getElementById('notesCancelBtn');
+  if (notesCancelBtn) {
+    notesCancelBtn.addEventListener('click', () => closeNotesModal());
+  }
+
+  const notesAddBtn = document.getElementById('notesAddBtn');
+  const notesAddInput = document.getElementById('notesAddInput');
+  const handleAddNote = () => {
+    const text = notesAddInput.value.trim();
+    if (!text) return;
+
+    const note = addNote(text);
+    if (currentUser && db && !isGuestMode) {
+      saveNoteToFirestore(note, currentUser.uid, db);
+    } else {
+      saveGuestNotes(getAllNotes());
+    }
+
+    notesAddInput.value = '';
+    renderNotesListWithCallbacks();
+  };
+  if (notesAddBtn && notesAddInput) {
+    notesAddBtn.addEventListener('click', handleAddNote);
+    notesAddInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAddNote();
+      }
+    });
+  }
+
+  function handleDeleteNote(noteId) {
+    const removed = deleteNote(noteId);
+    if (!removed) return;
+
+    if (currentUser && db && !isGuestMode) {
+      deleteNoteFromFirestore(removed.id, currentUser.uid, db);
+    } else {
+      saveGuestNotes(getAllNotes());
+    }
+
+    renderNotesListWithCallbacks();
   }
 
   // Settings button (header)
@@ -1175,6 +1312,10 @@ function setupEventListeners() {
       quickAddDueDate.style.display = checked ? '' : 'none';
       quickDueDateToggle?.classList.toggle('icon-toggle-checked', checked);
       if (checked) {
+        // Force a layout flush so the browser registers the input as
+        // rendered before showPicker() checks for it, otherwise it can
+        // throw InvalidStateError right after toggling display:none off.
+        void quickAddDueDate.offsetHeight;
         if (typeof quickAddDueDate.showPicker === 'function') {
           try {
             quickAddDueDate.showPicker();
@@ -1260,6 +1401,7 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     } else {
       await loadAllTasks();
     }
+    await loadAllNotes();
 
     // Wait for DOM to be fully visible after showApp()
     setTimeout(() => {
@@ -1312,6 +1454,7 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
   } else {
     // Tasks already loaded: just re-sync with Firebase in background
     await loadAllTasks();
+    await loadAllNotes();
     renderTasksWithCallbacks();
   }
 };
@@ -1403,6 +1546,7 @@ async function initApp() {
       isGuestMode = true;
       window.showApp();
       await loadAllTasks();
+      await loadAllNotes();
       setupEventListeners();
       if (!keyboardDragManager) {
         keyboardDragManager = new KeyboardDragManager(handleMoveTask);
@@ -1415,6 +1559,7 @@ async function initApp() {
       isGuestMode = false;
       window.showApp();
       await loadAllTasks();
+      await loadAllNotes();
       setupEventListeners();
       if (!keyboardDragManager) {
         keyboardDragManager = new KeyboardDragManager(handleMoveTask);

@@ -104,6 +104,31 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     textSpan.appendChild(recurringIndicator);
   }
 
+  // Add notes indicator/edit button (always available, not gated by any flag, Issue #371)
+  if (callbacks.onEditNotes) {
+    const notesIndicator = document.createElement('button');
+    notesIndicator.className = 'notes-indicator';
+    notesIndicator.type = 'button';
+    notesIndicator.classList.toggle('has-notes', !!task.notes);
+    const notesLabel = translations[currentLanguage]?.editNotes?.ariaLabel || 'Edit note';
+    notesIndicator.setAttribute('aria-label', notesLabel);
+    notesIndicator.title = task.notes || notesLabel;
+
+    notesIndicator.innerHTML = `
+ <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+ <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+ <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+ </svg>
+ `;
+
+    notesIndicator.addEventListener('click', (e) => {
+      e.stopPropagation();
+      callbacks.onEditNotes(task);
+    });
+
+    textSpan.appendChild(notesIndicator);
+  }
+
   // Add delete button inline after text (only for Done tasks on desktop)
   const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   const isDoneTask = task.segment === SEGMENTS.DONE;
@@ -168,9 +193,9 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
   }
 
   // Click on the task content re-opens the Quick Add dialog prefilled for
-  // editing (text, due date, recurring, category). Inner controls (checkbox,
-  // recurring indicator, delete button) already stop propagation, so they
-  // don't trigger this.
+  // editing (text, due date, recurring, category, notes). Inner controls
+  // (checkbox, recurring/notes indicator, delete button) already stop
+  // propagation, so they don't trigger this.
   if (callbacks.onEditTask) {
     content.classList.add('task-content-editable');
     content.addEventListener('click', () => {
@@ -616,6 +641,16 @@ export function openSettingsModal(
       return;
     }
 
+    // Handle Notizen button click (standalone notes collection, Issue #371)
+    if (target.closest('#notesBtn')) {
+      e.preventDefault();
+      closeSettingsModal();
+      if (window.openNotesModalWithData) {
+        window.openNotesModalWithData();
+      }
+      return;
+    }
+
     // Handle close button click
     if (target.closest('#settingsCancelBtn')) {
       closeSettingsModal();
@@ -832,6 +867,12 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     categoryFilterToggle.checked = localStorage.getItem('categoryFilterEnabled') === 'true';
   }
 
+  // Notes collection toggle reflects whether the standalone notes overview is enabled
+  const notesCollectionToggle = document.getElementById('notesCollectionToggle');
+  if (notesCollectionToggle) {
+    notesCollectionToggle.checked = localStorage.getItem('notesCollectionEnabled') === 'true';
+  }
+
   // Update reminders toggle + dropdown state
   const remindersToggle = document.getElementById('remindersToggle');
   const remindersDaysContainer = document.getElementById('remindersDaysContainer');
@@ -921,6 +962,17 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       }
       if (window.renderTasksCallback) {
         window.renderTasksCallback();
+      }
+      return;
+    }
+
+    // Handle notes collection toggle (show/hide the "Notizen" menu entry only)
+    if (target.id === 'notesCollectionToggle') {
+      const isEnabled = target.checked;
+      localStorage.setItem('notesCollectionEnabled', isEnabled.toString());
+
+      if (window.updateNotesMenuVisibility) {
+        window.updateNotesMenuVisibility();
       }
       return;
     }
@@ -1278,7 +1330,7 @@ export function updateMetricsLanguage(translations, currentLanguage) {
  * `onAddTask` is called with the task's id as a trailing argument so the
  * caller can tell an edit apart from a fresh add (Issue: edit existing tasks).
  * @param {number} segmentId - Segment ID (1-5)
- * @param {function} onAddTask - Callback when task is added/edited: (text, segmentId, recurring, dueDate, category, taskId)
+ * @param {function} onAddTask - Callback when task is added/edited: (text, segmentId, recurring, dueDate, category, notes, taskId)
  * @param {object} translations - Translations object
  * @param {string} currentLanguage - Current language
  * @param {object|null} existingTask - Task to edit, or null to create a new task
@@ -1359,6 +1411,13 @@ export function openQuickAddModal(
     document.getElementById('quickDueDateToggle')?.classList.add('icon-toggle-checked');
   }
 
+  // Reset notes field (always visible, not gated by any flag), prefilled
+  // from the task being edited when applicable.
+  const quickAddNotes = document.getElementById('quickAddNotes');
+  if (quickAddNotes) {
+    quickAddNotes.value = existingTask?.notes || '';
+  }
+
   // Show category selector only when the category filter feature is enabled,
   // and preselect the active calendar (Privat/Beruflich) — or the task's own
   // category when editing.
@@ -1404,6 +1463,12 @@ export function openQuickAddModal(
 
   // Update input placeholder
   quickAddInput.placeholder = lang.taskInputPlaceholder;
+
+  // Update notes placeholder
+  const quickAddNotesEl = document.getElementById('quickAddNotes');
+  if (quickAddNotesEl && lang.quickAddModal?.notesPlaceholder) {
+    quickAddNotesEl.placeholder = lang.quickAddModal.notesPlaceholder;
+  }
 
   // Update recurring label
   const quickRecurringEnableText = document.getElementById('quickRecurringEnableText');
@@ -1493,9 +1558,21 @@ export function openQuickAddModal(
       category = activeBtn?.dataset.category || null;
     }
 
-    // Call callback with due date, category and (when editing) the task id
+    // Get notes if provided (always available, not gated by any flag)
+    const notesInput = document.getElementById('quickAddNotes');
+    const notes = notesInput && notesInput.value.trim() ? notesInput.value.trim() : null;
+
+    // Call callback with due date, category, notes and (when editing) the task id
     if (onAddTask) {
-      onAddTask(text, segmentId, recurringConfig, dueDate, category, existingTask?.id ?? null);
+      onAddTask(
+        text,
+        segmentId,
+        recurringConfig,
+        dueDate,
+        category,
+        notes,
+        existingTask?.id ?? null
+      );
     }
 
     // Close modal
@@ -1664,6 +1741,139 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
   const newCancelBtn = cancelBtn.cloneNode(true);
   cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
   newCancelBtn.addEventListener('click', handleCancel);
+}
+
+/**
+ * Open edit-notes modal for an existing task (always available, Issue #371)
+ * @param {object} task - Task to edit
+ * @param {function} onSave - Callback(taskId, newNotes|null) when saved
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ */
+export function openEditNotesModal(task, onSave, translations, currentLanguage) {
+  const modal = document.getElementById('editNotesModal');
+  const taskNameElement = document.getElementById('editNotesTaskName');
+  const titleElement = document.getElementById('editNotesTitle');
+  const textarea = document.getElementById('editNotesTextarea');
+  const saveBtn = document.getElementById('editNotesSaveBtn');
+  const cancelBtn = document.getElementById('editNotesCancelBtn');
+
+  if (!modal || !textarea) return;
+
+  const lang = translations[currentLanguage]?.editNotes;
+
+  taskNameElement.textContent = task.text;
+  titleElement.textContent = lang?.title || 'Edit note';
+  textarea.placeholder = lang?.placeholder || '';
+  textarea.value = task.notes || '';
+
+  modal.style.display = 'flex';
+  setTimeout(() => textarea.focus(), 100);
+
+  const handleSave = () => {
+    const value = textarea.value.trim();
+    onSave(task.id, value.length ? value : null);
+    modal.style.display = 'none';
+  };
+
+  const handleCancel = () => {
+    modal.style.display = 'none';
+  };
+
+  // Remove old listeners and add new ones
+  const newSaveBtn = saveBtn.cloneNode(true);
+  saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+  newSaveBtn.textContent = lang?.save || 'Save';
+  newSaveBtn.addEventListener('click', handleSave);
+
+  const newCancelBtn = cancelBtn.cloneNode(true);
+  cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+  newCancelBtn.textContent = lang?.cancel || 'Cancel';
+  newCancelBtn.addEventListener('click', handleCancel);
+}
+
+/**
+ * Render the standalone notes list (Issue #371)
+ * @param {Array} notesArray - Flat array of note objects
+ * @param {object} translations - Translations object
+ * @param {string} currentLanguage - Current language
+ * @param {object} callbacks - { onDelete(noteId) }
+ */
+export function renderNotesList(notesArray, translations, currentLanguage, callbacks = {}) {
+  const container = document.getElementById('notesListContainer');
+  if (!container) return;
+
+  const lang = translations[currentLanguage]?.notes;
+  container.innerHTML = '';
+
+  if (!notesArray.length) {
+    const empty = document.createElement('p');
+    empty.className = 'notes-empty-state';
+    empty.textContent = lang?.empty || 'No notes yet';
+    container.appendChild(empty);
+    return;
+  }
+
+  const sorted = [...notesArray].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  const dateLocale = currentLanguage === 'de' ? 'de-DE' : 'en-US';
+
+  sorted.forEach((note) => {
+    const item = document.createElement('div');
+    item.className = 'note-item';
+    item.dataset.noteId = note.id;
+
+    const content = document.createElement('div');
+    content.className = 'note-item-content';
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'note-text';
+    textSpan.textContent = note.text;
+    content.appendChild(textSpan);
+
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'note-date';
+    dateSpan.textContent = new Date(note.createdAt).toLocaleDateString(dateLocale);
+    content.appendChild(dateSpan);
+
+    if (note.sourceTaskId) {
+      const badge = document.createElement('span');
+      badge.className = 'note-source-badge';
+      badge.textContent = `${lang?.sourceBadgePrefix || '→ Task'} ${note.sourceTaskId}`;
+      content.appendChild(badge);
+    }
+
+    item.appendChild(content);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'note-delete-btn';
+    deleteBtn.type = 'button';
+    deleteBtn.setAttribute('aria-label', lang?.deleteAriaLabel || 'Delete note');
+    deleteBtn.textContent = '✕';
+    deleteBtn.addEventListener('click', () => callbacks.onDelete?.(note.id));
+    item.appendChild(deleteBtn);
+
+    container.appendChild(item);
+  });
+}
+
+/**
+ * Open the standalone notes modal (Issue #371)
+ */
+export function openNotesModal() {
+  const modal = document.getElementById('notesModal');
+  if (modal) {
+    modal.style.display = 'flex';
+  }
+}
+
+/**
+ * Close the standalone notes modal
+ */
+export function closeNotesModal() {
+  const modal = document.getElementById('notesModal');
+  if (modal) {
+    modal.style.display = 'none';
+  }
 }
 
 /**

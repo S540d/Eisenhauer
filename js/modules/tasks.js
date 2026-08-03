@@ -157,7 +157,8 @@ function createTaskObject(
   recurringConfig = null,
   createdAt = null,
   dueDate = null,
-  category = null
+  category = null,
+  notes = null
 ) {
   const task = {
     id: generateTaskId(), // Stable, collision-free string ID (see generateTaskId)
@@ -176,6 +177,11 @@ function createTaskObject(
   // Add category if provided
   if (category) {
     task.category = category;
+  }
+
+  // Add notes if provided
+  if (notes) {
+    task.notes = notes;
   }
 
   // Add recurring configuration if enabled
@@ -199,6 +205,8 @@ function createTaskObject(
  * @param {object} recurringConfig - Optional recurring configuration
  * @param {function} saveCallback - Callback to save tasks (Firebase or LocalStorage)
  * @param {string} dueDate - Optional due date (ISO string or timestamp)
+ * @param {string} category - Optional category ('private' or 'business')
+ * @param {string} notes - Optional free-text notes
  * @returns {object} The created task
  */
 export function addTaskToSegment(
@@ -207,7 +215,8 @@ export function addTaskToSegment(
   recurringConfig = null,
   saveCallback = null,
   dueDate = null,
-  category = null
+  category = null,
+  notes = null
 ) {
   // Input validation
   if (typeof taskText !== 'string') {
@@ -222,8 +231,22 @@ export function addTaskToSegment(
   if (!Number.isInteger(segmentId) || segmentId < 1 || segmentId > 5) {
     throw new RangeError('Segment ID must be an integer between 1 and 5');
   }
+  if (notes !== null && typeof notes !== 'string') {
+    throw new TypeError('Notes must be a string');
+  }
+  if (notes && notes.length > 500) {
+    throw new Error('Notes must not exceed 500 characters');
+  }
 
-  const task = createTaskObject(taskText, segmentId, recurringConfig, null, dueDate, category);
+  const task = createTaskObject(
+    taskText,
+    segmentId,
+    recurringConfig,
+    null,
+    dueDate,
+    category,
+    notes
+  );
   tasks[segmentId].push(task);
 
   // Call save callback if provided
