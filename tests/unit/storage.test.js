@@ -10,6 +10,8 @@ import {
   checkPersistentStorage,
   saveGuestTasks,
   loadGuestTasks,
+  saveGuestNotes,
+  loadGuestNotes,
   importData,
 } from '../../js/modules/storage.js';
 import localforage from 'localforage';
@@ -383,6 +385,59 @@ describe('Storage Module', () => {
 
       // Should return empty structure on parse error
       expect(result).toEqual({ 1: [], 2: [], 3: [], 4: [], 5: [] });
+    });
+  });
+
+  describe('saveGuestNotes (Issue #371)', () => {
+    it('should save notes to localforage', async () => {
+      const notes = [{ id: 'n1', text: 'Note 1', createdAt: 1 }];
+
+      const setItemSpy = vi.spyOn(localforage, 'setItem').mockResolvedValue(undefined);
+
+      await saveGuestNotes(notes);
+
+      expect(setItemSpy).toHaveBeenCalledWith('eisenhauer-notes', notes);
+    });
+
+    it('should handle errors gracefully', async () => {
+      vi.spyOn(localforage, 'setItem').mockRejectedValue(new Error('Storage full'));
+
+      await expect(saveGuestNotes([])).resolves.not.toThrow();
+    });
+  });
+
+  describe('loadGuestNotes (Issue #371)', () => {
+    it('should load notes from localforage', async () => {
+      const notes = [{ id: 'n1', text: 'Note 1', createdAt: 1 }];
+      vi.spyOn(localforage, 'getItem').mockResolvedValue(notes);
+
+      const result = await loadGuestNotes();
+
+      expect(result).toEqual(notes);
+    });
+
+    it('should return an empty array when no data exists', async () => {
+      vi.spyOn(localforage, 'getItem').mockResolvedValue(null);
+
+      const result = await loadGuestNotes();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return an empty array on error', async () => {
+      vi.spyOn(localforage, 'getItem').mockRejectedValue(new Error('DB Error'));
+
+      const result = await loadGuestNotes();
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return an empty array for non-array stored data', async () => {
+      vi.spyOn(localforage, 'getItem').mockResolvedValue('not-an-array');
+
+      const result = await loadGuestNotes();
+
+      expect(result).toEqual([]);
     });
   });
 

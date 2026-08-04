@@ -861,6 +861,10 @@ header h1,
   gap: 4px;
 }
 
+.task-content-editable {
+  cursor: pointer;
+}
+
 .task-text {
   flex: 1;
   color: var(--text-primary);

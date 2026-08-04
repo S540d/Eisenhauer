@@ -21,6 +21,7 @@ export const COLORS = {
 
 export const STORAGE_KEYS = {
   TASKS: 'eisenhauer-tasks',
+  NOTES: 'eisenhauer-notes',
   LANGUAGE: 'language',
   DARK_MODE: 'darkMode',
   DRAG_HINT_SEEN: 'dragHintSeen',
@@ -28,6 +29,7 @@ export const STORAGE_KEYS = {
 
 export const UPDATE_CHECK_INTERVAL = 10000; // 10 seconds
 export const MAX_TASK_LENGTH = 140;
+export const MAX_NOTES_LENGTH = 500;
 
 // Smart Rules Configuration
 export const SMART_RULES = {
@@ -37,4 +39,5 @@ export const SMART_RULES = {
 export const STORAGE_KEYS_EXTENDED = {
   ...STORAGE_KEYS,
   SMART_FUNCTIONS_ENABLED: 'smartFunctionsEnabled',
+  NOTES_COLLECTION_ENABLED: 'notesCollectionEnabled',
 };
