@@ -360,26 +360,17 @@ export async function updateTaskInFirestore(task, userId, db) {
     createdAt: task.createdAt || serverTimestamp(),
   };
 
-  if (task.completedAt) {
-    updateData.completedAt = task.completedAt;
-  }
-
-  if (task.recurring) {
-    updateData.recurring = task.recurring;
-  }
-
-  if (task.dueDate) {
-    updateData.dueDate = task.dueDate;
-  }
-
-  if (task.category) {
-    updateData.category = task.category;
-  }
-
   // setDoc uses merge:true below, so an omitted field would just keep its old
-  // value in Firestore. Notes are user-clearable (empty the textarea to
-  // remove a note), so an absent/empty value must explicitly delete the
-  // field rather than silently leaving a stale one behind.
+  // value in Firestore. Every optional field here is user-clearable — the edit
+  // dialog can drop the due date, the category ("Keine"), the notes and the
+  // recurring config, and un-checking a Done task resets completedAt — so an
+  // absent/empty value must explicitly delete the field rather than silently
+  // leaving a stale one behind. Without this the cleared value reappears on
+  // the next load (Issue: clearing fields did not persist for signed-in users).
+  updateData.completedAt = task.completedAt ? task.completedAt : deleteField();
+  updateData.recurring = task.recurring ? task.recurring : deleteField();
+  updateData.dueDate = task.dueDate ? task.dueDate : deleteField();
+  updateData.category = task.category ? task.category : deleteField();
   updateData.notes = task.notes ? task.notes : deleteField();
 
   // Add to offline queue with retry logic
