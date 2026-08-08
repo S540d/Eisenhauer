@@ -21,6 +21,16 @@ feature/issue-XXX → testing → main (production)
 - **Vor Push:** lokale Tests (`npm test`); kein Merge bei CI-Fail
 - `main` ist protected
 
+### CI-Gate: PRs gegen `testing` laufen praktisch ohne CI (#381)
+
+Seit PR #381 triggern `ci-cd.yml` und `standards-audit.yml` nur noch bei `pull_request` gegen **`main`**. Auf einem PR Feature→`testing` läuft daher nur `mergeability` (plus CodeQL/Security-Scans) – **keine Unit-Tests, kein Lint, kein Build, kein E2E**. Der `push`-Trigger auf `testing` greift erst *nach* dem Merge.
+
+Praktische Konsequenzen:
+
+- **`npm test` und `npm run lint` lokal ausführen ist nicht optional**, sondern der einzige Gate vor `testing`. Grünes CI auf einem Feature-PR sagt nichts über die Tests aus.
+- Das erste echte CI-Gate ist der Release-PR `testing` → `main`. Regressionen fallen dort gebündelt auf, nicht mehr am einzelnen Feature-PR.
+- Beim Bewerten eines gemergten PRs nie aus „CI war grün" auf „Tests liefen" schließen – erst prüfen, *welche* Checks überhaupt getriggert wurden.
+
 ## Android-App (TWA)
 
 - Package: `com.sven4321.eisenhauer`
@@ -211,6 +221,16 @@ Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert (erledig
 
 > **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
 
+### Offene Punkte aus dem Review von PR #382 (2026-08-08)
+
+Beim Review des Release-PRs `testing` → `main` gefunden. Der blockierende Punkt (geleerte Felder landeten nicht in Firestore) ist mit PR #383 gefixt; die folgenden drei sind **noch nicht als GitHub-Issue erfasst** und daher hier festgehalten, damit sie nicht verloren gehen:
+
+1. **Bulk-Save ohne Offline-Queue** – `saveAllTasksToFirestore()` (`js/modules/storage.js`) committet direkt per `batch.commit()`, ohne `offlineQueue.add(...)`, Retry oder `ErrorHandler`. Der ersetzte Pfad über `saveTaskToFirestore` hatte all das (`maxRetries: 3`). Zusätzlich wird `saveAllTasks()` in `handleReorderTask()` (`script.js`) **weder awaited noch gecatcht** – ein fehlgeschlagener Bulk-Write ist damit komplett still, die UI zeigt die neue Reihenfolge trotzdem an. Der Performance-Gewinn aus #337 ist richtig, die Robustheit sollte nachgezogen werden.
+2. **Freistehende Notizen: kein Gast→Login-Pfad, nicht im Backup** – `loadAllNotes()` lädt bei angemeldeten Nutzern nur aus Firestore; ein Gegenstück zu `importGuestTasksToFirestore()` fehlt, sodass als Gast angelegte Notizen nach dem Anmelden unsichtbar sind (nicht zerstört – sie liegen weiter unter `eisenhauer-notes` in IndexedDB). Außerdem exportiert `exportData()` nur `tasks`, freistehende Notizen fehlen also im JSON-Backup. Task-Notizen sind als Task-Feld korrekt mit drin.
+3. **Kein Click-Suppress nach Long-Press** – `DragManager#handleTouchEnd()` wertet das Event nicht aus, und `preventDefault()` wird nur in `#handleTouchMove` gerufen. Long-Press ohne Bewegung → `#activateDragMode()` → Finger heben → der synthetische `click` erreicht den neuen Handler auf `.task-content` (`ui.js`) und öffnet ungewollt den Edit-Dialog. Bei echten Drags/Swipes mit Bewegung greift das `preventDefault()`.
+
+**Nebenbefund Versionsdrift:** `Android/app/build.gradle` steht auf `versionName "1.12.3"` / `versionCode 28` (Kommentar `// Match PWA version`), `package.json` auf `1.12.2`, `manifest.json` auf `1.12.1`. Der CI-Job „🔧 Version Checks" gibt die Werte nur aus und vergleicht sie **nicht** – er fängt solche Drifts also nicht ab.
+
 ### Backlog-Konsolidierung 2026-07-29
 
 Geschlossen und warum – damit nicht später erneut aufgemacht:
@@ -230,6 +250,7 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 
 ### Kürzlich erledigt
 
+- **PR #383** – `updateTaskInFirestore()` löscht geleerte optionale Felder jetzt explizit per `deleteField()` (`completedAt`, `recurring`, `dueDate`, `category`; `notes` war seit PR #373 schon korrekt). Vorher blieb ein im Edit-Dialog geleertes Feld wegen `merge: true` in Firestore stehen und tauchte nach dem Reload wieder auf; `completedAt` verfälschte zusätzlich die Metriken. Nur der Firebase-Modus war betroffen. Gefunden beim Review von PR #382, siehe Abschnitt „Optionale Task-Felder löschen" oben
 - **PR #378** – Bestehende Aufgaben lassen sich per Klick auf den Task-Text im wiederverwendeten Quick-Add-Modal bearbeiten (Prefill + `updateTask()` statt neuer Aufgabe); siehe Abschnitt „Bestehende Aufgaben bearbeiten" oben
 - **#368** – `androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`) in der TWA-Library; kein eigener App-Code betroffen; siehe Abschnitt „Edge-to-Edge / Android 15 API-Deprecations" oben (PR #374, gemerged)
 - **#337** – `saveAllTasks()` nutzt jetzt `saveAllTasksToFirestore()` (Firestore `writeBatch`, gechunkt à 500 Ops) statt sequentieller Einzel-Writes; bestehende Storage-Exports unverändert importierbar, siehe Abschnitt „Performance: saveAllTasks() per Firestore-Batch" oben (PR #374, gemerged)
