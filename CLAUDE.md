@@ -213,6 +213,7 @@ Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert (erledig
 | #359 | **Cloud-Backup: Blaze-Tarif nötig** – Architekturentscheidung offen (Firestore-Migration empfohlen). Bündelt auch die allgemeine Spark-/Blaze-Tarif-Frage (vormals #254) | Medium |
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
 | #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
+| #385 | Robustheits-Lücken aus dem Review von PR #382: Bulk-Save ohne Offline-Queue/Retry, Notizen ohne Gast→Login-Migration + fehlend im Backup, kein Click-Suppress nach Long-Press | Medium |
 | #348 | Meta: Rest-Punkte aus Cleanup 2026-07-08 – nur noch lokaler Stash + Dependency-Update-PR | Low |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
 | #296 | Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) | Low |
@@ -220,16 +221,6 @@ Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert (erledig
 | #266 | JSDoc-Kommentare für alle public functions | Low |
 
 > **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
-
-### Offene Punkte aus dem Review von PR #382 (2026-08-08)
-
-Beim Review des Release-PRs `testing` → `main` gefunden. Der blockierende Punkt (geleerte Felder landeten nicht in Firestore) ist mit PR #383 gefixt; die folgenden drei sind **noch nicht als GitHub-Issue erfasst** und daher hier festgehalten, damit sie nicht verloren gehen:
-
-1. **Bulk-Save ohne Offline-Queue** – `saveAllTasksToFirestore()` (`js/modules/storage.js`) committet direkt per `batch.commit()`, ohne `offlineQueue.add(...)`, Retry oder `ErrorHandler`. Der ersetzte Pfad über `saveTaskToFirestore` hatte all das (`maxRetries: 3`). Zusätzlich wird `saveAllTasks()` in `handleReorderTask()` (`script.js`) **weder awaited noch gecatcht** – ein fehlgeschlagener Bulk-Write ist damit komplett still, die UI zeigt die neue Reihenfolge trotzdem an. Der Performance-Gewinn aus #337 ist richtig, die Robustheit sollte nachgezogen werden.
-2. **Freistehende Notizen: kein Gast→Login-Pfad, nicht im Backup** – `loadAllNotes()` lädt bei angemeldeten Nutzern nur aus Firestore; ein Gegenstück zu `importGuestTasksToFirestore()` fehlt, sodass als Gast angelegte Notizen nach dem Anmelden unsichtbar sind (nicht zerstört – sie liegen weiter unter `eisenhauer-notes` in IndexedDB). Außerdem exportiert `exportData()` nur `tasks`, freistehende Notizen fehlen also im JSON-Backup. Task-Notizen sind als Task-Feld korrekt mit drin.
-3. **Kein Click-Suppress nach Long-Press** – `DragManager#handleTouchEnd()` wertet das Event nicht aus, und `preventDefault()` wird nur in `#handleTouchMove` gerufen. Long-Press ohne Bewegung → `#activateDragMode()` → Finger heben → der synthetische `click` erreicht den neuen Handler auf `.task-content` (`ui.js`) und öffnet ungewollt den Edit-Dialog. Bei echten Drags/Swipes mit Bewegung greift das `preventDefault()`.
-
-**Nebenbefund Versionsdrift:** `Android/app/build.gradle` steht auf `versionName "1.12.3"` / `versionCode 28` (Kommentar `// Match PWA version`), `package.json` auf `1.12.2`, `manifest.json` auf `1.12.1`. Der CI-Job „🔧 Version Checks" gibt die Werte nur aus und vergleicht sie **nicht** – er fängt solche Drifts also nicht ab.
 
 ### Backlog-Konsolidierung 2026-07-29
 
