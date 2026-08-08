@@ -35,6 +35,7 @@ export const translations = {
       cancel: 'Abbrechen',
       close: 'Schließen',
       ok: 'OK',
+      save: 'Speichern',
     },
     settings: {
       title: 'Einstellungen',
@@ -60,6 +61,7 @@ export const translations = {
       q4DetoxConfirm: 'Alle Aufgaben aus "Später!" archivieren?',
       q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
       q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
+      notesBtn: 'Notizen',
     },
     personalize: {
       title: 'Personalisieren',
@@ -77,6 +79,10 @@ export const translations = {
       categoryFilterLabel: 'Kategorie-Filter aktivieren',
       categoryFilterDesc:
         'Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
+      notesCollection: 'NOTIZEN',
+      notesCollectionLabel: 'Notizen-Übersicht aktivieren',
+      notesCollectionDesc:
+        'Zeigt einen „Notizen"-Menüpunkt für eine freie Notizliste unabhängig von Aufgaben. Notizen an einzelnen Aufgaben bleiben davon unberührt.',
       reminders: 'ERINNERUNGEN (BETA)',
       remindersLabel: 'Erinnerungen aktivieren',
       remindersDesc: 'Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum',
@@ -127,6 +133,7 @@ export const translations = {
     },
     quickAddModal: {
       title: 'Neue Aufgabe',
+      editTitle: 'Aufgabe bearbeiten',
       inputPlaceholder: 'Was möchtest du tun?',
       monthDayLabel: 'Tag (1-31)',
       dueDate: 'Fällig am',
@@ -134,6 +141,7 @@ export const translations = {
       categoryNone: 'Keine',
       categoryPrivate: 'Privat',
       categoryBusiness: 'Beruflich',
+      notesPlaceholder: 'Notiz (optional)',
     },
     segmentModal: {
       title: 'Wähle ein Segment',
@@ -143,6 +151,21 @@ export const translations = {
       disableRecurring: 'Wiederholung entfernen (Aufgabe einmalig machen)',
       deleteTask: 'Diese Aufgabe dauerhaft löschen',
       save: 'Speichern',
+    },
+    notes: {
+      title: 'Notizen',
+      inputPlaceholder: 'Neue Notiz…',
+      addButton: 'Hinzufügen',
+      empty: 'Noch keine Notizen',
+      deleteAriaLabel: 'Notiz löschen',
+      sourceBadgePrefix: '→ Aufgabe',
+    },
+    editNotes: {
+      title: 'Notiz bearbeiten',
+      placeholder: 'Notiz (optional)',
+      save: 'Speichern',
+      cancel: 'Abbrechen',
+      ariaLabel: 'Notiz bearbeiten',
     },
     metrics: {
       title: '📊 Produktivitäts-Statistiken',
@@ -250,6 +273,7 @@ export const translations = {
       cancel: 'Cancel',
       close: 'Close',
       ok: 'OK',
+      save: 'Save',
     },
     settings: {
       title: 'Settings',
@@ -275,6 +299,7 @@ export const translations = {
       q4DetoxConfirm: 'Archive all tasks from "Ignore!"?',
       q4DetoxSuccess: 'Q4 tasks archived!',
       q4DetoxEmpty: 'No Q4 tasks to archive',
+      notesBtn: 'Notes',
     },
     personalize: {
       title: 'Personalize',
@@ -292,6 +317,10 @@ export const translations = {
       categoryFilterLabel: 'Enable Category Filter',
       categoryFilterDesc:
         'Switch between All, Private and Business using the header switcher. New tasks are assigned to the active category.',
+      notesCollection: 'NOTES',
+      notesCollectionLabel: 'Enable notes overview',
+      notesCollectionDesc:
+        'Shows a "Notes" menu entry for a free-standing note list independent of tasks. Notes on individual tasks stay available either way.',
       reminders: 'REMINDERS (BETA)',
       remindersLabel: 'Enable Reminders',
       remindersDesc: 'Native notifications for tasks with due dates',
@@ -342,6 +371,7 @@ export const translations = {
     },
     quickAddModal: {
       title: 'New Task',
+      editTitle: 'Edit Task',
       inputPlaceholder: 'What do you want to do?',
       monthDayLabel: 'Day (1-31)',
       dueDate: 'Due Date',
@@ -349,6 +379,7 @@ export const translations = {
       categoryNone: 'None',
       categoryPrivate: 'Private',
       categoryBusiness: 'Business',
+      notesPlaceholder: 'Note (optional)',
     },
     segmentModal: {
       title: 'Choose a segment',
@@ -358,6 +389,21 @@ export const translations = {
       disableRecurring: 'Remove recurring (make one-time task)',
       deleteTask: 'Delete this task permanently',
       save: 'Save',
+    },
+    notes: {
+      title: 'Notes',
+      inputPlaceholder: 'New note…',
+      addButton: 'Add',
+      empty: 'No notes yet',
+      deleteAriaLabel: 'Delete note',
+      sourceBadgePrefix: '→ Task',
+    },
+    editNotes: {
+      title: 'Edit note',
+      placeholder: 'Note (optional)',
+      save: 'Save',
+      cancel: 'Cancel',
+      ariaLabel: 'Edit note',
     },
     metrics: {
       title: '📊 Productivity Statistics',
@@ -756,6 +802,11 @@ export function updateLanguageUI(renderAllTasksCallback) {
     personalizeBtn.textContent = lang.settings.personalizeBtn;
   }
 
+  const notesBtn = document.getElementById('notesBtn');
+  if (notesBtn) {
+    notesBtn.textContent = lang.settings.notesBtn;
+  }
+
   // Update Personalize Modal texts
   const personalizeTitle = document.getElementById('personalizeTitle');
   if (personalizeTitle) {
@@ -785,6 +836,71 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const smartFunctionsDesc = document.getElementById('smartFunctionsDesc');
   if (smartFunctionsDesc) {
     smartFunctionsDesc.textContent = lang.personalize.smartFunctionsDesc;
+  }
+
+  const personalizeNotesCollectionTitle = document.getElementById(
+    'personalizeNotesCollectionTitle'
+  );
+  if (personalizeNotesCollectionTitle) {
+    personalizeNotesCollectionTitle.textContent = lang.personalize.notesCollection;
+  }
+
+  const notesCollectionLabel = document.getElementById('notesCollectionLabel');
+  if (notesCollectionLabel) {
+    notesCollectionLabel.textContent = lang.personalize.notesCollectionLabel;
+  }
+
+  const notesCollectionDesc = document.getElementById('notesCollectionDesc');
+  if (notesCollectionDesc) {
+    notesCollectionDesc.textContent = lang.personalize.notesCollectionDesc;
+  }
+
+  // Update standalone Notes modal texts
+  const notesModalTitle = document.getElementById('notesModalTitle');
+  if (notesModalTitle) {
+    notesModalTitle.textContent = lang.notes.title;
+  }
+
+  const notesAddInput = document.getElementById('notesAddInput');
+  if (notesAddInput) {
+    notesAddInput.placeholder = lang.notes.inputPlaceholder;
+  }
+
+  const notesAddBtn = document.getElementById('notesAddBtn');
+  if (notesAddBtn) {
+    notesAddBtn.textContent = lang.notes.addButton;
+  }
+
+  const notesCancelBtn = document.getElementById('notesCancelBtn');
+  if (notesCancelBtn) {
+    notesCancelBtn.textContent = lang.buttons.close;
+  }
+
+  // Update quick-add notes textarea placeholder
+  const quickAddNotes = document.getElementById('quickAddNotes');
+  if (quickAddNotes) {
+    quickAddNotes.placeholder = lang.quickAddModal.notesPlaceholder;
+  }
+
+  // Update edit-notes modal texts
+  const editNotesTitle = document.getElementById('editNotesTitle');
+  if (editNotesTitle) {
+    editNotesTitle.textContent = lang.editNotes.title;
+  }
+
+  const editNotesTextarea = document.getElementById('editNotesTextarea');
+  if (editNotesTextarea) {
+    editNotesTextarea.placeholder = lang.editNotes.placeholder;
+  }
+
+  const editNotesSaveBtn = document.getElementById('editNotesSaveBtn');
+  if (editNotesSaveBtn) {
+    editNotesSaveBtn.textContent = lang.editNotes.save;
+  }
+
+  const editNotesCancelBtn = document.getElementById('editNotesCancelBtn');
+  if (editNotesCancelBtn) {
+    editNotesCancelBtn.textContent = lang.editNotes.cancel;
   }
 
   // Update Q4-Detox section (title, description, button)

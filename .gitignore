@@ -102,3 +102,4 @@ coverage/
 credentials.json
 *.p12
 *.p8
+aab-archive/

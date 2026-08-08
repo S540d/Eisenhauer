@@ -109,6 +109,41 @@ describe('Tasks', () => {
       expect(() => restoreTask({ segment: SEGMENTS.DO })).toThrow('Task ID is required');
     });
 
+    it('should set notes when provided and omit the field otherwise (Issue #371)', () => {
+      const withNotes = addTaskToSegment(
+        'Buy groceries',
+        SEGMENTS.DO,
+        null,
+        null,
+        null,
+        null,
+        'Remember the oat milk'
+      );
+      expect(withNotes.notes).toBe('Remember the oat milk');
+
+      const withoutNotes = addTaskToSegment('No notes here', SEGMENTS.DO);
+      expect(withoutNotes).not.toHaveProperty('notes');
+    });
+
+    it('should validate notes input', () => {
+      expect(() => addTaskToSegment('Task', SEGMENTS.DO, null, null, null, null, 42)).toThrow(
+        TypeError
+      );
+      expect(() =>
+        addTaskToSegment('Task', SEGMENTS.DO, null, null, null, null, 'x'.repeat(501))
+      ).toThrow('Notes must not exceed 500 characters');
+    });
+
+    it('should set or clear notes via updateTask', () => {
+      const task = addTaskToSegment('Task', SEGMENTS.DO);
+
+      updateTask(task.id, SEGMENTS.DO, { notes: 'A quick note' });
+      expect(getTask(task.id, SEGMENTS.DO).notes).toBe('A quick note');
+
+      updateTask(task.id, SEGMENTS.DO, { notes: null });
+      expect(getTask(task.id, SEGMENTS.DO).notes).toBeNull();
+    });
+
     it('should restore and delete tasks with callbacks', () => {
       const task = {
         id: 101,

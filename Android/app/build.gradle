@@ -10,8 +10,8 @@ android {
         applicationId "com.sven4321.eisenhauer"
         minSdk 21  // Android 5.0 Lollipop (per project-templates requirement)
         targetSdk 36  // Android 16 – Google Play target API requirement (deadline 2026-08-31)
-        versionCode 27
-        versionName "1.12.2"  // Match PWA version
+        versionCode 28
+        versionName "1.12.3"  // Match PWA version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -98,7 +98,7 @@ dependencies {
     implementation 'androidx.browser:browser:1.7.0'
 
     // Google Android Browser Helper - TWA Support
-    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.2'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'

@@ -9,12 +9,14 @@ import { isGuestMode } from './auth.js';
 import { OfflineQueue } from './offline-queue.js';
 import { ErrorHandler } from './error-handler.js';
 import { showError, showInfo, showWarning } from './notifications.js';
+import { STORAGE_KEYS } from './config.js';
 import {
   collection,
   doc,
   getDocs,
   setDoc,
   deleteDoc,
+  deleteField,
   writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -247,6 +249,10 @@ export async function saveTaskToFirestore(task, userId, db) {
     taskData.category = task.category;
   }
 
+  if (task.notes) {
+    taskData.notes = task.notes;
+  }
+
   // Add to offline queue with retry logic and error handling
   try {
     await offlineQueue.add(
@@ -275,6 +281,68 @@ export async function saveTaskToFirestore(task, userId, db) {
 }
 
 /**
+ * Save all tasks for a user in one or more Firestore batches (chunked at 500 ops/batch,
+ * the Firestore writeBatch limit). Used for bulk operations (reorder, import) where saving
+ * every task sequentially via saveTaskToFirestore would serialize N round-trips and block
+ * the UI. Individual add/update/delete operations keep using saveTaskToFirestore/
+ * updateTaskInFirestore/deleteTaskFromFirestore with their offline-queue retry logic.
+ * @param {object} tasksBySegment - Tasks keyed by segment id, e.g. { 1: [...], 2: [...] }
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ */
+export async function saveAllTasksToFirestore(tasksBySegment, userId, db) {
+  if (!userId || !db) return;
+
+  const allTasks = Object.values(tasksBySegment).flat();
+  if (allTasks.length === 0) return;
+
+  const BATCH_LIMIT = 500;
+
+  for (let i = 0; i < allTasks.length; i += BATCH_LIMIT) {
+    const chunk = allTasks.slice(i, i + BATCH_LIMIT);
+    const batch = writeBatch(db);
+
+    chunk.forEach((task) => {
+      if (!task || typeof task.text !== 'string' || !task.segment) {
+        return;
+      }
+
+      const docRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
+      const taskData = {
+        text: task.text,
+        segment: task.segment,
+        checked: task.checked || false,
+        createdAt: task.createdAt || serverTimestamp(),
+      };
+
+      if (task.completedAt) {
+        taskData.completedAt = task.completedAt;
+      }
+
+      if (task.recurring) {
+        taskData.recurring = task.recurring;
+      }
+
+      if (task.dueDate) {
+        taskData.dueDate = task.dueDate;
+      }
+
+      if (task.category) {
+        taskData.category = task.category;
+      }
+
+      if (task.notes) {
+        taskData.notes = task.notes;
+      }
+
+      batch.set(docRef, taskData);
+    });
+
+    await batch.commit();
+  }
+}
+
+/**
  * Update a task in Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID
@@ -292,21 +360,18 @@ export async function updateTaskInFirestore(task, userId, db) {
     createdAt: task.createdAt || serverTimestamp(),
   };
 
-  if (task.completedAt) {
-    updateData.completedAt = task.completedAt;
-  }
-
-  if (task.recurring) {
-    updateData.recurring = task.recurring;
-  }
-
-  if (task.dueDate) {
-    updateData.dueDate = task.dueDate;
-  }
-
-  if (task.category) {
-    updateData.category = task.category;
-  }
+  // setDoc uses merge:true below, so an omitted field would just keep its old
+  // value in Firestore. Every optional field here is user-clearable — the edit
+  // dialog can drop the due date, the category ("Keine"), the notes and the
+  // recurring config, and un-checking a Done task resets completedAt — so an
+  // absent/empty value must explicitly delete the field rather than silently
+  // leaving a stale one behind. Without this the cleared value reappears on
+  // the next load (Issue: clearing fields did not persist for signed-in users).
+  updateData.completedAt = task.completedAt ? task.completedAt : deleteField();
+  updateData.recurring = task.recurring ? task.recurring : deleteField();
+  updateData.dueDate = task.dueDate ? task.dueDate : deleteField();
+  updateData.category = task.category ? task.category : deleteField();
+  updateData.notes = task.notes ? task.notes : deleteField();
 
   // Add to offline queue with retry logic
   await offlineQueue.add(
@@ -344,6 +409,131 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
     },
     {
       taskId,
+      userId,
+    },
+    3 // maxRetries
+  );
+}
+
+/**
+ * Save guest notes to LocalForage (IndexedDB)
+ * @param {Array} notes - Flat array of note objects
+ */
+export async function saveGuestNotes(notes) {
+  try {
+    await localforage.setItem(STORAGE_KEYS.NOTES, notes);
+  } catch (_error) {
+    // Guest note save failure is non-fatal; data remains in memory
+  }
+}
+
+/**
+ * Load guest notes from LocalForage
+ * @returns {Promise<Array>} Notes array
+ */
+export async function loadGuestNotes() {
+  try {
+    const notesData = await localforage.getItem(STORAGE_KEYS.NOTES);
+    return Array.isArray(notesData) ? notesData : [];
+  } catch (_error) {
+    return [];
+  }
+}
+
+/**
+ * Load user notes from Firestore
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ * @returns {Promise<Array>} Notes array
+ */
+export async function loadUserNotes(userId, db) {
+  if (!userId || !db) return [];
+
+  try {
+    const notesRef = collection(db, 'users', userId, 'notes');
+    const snapshot = await getDocs(notesRef);
+
+    const notes = [];
+    snapshot.forEach((docSnap) => {
+      const note = docSnap.data();
+      note.id = String(docSnap.id);
+      notes.push(note);
+    });
+
+    // Firestore doesn't guarantee order without an explicit orderBy query,
+    // so sort client-side to keep the collection chronological.
+    notes.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+
+    return notes;
+  } catch (_error) {
+    return [];
+  }
+}
+
+/**
+ * Save a single note to Firestore (with offline queue support)
+ * @param {object} note - Note object
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ */
+export async function saveNoteToFirestore(note, userId, db) {
+  if (!userId || !db) return;
+
+  if (!note || typeof note.text !== 'string') {
+    console.error('Invalid note data', note);
+    return;
+  }
+
+  const noteData = {
+    text: note.text,
+    createdAt: note.createdAt || serverTimestamp(),
+  };
+
+  if (note.sourceTaskId) {
+    noteData.sourceTaskId = note.sourceTaskId;
+  }
+
+  try {
+    await offlineQueue.add(
+      'saveNote',
+      async () => {
+        const noteRef = doc(collection(db, 'users', userId, 'notes'), note.id.toString());
+        await setDoc(noteRef, noteData);
+      },
+      {
+        noteId: note.id,
+        userId,
+        noteData,
+      },
+      3 // maxRetries
+    );
+  } catch (error) {
+    console.warn('Firebase note save failed, continuing with local storage:', error);
+    ErrorHandler.handleStorageError(error, {
+      operation: 'saveNoteToFirestore',
+      data: { noteId: note.id },
+      silent: false,
+    });
+  }
+}
+
+/**
+ * Delete a note from Firestore (with offline queue support)
+ * @param {string} noteId - Note ID
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ */
+export async function deleteNoteFromFirestore(noteId, userId, db) {
+  if (!userId || !db) return;
+
+  await offlineQueue.add(
+    'deleteNote',
+    async () => {
+      const noteRef = doc(collection(db, 'users', userId, 'notes'), noteId.toString());
+      await deleteDoc(noteRef);
+    },
+    {
+      noteId,
       userId,
     },
     3 // maxRetries
@@ -422,6 +612,10 @@ export async function importGuestTasksToFirestore(userId, db) {
 
         if (task.category) {
           taskData.category = task.category;
+        }
+
+        if (task.notes) {
+          taskData.notes = task.notes;
         }
 
         batch.set(docRef, taskData);

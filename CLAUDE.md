@@ -21,6 +21,16 @@ feature/issue-XXX → testing → main (production)
 - **Vor Push:** lokale Tests (`npm test`); kein Merge bei CI-Fail
 - `main` ist protected
 
+### CI-Gate: PRs gegen `testing` laufen praktisch ohne CI (#381)
+
+Seit PR #381 triggern `ci-cd.yml` und `standards-audit.yml` nur noch bei `pull_request` gegen **`main`**. Auf einem PR Feature→`testing` läuft daher nur `mergeability` (plus CodeQL/Security-Scans) – **keine Unit-Tests, kein Lint, kein Build, kein E2E**. Der `push`-Trigger auf `testing` greift erst *nach* dem Merge.
+
+Praktische Konsequenzen:
+
+- **`npm test` und `npm run lint` lokal ausführen ist nicht optional**, sondern der einzige Gate vor `testing`. Grünes CI auf einem Feature-PR sagt nichts über die Tests aus.
+- Das erste echte CI-Gate ist der Release-PR `testing` → `main`. Regressionen fallen dort gebündelt auf, nicht mehr am einzelnen Feature-PR.
+- Beim Bewerten eines gemergten PRs nie aus „CI war grün" auf „Tests liefen" schließen – erst prüfen, *welche* Checks überhaupt getriggert wurden.
+
 ## Android-App (TWA)
 
 - Package: `com.sven4321.eisenhauer`
@@ -41,6 +51,24 @@ Der alte TWA-Splash-Screen (Gradient-Drawable `splash_background.xml` mit Icon i
 - `SPLASH_SCREEN_FADE_OUT_DURATION` → entfernt
 
 Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeigt.
+
+### Edge-to-Edge / Android 15 API-Deprecations (Issue #368, PR #374, gemerged)
+
+Play Console meldete die Verwendung nicht mehr unterstützter Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`/`LAYOUT_IN_DISPLAY_CUTOUT_MODE_*`, seit Android 15 deprecated). Die gemeldeten Stacktraces zeigen ausschließlich auf `com.google.androidbrowserhelper`-Klassen (`EdgeToEdgeUtils`, `LauncherActivity`) – die App selbst ruft keine dieser APIs direkt auf (Konfiguration läuft rein über `STATUS_BAR_COLOR`/`NAVIGATION_BAR_COLOR`-Metadaten in `AndroidManifest.xml`, siehe oben).
+
+- `com.google.androidbrowserhelper:androidbrowserhelper` **2.5.0 → 2.7.2** angehoben (`Android/app/build.gradle`) – Version 2.7.1 behebt laut Changelog explizit „Deprecations in launcher activity“, 2.7.0 bringt zusätzlich Edge-to-Edge-Support für den Splash-Screen.
+- Kein eigener App-Code betroffen, daher keine weiteren Änderungen nötig.
+- Nach dem nächsten Play-Store-Upload prüfen, ob die Play-Console-Warnung verschwindet.
+
+### R8/ProGuard-Optimierung (Issue #367, PR #375, gemerged – Verifikation offen)
+
+Play Console meldete für Release 25 (1.12.1), dass die R8-Optimierung nicht greift. Ursache: `Android/app/proguard-rules.pro` enthielt `-keep class androidx.** { *; }`, was **jede** AndroidX-Klasse pauschal vor Shrinking/Optimierung/Obfuskation schützte – da AndroidX den Großteil des TWA-Codes ausmacht, blieb R8 praktisch nichts zu tun übrig.
+
+- Die Regel wurde entfernt. Bewusst **unverändert** blieben `-keep class com.google.androidbrowserhelper.** { *; }` (Reflection) und `-keep class androidx.browser.** { *; }` (prozessübergreifende Bindung, TWA-kritisch) sowie das breite `-dontwarn androidx.**` (als `TODO(#367)` im File markiert, bis ein sauberer Release-Build zeigt, welche Warnungen real sind).
+- **⚠️ Nicht auf einem echten Gerät getestet.** Kein CI-Check baut einen Android-Release (die Workflows bauen die PWA + Playwright-E2E gegen den Browser) – grünes CI im gemergten PR #375 sagt zu diesem Fix nichts aus. Zu aggressiv entfernte Keep-Regeln brechen erst zur Laufzeit (TWA startet nicht, Splash hängt, Deep Links tot), nicht beim Build.
+- **Vor dem nächsten Play-Store-Upload zwingend:** `cd Android && ./gradlew bundleRelease` bauen und auf einem echten Gerät testen (App-Start, Splash, Deep Links, Status-/Navigationsleisten-Farbe). Ein Debug-Build genügt nicht – `minifyEnabled` gilt nur für `release`.
+- **Bei einem Laufzeit-Crash:** keine pauschale `-keep class androidx.** { *; }`-Regel wiedereinsetzen (macht den Fix wirkungslos), sondern eine gezielte Regel für die konkret betroffene Klasse ergänzen.
+- Issue #367 bleibt bis zum erfolgreichen Gerätetest offen.
 
 ## Features
 
@@ -127,6 +155,40 @@ Aufgaben haben ein optionales Feld `task.category` mit den Werten `'private'` od
 
 **B3 – Micro-Interactions & Motion:** „Erledigt"-Häkchen lösen eine kurze Puls-/Glow-Animation aus (`createTaskElement()` in `ui.js` fügt `task-completing` hinzu, `callbacks.onToggle` wird erst nach ~220ms aufgerufen; bei `prefers-reduced-motion: reduce` sofort ohne Delay). Drag & Drop dimmt jetzt alle Nicht-Ziel-Quadranten (`body.is-dragging .segment:not(.drag-target-segment)`) sowohl im Touch-Pfad (`DragManager#activateDragMode`/`#detectDropTarget`) als auch im Desktop-HTML5-DnD-Pfad (`#handleDragStart`/`#handleDragEnd`/`setupDropZone()` in `drag-manager.js`). Alle neuen Animationen sind im bestehenden `@media (prefers-reduced-motion: reduce)`-Block am Ende von `style.css` deaktiviert.
 
+### Performance: `saveAllTasks()` per Firestore-Batch (Issue #337)
+
+`saveAllTasks()` in `script.js` (genutzt bei Reorder und Import) schrieb für angemeldete Nutzer bisher jede Aufgabe einzeln sequentiell mit `await saveTaskToFirestore(...)` – bei vielen Aufgaben spürbar blockierend.
+
+- Neue Funktion `saveAllTasksToFirestore(tasksBySegment, userId, db)` in `js/modules/storage.js` – schreibt alle Tasks über `writeBatch`, in Chunks à max. 500 Operationen (Firestore-Batch-Limit), analog zum bestehenden Muster in `importGuestTasksToFirestore`.
+- `saveAllTasks()` ruft jetzt `saveAllTasksToFirestore()` statt der Einzel-Write-Schleife auf.
+- **Bestehende Exports bleiben unverändert importierbar:** `saveTaskToFirestore`, `updateTaskInFirestore`, `deleteTaskFromFirestore` und alle anderen Storage-Exports wurden nicht entfernt oder umbenannt – einzelne Task-Operationen (Add/Update/Delete) laufen weiterhin über diese Funktionen inkl. Offline-Queue/Retry-Logik. `saveAllTasksToFirestore` ist ein rein additiver neuer Export.
+- Gast-Modus (`saveGuestTasks`) unverändert.
+
+### Bestehende Aufgaben bearbeiten (PR #378)
+
+Klick auf den Task-Text öffnet das bestehende Quick-Add-Modal (`openQuickAddModal()` in `js/modules/ui.js`) wieder – vorausgefüllt statt leer – und speichert Änderungen per `updateTask()` (`js/modules/tasks.js`) statt eine neue Aufgabe anzulegen. Kein separates Edit-Modal.
+
+- `openQuickAddModal(segmentId, onAddTask, translations, currentLanguage, existingTask = null)` – neuer optionaler 5. Parameter `existingTask`. Ist er gesetzt: Text/Fälligkeit/Wiederholung/Kategorie/Notiz werden vorausgefüllt, Titel wird zu `lang.quickAddModal.editTitle` ("Aufgabe bearbeiten"/"Edit Task"), der Submit-Button zu `lang.buttons.save` ("Speichern"/"Save") statt `lang.buttons.ok`.
+- **Callback-Signatur erweitert:** `onAddTask(text, segmentId, recurring, dueDate, category, notes, taskId)` – `taskId` ist der neue, angehängte 7. Parameter (`existingTask?.id ?? null`), analog zu `notes` (Issue #371/PR #372, gemergt kurz vor #378 – deshalb Merge-Konflikt in `ui.js` beim Zusammenführen der beiden Feature-Branches, siehe unten). Bestehende Aufrufer, die `onAddTask` mit der alten (kürzeren) Signatur implementieren, funktionieren unverändert weiter – der zusätzliche Parameter wird einfach ignoriert, wenn nicht referenziert.
+- `createTaskElement()` in `ui.js`: Klick auf `.task-content` (nicht auf Checkbox/Wiederholungs-Icon/Notiz-Icon/Löschen-Button – die stoppen weiterhin `event.propagation`) ruft `callbacks.onEditTask(task)`. Neue CSS-Klasse `.task-content-editable` (`cursor: pointer`) als visueller Hinweis.
+- `script.js`: `handleEditTask(taskText, segment, recurringConfig, dueDate, category, notes, taskId)` ruft `updateTask()` auf und speichert je nach Modus (Firestore/`saveGuestTasks`); `handleOpenEditTask(task)` öffnet das Modal im Edit-Modus; beide über `onEditTask: handleOpenEditTask` in `renderTasksWithCallbacks()` verdrahtet.
+- **Kein Segment-Wechsel im Edit-Modus** – das Modal hat keinen Segment-Picker, Editieren ändert nur Text/Fälligkeit/Wiederholung/Kategorie/Notiz im selben Quadranten.
+- i18n: neue Keys `buttons.save` und `quickAddModal.editTitle` in `translations.js` (de/en).
+
+### Optionale Task-Felder löschen: `deleteField()` statt Feld weglassen
+
+`updateTaskInFirestore()` in `js/modules/storage.js` schreibt mit `setDoc(..., { merge: true })`. Ein **weggelassenes** Feld bedeutet dort „alten Wert behalten" – nicht „Feld löschen". Optionale Felder, die der Nutzer leeren kann, dürfen deshalb nie über ein `if (task.x) { updateData.x = task.x; }` geschrieben werden, sondern müssen den leeren Fall explizit als `deleteField()` senden:
+
+```js
+updateData.dueDate = task.dueDate ? task.dueDate : deleteField();
+```
+
+Betroffen sind `completedAt`, `recurring`, `dueDate`, `category` und `notes`. Vorher war nur `notes` so umgesetzt (PR #373); die übrigen vier hatten den Bug, was durch den Edit-Dialog aus PR #378 sichtbar wurde: Fälligkeit/Kategorie im Dialog leeren → lokal korrekt weg → nach dem Reload wieder da. `completedAt` traf es beim Abwählen einer erledigten Aufgabe (`task.completedAt = null` in `tasks.js`), was die Metriken verfälscht.
+
+- **Nur der Firebase-Modus war betroffen** – `saveGuestTasks()` serialisiert das Task-Objekt komplett und kennt das Problem nicht.
+- Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) mit gemocktem `firebase/firestore`. **Achtung:** Diese Suite ist in der CI per `--exclude` ausgeschlossen, die Tests laufen also nur lokal über `npm test`.
+- Beim Ergänzen weiterer optionaler Task-Felder: immer dem `deleteField()`-Muster folgen.
+
 ## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
@@ -142,22 +204,49 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-06-19)
+## Offene Issues (Backlog-Stand 2026-07-29, nach Konsolidierung)
+
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert (erledigte geschlossen, Duplikate zusammengeführt, Alt-Issues aus 2025 abgeräumt).
 
 | # | Titel | Prio |
 |---|-------|------|
-| #263 | Sentry-Integration (Error Monitoring) | Medium |
-| #265 | CONTRIBUTING.md erstellen | Low |
+| #359 | **Cloud-Backup: Blaze-Tarif nötig** – Architekturentscheidung offen (Firestore-Migration empfohlen). Bündelt auch die allgemeine Spark-/Blaze-Tarif-Frage (vormals #254) | Medium |
+| #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
+| #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
+| #385 | Robustheits-Lücken aus dem Review von PR #382: Bulk-Save ohne Offline-Queue/Retry, Notizen ohne Gast→Login-Migration + fehlend im Backup, kein Click-Suppress nach Long-Press | Medium |
+| #348 | Meta: Rest-Punkte aus Cleanup 2026-07-08 – nur noch lokaler Stash + Dependency-Update-PR | Low |
+| #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
+| #296 | Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) | Low |
+| #351 | Import von Apple Reminders (.ics) – gehört unter #352 „Capture" | Low |
 | #266 | JSDoc-Kommentare für alle public functions | Low |
-| #256 | Dependency Updates (firebase, vite, vitest, playwright, eslint) | Low |
-| #245 | Security-Header (CSP) – Phase 2 & 3 ausstehend | Medium |
-| #254 | Firebase Spark-Tarif prüfen | – |
-| #355 | Cloud-Backup schlägt fehl – blockiert durch #359 (siehe unten), kein reiner Code-Fix möglich | Medium |
-| #359 | Cloud-Backup: Firebase Storage erfordert Blaze-Tarif – Architekturentscheidung (Firestore-Migration vs. Feature-Entfernung) offen | Medium |
+
+> **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
+
+### Backlog-Konsolidierung 2026-07-29
+
+Geschlossen und warum – damit nicht später erneut aufgemacht:
+
+| # | Grund |
+|---|-------|
+| #369, #371 | bereits umgesetzt (PR #372 bzw. #373, beide auf `testing`), Issues nur nie geschlossen |
+| #330 | bereits seit PR #360 auf `testing` umgesetzt |
+| #337, #368 | umgesetzt in PR #374 |
+| #179 | abgelöst durch #352 (sagt das im eigenen Body) |
+| #355 | Duplikat von #359 (Symptom vs. Root Cause) |
+| #254 | mit #359 zusammengeführt – gleiche Tarif-Entscheidung |
+| #126 | wontfix, entsprechend der Empfehlung im Issue selbst („Do Nothing") |
+| #55 | wontfix – GitHub-Pages-Pfade sind inhärent case-sensitive, ohne eigene Domain nicht lösbar |
+| #36 | Gamification kollidiert mit der Anti-Bloat-Regel aus #352 |
+| #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
 
-- **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes (PR #360)
+- **PR #383** – `updateTaskInFirestore()` löscht geleerte optionale Felder jetzt explizit per `deleteField()` (`completedAt`, `recurring`, `dueDate`, `category`; `notes` war seit PR #373 schon korrekt). Vorher blieb ein im Edit-Dialog geleertes Feld wegen `merge: true` in Firestore stehen und tauchte nach dem Reload wieder auf; `completedAt` verfälschte zusätzlich die Metriken. Nur der Firebase-Modus war betroffen. Gefunden beim Review von PR #382, siehe Abschnitt „Optionale Task-Felder löschen" oben
+- **PR #378** – Bestehende Aufgaben lassen sich per Klick auf den Task-Text im wiederverwendeten Quick-Add-Modal bearbeiten (Prefill + `updateTask()` statt neuer Aufgabe); siehe Abschnitt „Bestehende Aufgaben bearbeiten" oben
+- **#368** – `androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`) in der TWA-Library; kein eigener App-Code betroffen; siehe Abschnitt „Edge-to-Edge / Android 15 API-Deprecations" oben (PR #374, gemerged)
+- **#337** – `saveAllTasks()` nutzt jetzt `saveAllTasksToFirestore()` (Firestore `writeBatch`, gechunkt à 500 Ops) statt sequentieller Einzel-Writes; bestehende Storage-Exports unverändert importierbar, siehe Abschnitt „Performance: saveAllTasks() per Firestore-Batch" oben (PR #374, gemerged)
+- **#367 (Code-Teil)** – blanket `-keep class androidx.** { *; }` aus `proguard-rules.pro` entfernt (PR #375, gemerged); Issue bleibt offen bis zum Gerätetest, siehe Abschnitt „R8/ProGuard-Optimierung" oben
+- **#330** – `concurrency: { group: ${{ github.workflow }}-${{ github.ref }}, cancel-in-progress: true }` in `ci-cd.yml`, `pr-review.yml`, `standards-audit.yml`, `mergeability.yml`, `build-android.yml`, `cache-cleanup.yml` ergänzt (Vorlage: `deploy-unified.yml`), verhindert redundante Parallel-Läufe bei schnell aufeinanderfolgenden Pushes (PR #360). Umsetzung bereits auf `testing`; das GitHub-Issue war nur nicht geschlossen worden.
 - **#352 B1–B3** – Design-Tokens konsolidiert (`--primary-color`/`--primary`/`--primary-rgb`/`--hover-bg` echt definiert), Onboarding mit dismissable Demo-Tasks + Quadranten-Erklärung + freundlichen Empty States (`js/modules/onboarding.js`), „Erledigt"-Micro-Interaction + klareres Drag-Feedback (Segment-Dimming), siehe Abschnitt „Design-Tokens, Onboarding & Micro-Interactions" oben
 - **PR #346** – Quick-Add-Modal verschlankt: Icon-Toggles für Wiederholung/Fälligkeit (Stil des Fokus-Modus-Toggles), Cancel-Button entfernt, Add-Button durch OK neben dem Eingabefeld ersetzt
 - **#179** – Export CSV/Markdown, Smart Suggest (Quadrant-Vorschlag), Matrix-Verteilung in Metriken (PR #332, gemerged 2026-06-19)
