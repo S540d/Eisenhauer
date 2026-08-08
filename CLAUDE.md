@@ -165,6 +165,20 @@ Klick auf den Task-Text öffnet das bestehende Quick-Add-Modal (`openQuickAddMod
 - **Kein Segment-Wechsel im Edit-Modus** – das Modal hat keinen Segment-Picker, Editieren ändert nur Text/Fälligkeit/Wiederholung/Kategorie/Notiz im selben Quadranten.
 - i18n: neue Keys `buttons.save` und `quickAddModal.editTitle` in `translations.js` (de/en).
 
+### Optionale Task-Felder löschen: `deleteField()` statt Feld weglassen
+
+`updateTaskInFirestore()` in `js/modules/storage.js` schreibt mit `setDoc(..., { merge: true })`. Ein **weggelassenes** Feld bedeutet dort „alten Wert behalten" – nicht „Feld löschen". Optionale Felder, die der Nutzer leeren kann, dürfen deshalb nie über ein `if (task.x) { updateData.x = task.x; }` geschrieben werden, sondern müssen den leeren Fall explizit als `deleteField()` senden:
+
+```js
+updateData.dueDate = task.dueDate ? task.dueDate : deleteField();
+```
+
+Betroffen sind `completedAt`, `recurring`, `dueDate`, `category` und `notes`. Vorher war nur `notes` so umgesetzt (PR #373); die übrigen vier hatten den Bug, was durch den Edit-Dialog aus PR #378 sichtbar wurde: Fälligkeit/Kategorie im Dialog leeren → lokal korrekt weg → nach dem Reload wieder da. `completedAt` traf es beim Abwählen einer erledigten Aufgabe (`task.completedAt = null` in `tasks.js`), was die Metriken verfälscht.
+
+- **Nur der Firebase-Modus war betroffen** – `saveGuestTasks()` serialisiert das Task-Objekt komplett und kennt das Problem nicht.
+- Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) mit gemocktem `firebase/firestore`. **Achtung:** Diese Suite ist in der CI per `--exclude` ausgeschlossen, die Tests laufen also nur lokal über `npm test`.
+- Beim Ergänzen weiterer optionaler Task-Felder: immer dem `deleteField()`-Muster folgen.
+
 ## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):

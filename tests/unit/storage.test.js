@@ -3,6 +3,23 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+
+// Firestore is mocked so updateTaskInFirestore can be asserted on without a
+// live connection. deleteField() returns a recognisable sentinel instead of the
+// real FieldValue instance.
+const DELETE_SENTINEL = Symbol('deleteField');
+
+vi.mock('firebase/firestore', () => ({
+  collection: vi.fn(() => ({})),
+  doc: vi.fn(() => ({})),
+  getDocs: vi.fn(async () => ({ forEach: () => {} })),
+  setDoc: vi.fn(async () => {}),
+  deleteDoc: vi.fn(async () => {}),
+  deleteField: vi.fn(() => DELETE_SENTINEL),
+  writeBatch: vi.fn(() => ({ set: vi.fn(), commit: vi.fn(async () => {}) })),
+  serverTimestamp: vi.fn(() => 'SERVER_TIMESTAMP'),
+}));
+
 import {
   getSyncStatus,
   exportData,
@@ -13,7 +30,9 @@ import {
   saveGuestNotes,
   loadGuestNotes,
   importData,
+  updateTaskInFirestore,
 } from '../../js/modules/storage.js';
+import { setDoc } from 'firebase/firestore';
 import localforage from 'localforage';
 
 describe('Storage Module', () => {
@@ -598,6 +617,90 @@ describe('Storage Module', () => {
       await expect(importData(file, {}, null)).rejects.toThrow('Fehler beim Lesen der Datei');
 
       global.FileReader = originalFileReader;
+    });
+  });
+
+  describe('updateTaskInFirestore clearable fields', () => {
+    const userId = 'user-1';
+    const db = {};
+
+    // setDoc runs via the offline queue, so wait until it has been called
+    // instead of assuming it happened synchronously.
+    const writtenData = async () => {
+      await vi.waitFor(() => expect(setDoc).toHaveBeenCalled());
+      return setDoc.mock.calls.at(-1)[1];
+    };
+
+    beforeEach(() => {
+      setDoc.mockClear();
+    });
+
+    it('should write optional fields when they have a value', async () => {
+      await updateTaskInFirestore(
+        {
+          id: 't1',
+          text: 'Task',
+          segment: 1,
+          createdAt: 123,
+          completedAt: 456,
+          dueDate: '2026-08-20',
+          category: 'business',
+          notes: 'Some note',
+          recurring: { enabled: true, interval: 'daily' },
+        },
+        userId,
+        db
+      );
+
+      expect(await writtenData()).toMatchObject({
+        completedAt: 456,
+        dueDate: '2026-08-20',
+        category: 'business',
+        notes: 'Some note',
+        recurring: { enabled: true, interval: 'daily' },
+      });
+    });
+
+    it('should delete cleared fields instead of omitting them', async () => {
+      // setDoc uses merge:true, so an omitted field would keep its stale value
+      // in Firestore and the cleared value would reappear on the next load.
+      await updateTaskInFirestore(
+        {
+          id: 't1',
+          text: 'Task',
+          segment: 1,
+          createdAt: 123,
+          completedAt: null,
+          dueDate: null,
+          category: null,
+          notes: null,
+          recurring: null,
+        },
+        userId,
+        db
+      );
+
+      const data = await writtenData();
+      expect(data.completedAt).toBe(DELETE_SENTINEL);
+      expect(data.dueDate).toBe(DELETE_SENTINEL);
+      expect(data.category).toBe(DELETE_SENTINEL);
+      expect(data.notes).toBe(DELETE_SENTINEL);
+      expect(data.recurring).toBe(DELETE_SENTINEL);
+    });
+
+    it('should delete fields that are absent from the task object', async () => {
+      await updateTaskInFirestore(
+        { id: 't1', text: 'Task', segment: 1, createdAt: 123 },
+        userId,
+        db
+      );
+
+      const data = await writtenData();
+      expect(data.dueDate).toBe(DELETE_SENTINEL);
+      expect(data.category).toBe(DELETE_SENTINEL);
+      expect(data.notes).toBe(DELETE_SENTINEL);
+      expect(data.recurring).toBe(DELETE_SENTINEL);
+      expect(data.completedAt).toBe(DELETE_SENTINEL);
     });
   });
 });
