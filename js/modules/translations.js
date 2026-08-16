@@ -160,13 +160,6 @@ export const translations = {
       deleteAriaLabel: 'Notiz löschen',
       sourceBadgePrefix: '→ Aufgabe',
     },
-    editNotes: {
-      title: 'Notiz bearbeiten',
-      placeholder: 'Notiz (optional)',
-      save: 'Speichern',
-      cancel: 'Abbrechen',
-      ariaLabel: 'Notiz bearbeiten',
-    },
     metrics: {
       title: '📊 Produktivitäts-Statistiken',
       close: 'Schließen',
@@ -397,13 +390,6 @@ export const translations = {
       empty: 'No notes yet',
       deleteAriaLabel: 'Delete note',
       sourceBadgePrefix: '→ Task',
-    },
-    editNotes: {
-      title: 'Edit note',
-      placeholder: 'Note (optional)',
-      save: 'Save',
-      cancel: 'Cancel',
-      ariaLabel: 'Edit note',
     },
     metrics: {
       title: '📊 Productivity Statistics',
@@ -880,27 +866,6 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const quickAddNotes = document.getElementById('quickAddNotes');
   if (quickAddNotes) {
     quickAddNotes.placeholder = lang.quickAddModal.notesPlaceholder;
-  }
-
-  // Update edit-notes modal texts
-  const editNotesTitle = document.getElementById('editNotesTitle');
-  if (editNotesTitle) {
-    editNotesTitle.textContent = lang.editNotes.title;
-  }
-
-  const editNotesTextarea = document.getElementById('editNotesTextarea');
-  if (editNotesTextarea) {
-    editNotesTextarea.placeholder = lang.editNotes.placeholder;
-  }
-
-  const editNotesSaveBtn = document.getElementById('editNotesSaveBtn');
-  if (editNotesSaveBtn) {
-    editNotesSaveBtn.textContent = lang.editNotes.save;
-  }
-
-  const editNotesCancelBtn = document.getElementById('editNotesCancelBtn');
-  if (editNotesCancelBtn) {
-    editNotesCancelBtn.textContent = lang.editNotes.cancel;
   }
 
   // Update Q4-Detox section (title, description, button)
