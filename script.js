@@ -90,7 +90,6 @@ import {
   openSettingsModal,
   openMetricsModal,
   openEditRecurringModal,
-  openEditNotesModal,
   openNotesModal,
   closeNotesModal,
   renderNotesList,
@@ -541,40 +540,6 @@ function handleEditRecurring(task) {
 }
 
 /**
- * Handle edit task notes (always available, not gated by any flag, Issue #371)
- * @param {object} task - Task to edit
- */
-function handleEditNotes(task) {
-  openEditNotesModal(
-    task,
-    (taskId, newNotes) => {
-      for (const segment in tasks) {
-        const taskIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
-        if (taskIndex !== -1) {
-          if (newNotes === null) {
-            delete tasks[segment][taskIndex].notes;
-          } else {
-            tasks[segment][taskIndex].notes = newNotes;
-          }
-
-          const updatedTask = tasks[segment][taskIndex];
-          if (currentUser && db && !isGuestMode) {
-            updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
-          } else {
-            saveGuestTasks(tasks);
-          }
-
-          renderTasksWithCallbacks();
-          break;
-        }
-      }
-    },
-    translations,
-    getCurrentLanguage()
-  );
-}
-
-/**
  * Render all tasks with all callbacks (Drag & Drop 2.0)
  */
 function renderTasksWithCallbacks() {
@@ -584,7 +549,6 @@ function renderTasksWithCallbacks() {
     onDragEnd: handleMoveTask,
     onSwipeDelete: handleDeleteTask,
     onEditRecurring: handleEditRecurring,
-    onEditNotes: handleEditNotes,
     onReorder: handleReorderTask,
     onDismissDemo: handleDismissDemo,
     onEditTask: handleOpenEditTask,
