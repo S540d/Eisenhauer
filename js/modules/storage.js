@@ -297,48 +297,74 @@ export async function saveAllTasksToFirestore(tasksBySegment, userId, db) {
   if (allTasks.length === 0) return;
 
   const BATCH_LIMIT = 500;
-
+  const chunks = [];
   for (let i = 0; i < allTasks.length; i += BATCH_LIMIT) {
-    const chunk = allTasks.slice(i, i + BATCH_LIMIT);
-    const batch = writeBatch(db);
+    chunks.push(allTasks.slice(i, i + BATCH_LIMIT));
+  }
 
-    chunk.forEach((task) => {
-      if (!task || typeof task.text !== 'string' || !task.segment) {
-        return;
-      }
+  // Add to offline queue with retry logic and error handling, same as the
+  // single-task write path — a bulk write is just as likely to hit a flaky
+  // connection, and it must not fail silently (Issue #385).
+  try {
+    await offlineQueue.add(
+      'saveAllTasks',
+      async () => {
+        for (const chunk of chunks) {
+          const batch = writeBatch(db);
 
-      const docRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
-      const taskData = {
-        text: task.text,
-        segment: task.segment,
-        checked: task.checked || false,
-        createdAt: task.createdAt || serverTimestamp(),
-      };
+          chunk.forEach((task) => {
+            if (!task || typeof task.text !== 'string' || !task.segment) {
+              return;
+            }
 
-      if (task.completedAt) {
-        taskData.completedAt = task.completedAt;
-      }
+            const docRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
+            const taskData = {
+              text: task.text,
+              segment: task.segment,
+              checked: task.checked || false,
+              createdAt: task.createdAt || serverTimestamp(),
+            };
 
-      if (task.recurring) {
-        taskData.recurring = task.recurring;
-      }
+            if (task.completedAt) {
+              taskData.completedAt = task.completedAt;
+            }
 
-      if (task.dueDate) {
-        taskData.dueDate = task.dueDate;
-      }
+            if (task.recurring) {
+              taskData.recurring = task.recurring;
+            }
 
-      if (task.category) {
-        taskData.category = task.category;
-      }
+            if (task.dueDate) {
+              taskData.dueDate = task.dueDate;
+            }
 
-      if (task.notes) {
-        taskData.notes = task.notes;
-      }
+            if (task.category) {
+              taskData.category = task.category;
+            }
 
-      batch.set(docRef, taskData);
+            if (task.notes) {
+              taskData.notes = task.notes;
+            }
+
+            batch.set(docRef, taskData);
+          });
+
+          await batch.commit();
+        }
+      },
+      {
+        userId,
+        taskCount: allTasks.length,
+      },
+      3 // maxRetries
+    );
+  } catch (error) {
+    // Graceful degradation: Continue with local storage only
+    console.warn('Firebase bulk save failed, continuing with local storage:', error);
+    ErrorHandler.handleStorageError(error, {
+      operation: 'saveAllTasksToFirestore',
+      data: { taskCount: allTasks.length },
+      silent: false,
     });
-
-    await batch.commit();
   }
 }
 
@@ -644,15 +670,76 @@ export async function importGuestTasksToFirestore(userId, db) {
 }
 
 /**
+ * Import guest notes to user account (explicit user action)
+ * Mirrors importGuestTasksToFirestore — without this, standalone notes
+ * created as a guest silently stay invisible after signing in (Issue #385).
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ * @returns {object} { success, noteCount, error }
+ */
+export async function importGuestNotesToFirestore(userId, db) {
+  try {
+    const guestNotes = await loadGuestNotes();
+
+    if (!guestNotes || guestNotes.length === 0) {
+      return {
+        success: false,
+        noteCount: 0,
+        error: 'Keine Gast-Notizen zum Importieren gefunden',
+      };
+    }
+
+    const batch = writeBatch(db);
+    let importedCount = 0;
+
+    guestNotes.forEach((note) => {
+      if (!note || typeof note.text !== 'string') return;
+
+      const docRef = doc(collection(db, 'users', userId, 'notes'), note.id.toString());
+      const noteData = {
+        text: note.text,
+        createdAt: note.createdAt || serverTimestamp(),
+      };
+
+      if (note.sourceTaskId) {
+        noteData.sourceTaskId = note.sourceTaskId;
+      }
+
+      batch.set(docRef, noteData);
+      importedCount++;
+    });
+
+    await batch.commit();
+
+    // Delete guest notes after successful import
+    await localforage.removeItem(STORAGE_KEYS.NOTES);
+
+    return {
+      success: true,
+      noteCount: importedCount,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      noteCount: 0,
+      error: error.message || 'Fehler beim Importieren der Gast-Notizen',
+    };
+  }
+}
+
+/**
  * Export data as JSON file
  * @param {object} tasks - Tasks object
  * @param {string} version - App version
+ * @param {Array} [notes] - Standalone notes (Issue #385: previously missing from backup)
  */
-export function exportData(tasks, version) {
+export function exportData(tasks, version, notes = []) {
   const exportData = {
     version: version || 'unknown',
     exportDate: new Date().toISOString(),
     tasks: tasks,
+    notes: notes,
   };
 
   const dataStr = JSON.stringify(exportData, null, 2);
@@ -673,10 +760,13 @@ export function exportData(tasks, version) {
  * Import data from JSON file
  * @param {File} file - File to import
  * @param {object} currentTasks - Current tasks object
- * @param {function} saveCallback - Callback to save imported tasks
+ * @param {function} saveCallback - Callback to save imported tasks; called with
+ *   (finalTasks, finalNotes) when the backup contains standalone notes (Issue #385),
+ *   or (finalTasks) alone otherwise, to keep older callers unaffected.
+ * @param {Array} [currentNotes] - Current standalone notes, for merging
  * @returns {Promise<object>} Imported tasks object
  */
-export function importData(file, currentTasks, saveCallback) {
+export function importData(file, currentTasks, saveCallback, currentNotes = []) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -689,7 +779,9 @@ export function importData(file, currentTasks, saveCallback) {
           throw new Error('Ungültiges Datenformat: Keine Tasks gefunden');
         }
 
+        const hasImportedNotes = Array.isArray(importedData.notes);
         let finalTasks;
+        let finalNotes;
 
         if (
           confirm(
@@ -710,14 +802,29 @@ export function importData(file, currentTasks, saveCallback) {
               finalTasks[segmentId].push(task);
             });
           });
+
+          if (hasImportedNotes) {
+            finalNotes = [...currentNotes];
+            importedData.notes.forEach((note) => {
+              // Generate new ID to avoid conflicts, same as tasks above
+              finalNotes.push({ ...note, id: Date.now() + Math.random() });
+            });
+          }
         } else {
           // Replace: Overwrite existing tasks
           finalTasks = importedData.tasks;
+          if (hasImportedNotes) {
+            finalNotes = importedData.notes;
+          }
         }
 
         // Call save callback if provided
         if (saveCallback) {
-          await saveCallback(finalTasks);
+          if (hasImportedNotes) {
+            await saveCallback(finalTasks, finalNotes);
+          } else {
+            await saveCallback(finalTasks);
+          }
         }
         resolve(finalTasks);
       } catch (error) {

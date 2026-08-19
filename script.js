@@ -82,6 +82,7 @@ import {
   requestPersistentStorage,
   getSyncStatus,
   importGuestTasksToFirestore,
+  importGuestNotesToFirestore,
 } from './js/modules/storage.js';
 import {
   renderAllTasks,
@@ -104,6 +105,7 @@ import { exportCsv, exportMarkdown } from './js/modules/export.js';
 import { suggestSegment, SEGMENT_SUGGEST_LABELS } from './js/modules/smart-suggest.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
+import { ErrorHandler } from './js/modules/error-handler.js';
 import {
   isSupported as remindersSupported,
   requestPermission as requestReminderPermission,
@@ -430,7 +432,13 @@ function handleReorderTask(taskId, segment, direction) {
     if (currentUser && db && !isGuestMode) {
       // In authenticated mode, save all tasks in the segment
       // (Firestore doesn't have ordering, so we save the entire array)
-      saveAllTasks();
+      saveAllTasks().catch((error) => {
+        ErrorHandler.handleStorageError(error, {
+          operation: 'saveAllTasks',
+          data: { segment },
+          silent: false,
+        });
+      });
     } else {
       // Save to LocalForage (guest mode)
       saveGuestTasks(tasks);
@@ -996,11 +1004,22 @@ function setupEventListeners() {
     });
   }
 
+  // Persist an imported/merged notes array (Issue #385: notes were missing
+  // from the JSON backup entirely, so a restore could never bring them back)
+  const saveImportedNotes = async (notesArray) => {
+    setAllNotesState(notesArray);
+    if (currentUser && db && !isGuestMode) {
+      await Promise.all(notesArray.map((note) => saveNoteToFirestore(note, currentUser.uid, db)));
+    } else {
+      await saveGuestNotes(notesArray);
+    }
+  };
+
   // Export button
   const exportBtn = document.getElementById('exportBtn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-      exportData(tasks, APP_VERSION);
+      exportData(tasks, APP_VERSION, getAllNotes());
     });
   }
 
@@ -1011,12 +1030,20 @@ function setupEventListeners() {
     importBtn.addEventListener('click', () => importFile.click());
     importFile.addEventListener('change', (e) => {
       if (e.target.files.length > 0) {
-        importData(e.target.files[0], tasks, async (importedTasks) => {
-          setAllTasks(importedTasks);
-          await saveAllTasks();
-          renderTasksWithCallbacks();
-          alert(getTranslation('importSuccess') || 'Data imported successfully!');
-        });
+        importData(
+          e.target.files[0],
+          tasks,
+          async (importedTasks, importedNotes) => {
+            setAllTasks(importedTasks);
+            await saveAllTasks();
+            if (importedNotes) {
+              await saveImportedNotes(importedNotes);
+            }
+            renderTasksWithCallbacks();
+            alert(getTranslation('importSuccess') || 'Data imported successfully!');
+          },
+          getAllNotes()
+        );
       }
     });
   }
@@ -1025,7 +1052,7 @@ function setupEventListeners() {
   const exportJsonBtn = document.getElementById('exportJsonBtn');
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', () => {
-      exportData(tasks, APP_VERSION);
+      exportData(tasks, APP_VERSION, getAllNotes());
     });
   }
 
@@ -1119,38 +1146,54 @@ function setupEventListeners() {
         return;
       }
 
-      // Count guest tasks first
+      // Count guest tasks and standalone notes first (Issue #385: notes had no
+      // guest→login migration path at all, unlike tasks)
       const guestTasks = await loadGuestTasks();
       let guestTaskCount = 0;
       Object.keys(guestTasks).forEach((segmentId) => {
         guestTaskCount += guestTasks[segmentId].length;
       });
 
-      if (guestTaskCount === 0) {
-        showWarning('Keine Gast-Tasks zum Importieren gefunden');
+      const guestNotes = await loadGuestNotes();
+      const guestNoteCount = guestNotes.length;
+
+      if (guestTaskCount === 0 && guestNoteCount === 0) {
+        showWarning('Keine Gast-Daten zum Importieren gefunden');
         return;
       }
 
       // Show confirmation dialog
+      const parts = [];
+      if (guestTaskCount > 0) parts.push(`${guestTaskCount} Gast-Tasks`);
+      if (guestNoteCount > 0) parts.push(`${guestNoteCount} Gast-Notizen`);
       const confirmed = confirm(
-        `Du hast ${guestTaskCount} Gast-Tasks.\n\nMöchtest du diese in deinen Account importieren?\n\nDie Gast-Daten werden nach dem Import gelöscht.`
+        `Du hast ${parts.join(' und ')}.\n\nMöchtest du diese in deinen Account importieren?\n\nDie Gast-Daten werden nach dem Import gelöscht.`
       );
 
       if (!confirmed) return;
 
-      // Perform import
-      const result = await window.importGuestTasksToFirestore(currentUser.uid, db);
+      // Perform import (independently, so a notes failure doesn't hide a
+      // successful task import or vice versa)
+      const taskResult =
+        guestTaskCount > 0
+          ? await window.importGuestTasksToFirestore(currentUser.uid, db)
+          : { success: true, taskCount: 0 };
+      const noteResult =
+        guestNoteCount > 0
+          ? await importGuestNotesToFirestore(currentUser.uid, db)
+          : { success: true, noteCount: 0 };
 
-      if (result.success) {
+      if (taskResult.success && noteResult.success) {
         showSuccess(
-          `${result.taskCount} Gast-Tasks erfolgreich importiert! Seite wird neu geladen...`
+          `${taskResult.taskCount} Gast-Tasks und ${noteResult.noteCount} Gast-Notizen erfolgreich importiert! Seite wird neu geladen...`
         );
         // Reload tasks and close modal
         setTimeout(() => {
           location.reload();
         }, 1500);
       } else {
-        showError(`Import fehlgeschlagen: ${result.error}`);
+        const errors = [taskResult.error, noteResult.error].filter(Boolean).join('; ');
+        showError(`Import fehlgeschlagen: ${errors}`);
       }
     });
   }

@@ -87,6 +87,7 @@ export class DragManager {
     dragClone: null,
     dropTarget: null,
     originalOpacity: null,
+    suppressNextClick: false,
   };
 
   /**
@@ -151,6 +152,12 @@ export class DragManager {
 
     // Prevent context menu on long press
     this.element.addEventListener('contextmenu', (e) => e.preventDefault());
+
+    // Suppress the synthetic click a browser fires after touchend when a
+    // long-press activated drag mode but the finger never moved (so
+    // touchmove's preventDefault never ran). Capture phase so this runs
+    // before bubble-phase listeners on inner elements like .task-content.
+    this.element.addEventListener('click', this.#handleClickCapture.bind(this), true);
   }
 
   /**
@@ -172,6 +179,10 @@ export class DragManager {
    */
   #handleTouchStart(e) {
     const touch = e.touches[0];
+
+    // Reset from any previous gesture (e.g. a drag whose synthetic click
+    // never fired, so #handleClickCapture never got a chance to clear it)
+    this.state.suppressNextClick = false;
 
     // Store initial position
     this.state.startX = touch.clientX;
@@ -273,6 +284,19 @@ export class DragManager {
       this.element.style.transform = `translateX(${translateX}px)`;
       this.element.style.opacity = 1 - translateX / 300; // Fade out
     }
+  }
+
+  /**
+   * Consume the synthetic click following a suppressed touch gesture
+   * @private
+   * @param {MouseEvent} e
+   */
+  #handleClickCapture(e) {
+    if (!this.state.suppressNextClick) return;
+
+    this.state.suppressNextClick = false;
+    e.preventDefault();
+    e.stopPropagation();
   }
 
   /**
@@ -392,6 +416,7 @@ export class DragManager {
    */
   #activateDragMode() {
     this.state.isDragging = true;
+    this.state.suppressNextClick = true;
 
     // Haptic feedback
     this.#triggerHaptic(50);
