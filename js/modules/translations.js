@@ -62,7 +62,6 @@ export const translations = {
       q4DetoxConfirm: 'Alle Aufgaben aus "Später!" archivieren?',
       q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
       q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
-      notesBtn: 'Notizen',
       importIcsBtn: 'Import .ics (BETA)',
       icsImportSuccess: 'Aufgaben importiert',
       icsImportSkipped: 'bereits vorhanden, übersprungen',
@@ -86,10 +85,10 @@ export const translations = {
       categoryFilterLabel: 'Kategorie-Filter aktivieren',
       categoryFilterDesc:
         'Über den Umschalter im Kopf zwischen Alle, Privat und Beruflich wechseln. Neue Aufgaben werden der aktiven Kategorie zugeordnet.',
-      notesCollection: 'NOTIZEN',
-      notesCollectionLabel: 'Notizen-Übersicht aktivieren',
-      notesCollectionDesc:
-        'Zeigt einen „Notizen"-Menüpunkt für eine freie Notizliste unabhängig von Aufgaben. Notizen an einzelnen Aufgaben bleiben davon unberührt.',
+      taskNotes: 'NOTIZEN',
+      taskNotesLabel: 'Notizfeld bei Aufgaben aktivieren',
+      taskNotesDesc:
+        'Zeigt ein optionales Notizfeld im "Neue Aufgabe"-Dialog, um zusätzliche Details zu einer Aufgabe festzuhalten.',
       reminders: 'ERINNERUNGEN (BETA)',
       remindersLabel: 'Erinnerungen aktivieren',
       remindersDesc: 'Native Benachrichtigungen für Aufgaben mit Fälligkeitsdatum',
@@ -158,14 +157,6 @@ export const translations = {
       disableRecurring: 'Wiederholung entfernen (Aufgabe einmalig machen)',
       deleteTask: 'Diese Aufgabe dauerhaft löschen',
       save: 'Speichern',
-    },
-    notes: {
-      title: 'Notizen',
-      inputPlaceholder: 'Neue Notiz…',
-      addButton: 'Hinzufügen',
-      empty: 'Noch keine Notizen',
-      deleteAriaLabel: 'Notiz löschen',
-      sourceBadgePrefix: '→ Aufgabe',
     },
     metrics: {
       title: '📊 Produktivitäts-Statistiken',
@@ -299,7 +290,6 @@ export const translations = {
       q4DetoxConfirm: 'Archive all tasks from "Ignore!"?',
       q4DetoxSuccess: 'Q4 tasks archived!',
       q4DetoxEmpty: 'No Q4 tasks to archive',
-      notesBtn: 'Notes',
       importIcsBtn: 'Import .ics (BETA)',
       icsImportSuccess: 'Tasks imported',
       icsImportSkipped: 'already existed, skipped',
@@ -323,10 +313,10 @@ export const translations = {
       categoryFilterLabel: 'Enable Category Filter',
       categoryFilterDesc:
         'Switch between All, Private and Business using the header switcher. New tasks are assigned to the active category.',
-      notesCollection: 'NOTES',
-      notesCollectionLabel: 'Enable notes overview',
-      notesCollectionDesc:
-        'Shows a "Notes" menu entry for a free-standing note list independent of tasks. Notes on individual tasks stay available either way.',
+      taskNotes: 'NOTES',
+      taskNotesLabel: 'Enable notes field for tasks',
+      taskNotesDesc:
+        'Shows an optional notes field in the "New Task" dialog to capture extra details about a task.',
       reminders: 'REMINDERS (BETA)',
       remindersLabel: 'Enable Reminders',
       remindersDesc: 'Native notifications for tasks with due dates',
@@ -395,14 +385,6 @@ export const translations = {
       disableRecurring: 'Remove recurring (make one-time task)',
       deleteTask: 'Delete this task permanently',
       save: 'Save',
-    },
-    notes: {
-      title: 'Notes',
-      inputPlaceholder: 'New note…',
-      addButton: 'Add',
-      empty: 'No notes yet',
-      deleteAriaLabel: 'Delete note',
-      sourceBadgePrefix: '→ Task',
     },
     metrics: {
       title: '📊 Productivity Statistics',
@@ -828,11 +810,6 @@ export function updateLanguageUI(renderAllTasksCallback) {
     personalizeBtn.textContent = lang.settings.personalizeBtn;
   }
 
-  const notesBtn = document.getElementById('notesBtn');
-  if (notesBtn) {
-    notesBtn.textContent = lang.settings.notesBtn;
-  }
-
   // Update Personalize Modal texts
   const personalizeTitle = document.getElementById('personalizeTitle');
   if (personalizeTitle) {
@@ -864,42 +841,19 @@ export function updateLanguageUI(renderAllTasksCallback) {
     smartFunctionsDesc.textContent = lang.personalize.smartFunctionsDesc;
   }
 
-  const personalizeNotesCollectionTitle = document.getElementById(
-    'personalizeNotesCollectionTitle'
-  );
-  if (personalizeNotesCollectionTitle) {
-    personalizeNotesCollectionTitle.textContent = lang.personalize.notesCollection;
+  const personalizeTaskNotesTitle = document.getElementById('personalizeTaskNotesTitle');
+  if (personalizeTaskNotesTitle) {
+    personalizeTaskNotesTitle.textContent = lang.personalize.taskNotes;
   }
 
-  const notesCollectionLabel = document.getElementById('notesCollectionLabel');
-  if (notesCollectionLabel) {
-    notesCollectionLabel.textContent = lang.personalize.notesCollectionLabel;
+  const taskNotesLabel = document.getElementById('taskNotesLabel');
+  if (taskNotesLabel) {
+    taskNotesLabel.textContent = lang.personalize.taskNotesLabel;
   }
 
-  const notesCollectionDesc = document.getElementById('notesCollectionDesc');
-  if (notesCollectionDesc) {
-    notesCollectionDesc.textContent = lang.personalize.notesCollectionDesc;
-  }
-
-  // Update standalone Notes modal texts
-  const notesModalTitle = document.getElementById('notesModalTitle');
-  if (notesModalTitle) {
-    notesModalTitle.textContent = lang.notes.title;
-  }
-
-  const notesAddInput = document.getElementById('notesAddInput');
-  if (notesAddInput) {
-    notesAddInput.placeholder = lang.notes.inputPlaceholder;
-  }
-
-  const notesAddBtn = document.getElementById('notesAddBtn');
-  if (notesAddBtn) {
-    notesAddBtn.textContent = lang.notes.addButton;
-  }
-
-  const notesCancelBtn = document.getElementById('notesCancelBtn');
-  if (notesCancelBtn) {
-    notesCancelBtn.textContent = lang.buttons.close;
+  const taskNotesDesc = document.getElementById('taskNotesDesc');
+  if (taskNotesDesc) {
+    taskNotesDesc.textContent = lang.personalize.taskNotesDesc;
   }
 
   // Update quick-add notes textarea placeholder
