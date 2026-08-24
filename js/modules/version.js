@@ -3,9 +3,15 @@
  * Handles app version loading and display
  */
 
+/** Current app version string, updated from version.json once loaded */
 export let APP_VERSION = 'v1.9.0'; // Fallback version
+/** Build date string, defaults to today until overwritten */
 export const BUILD_DATE = new Date().toISOString().split('T')[0];
 
+/**
+ * Fetch version.json and update APP_VERSION; falls back silently on error/timeout
+ * @returns {Promise<string>} The resolved app version
+ */
 export async function loadVersion() {
   try {
     // Add timeout to prevent long delays if version.json is missing
@@ -29,6 +35,7 @@ export async function loadVersion() {
   }
 }
 
+/** Render APP_VERSION into the version display DOM elements, if present */
 export function displayVersion() {
   const versionElement = document.getElementById('versionNumber');
   if (versionElement) {
@@ -41,6 +48,7 @@ export function displayVersion() {
   }
 }
 
+/** Load and display the current app version */
 export async function initVersion() {
   await loadVersion();
   displayVersion();

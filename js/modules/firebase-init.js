@@ -101,6 +101,7 @@ const storage = getStorage(app);
 // (privacy). Visitor counts are tracked via GitHub Pages Insights instead.
 
 // Export current environment for debugging
+/** Current Firebase environment info (env name + project ID), for debugging */
 export const firebaseEnvironment = {
   env: CURRENT_ENV,
   projectId: firebaseConfig.projectId,

@@ -3,6 +3,7 @@
  * Handles all language-related functionality
  */
 
+/** All UI strings, keyed by language code ('de' / 'en') */
 export const translations = {
   de: {
     taskInputPlaceholder: 'Neue Aufgabe',
@@ -480,6 +481,7 @@ export const translations = {
   },
 };
 
+/** Currently active language code ('de' or 'en') */
 export let currentLanguage = 'en';
 
 /**
@@ -491,18 +493,35 @@ export function detectBrowserLanguage() {
   return ['en', 'de'].includes(browserLang) ? browserLang : 'en';
 }
 
+/**
+ * Set the currently active language
+ * @param {string} lang - Language code ('de' or 'en')
+ */
 export function setLanguage(lang) {
   currentLanguage = lang;
 }
 
+/**
+ * Get the currently active language code
+ * @returns {string} 'de' or 'en'
+ */
 export function getCurrentLanguage() {
   return currentLanguage;
 }
 
+/**
+ * Get the translation object for the currently active language
+ * @returns {Object} Translation strings for the current language
+ */
 export function getTranslation() {
   return translations[currentLanguage];
 }
 
+/**
+ * Build a human-readable description of a task's recurrence config
+ * @param {Object} recurring - Recurring config with `interval` and interval-specific fields
+ * @returns {string} Localized description of the recurrence
+ */
 export function getRecurringDescription(recurring) {
   const lang = translations[currentLanguage].recurring;
 
@@ -587,6 +606,10 @@ export function initLoginTranslations() {
   }
 }
 
+/**
+ * Update all translatable UI text in the DOM for the current language
+ * @param {Function} renderAllTasksCallback - Called to re-render tasks with the new language
+ */
 export function updateLanguageUI(renderAllTasksCallback) {
   const lang = translations[currentLanguage];
 

@@ -416,6 +416,7 @@ class Store {
 }
 
 // Create singleton instance
+/** Singleton Store instance used throughout the app */
 export const store = new Store();
 
 // Export class for testing

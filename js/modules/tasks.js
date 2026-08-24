@@ -6,6 +6,7 @@
 import { SEGMENTS } from './config.js';
 
 // Task storage
+/** In-memory tasks grouped by segment ID (1-5) */
 export let tasks = {
   1: [],
   2: [],
@@ -15,6 +16,7 @@ export let tasks = {
 };
 
 // Current task being processed (for modal)
+/** Task currently being edited/moved via the modal, or null */
 export let currentTask = null;
 
 /**

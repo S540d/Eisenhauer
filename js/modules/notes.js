@@ -4,6 +4,7 @@
  */
 
 // Notes storage (flat, chronological array)
+/** In-memory list of all notes, chronological order */
 export let notes = [];
 
 /**
