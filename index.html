@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.12.2 (e9cae64f) built at 1786432807360 -->
+<!-- Cache-Busting Info: v1.12.2 (5cee5513) built at 1787597020926 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="e9cae64f" /><meta name="build-time" content="1786432807360" />
+    <meta name="build-hash" content="5cee5513" /><meta name="build-time" content="1787597020926" />
 
     <!-- SEO -->
     <meta
@@ -63,9 +63,9 @@
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-BK8MEuQN.js?v=e9cae64f"></script>
-    <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-CNXAS51c.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-3-Np_Vj4.css">
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-Dv3hajLl.js?v=5cee5513"></script>
+    <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-CnETCl0T.js">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-Dl6Rqphm.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
   <body>
     <!-- Splash Screen -->
@@ -625,6 +625,16 @@
             <button id="exportCsvBtn" class="btn">Export CSV</button>
             <button id="exportMarkdownBtn" class="btn">Export Markdown</button>
           </div>
+          <div class="settings-data-buttons settings-export-extra">
+            <button
+              id="importIcsBtn"
+              class="btn"
+              title="Apple Reminders / Erinnerungen .ics-Export importieren"
+            >
+              Import .ics
+            </button>
+            <input type="file" id="importIcsFileInput" accept=".ics" style="display: none" />
+          </div>
         </div>
 
         <div class="settings-separator"></div>
@@ -970,25 +980,6 @@
         </div>
 
         <button id="notesCancelBtn" class="btn cancel-btn">Close</button>
-      </div>
-    </div>
-
-    <!-- Edit Notes Modal (edit notes on an existing task, Issue #371) -->
-    <div id="editNotesModal" class="modal">
-      <div class="modal-content quick-add-modal">
-        <h3 id="editNotesTitle">Notiz bearbeiten</h3>
-        <p id="editNotesTaskName" class="quick-add-category"></p>
-
-        <textarea
-          id="editNotesTextarea"
-          class="quick-add-notes-input"
-          placeholder="Notiz (optional)"
-          maxlength="500"
-          rows="4"
-        ></textarea>
-
-        <button id="editNotesSaveBtn" class="btn">Save</button>
-        <button id="editNotesCancelBtn" class="btn cancel-btn">Cancel</button>
       </div>
     </div>
 
