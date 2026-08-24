@@ -8,6 +8,11 @@ const SEGMENT_LABELS = {
   en: { 1: 'Q1 – Do!', 2: 'Q2 – Schedule!', 3: 'Q3 – Delegate!', 4: 'Q4 – Ignore!', 5: 'Done!' },
 };
 
+/**
+ * Export all tasks as a CSV file download
+ * @param {Object} tasks - Tasks grouped by segment ID
+ * @param {string} [lang='en'] - Language for labels ('de' or 'en')
+ */
 export function exportCsv(tasks, lang = 'en') {
   const labels = SEGMENT_LABELS[lang] || SEGMENT_LABELS.en;
   const headers =
@@ -36,6 +41,11 @@ export function exportCsv(tasks, lang = 'en') {
   _download(rows.join('\n'), `eisenhauer-export-${dateStr}.csv`, 'text/csv;charset=utf-8;');
 }
 
+/**
+ * Export all tasks as a Markdown file download, grouped by segment
+ * @param {Object} tasks - Tasks grouped by segment ID
+ * @param {string} [lang='en'] - Language for labels ('de' or 'en')
+ */
 export function exportMarkdown(tasks, lang = 'en') {
   const labels = SEGMENT_LABELS[lang] || SEGMENT_LABELS.en;
   const locale = lang === 'de' ? 'de-DE' : 'en-US';
