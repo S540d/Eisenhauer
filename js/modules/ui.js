@@ -1557,14 +1557,25 @@ export function openQuickAddModal(
   newSubmitBtn.textContent = existingTask ? lang.buttons.save : lang.buttons.ok;
   newSubmitBtn.addEventListener('click', handleSubmit);
 
-  // Handle Enter key
+  // Handle Enter key. handleKeyPress is a fresh closure every call, so
+  // passing it straight to removeEventListener would always be a no-op
+  // (different function reference) — the previous call's listener would
+  // stay attached forever, stacking one extra submit per modal open and
+  // creating 1x/2x/3x duplicate tasks on repeated Enter-key adds. Stashing
+  // the listener reference on the element itself lets us remove the exact
+  // previous instance before adding the new one. Scoped to this one
+  // listener only — script.js's separate 'input' listener on the same
+  // element (Smart Suggest) is untouched.
+  if (quickAddInput._eisenhauerKeyPressHandler) {
+    quickAddInput.removeEventListener('keypress', quickAddInput._eisenhauerKeyPressHandler);
+  }
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
   };
-  quickAddInput.removeEventListener('keypress', handleKeyPress);
+  quickAddInput._eisenhauerKeyPressHandler = handleKeyPress;
   quickAddInput.addEventListener('keypress', handleKeyPress);
 }
 
