@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.12.2 (5cee5513) built at 1787597020926 -->
+<!-- Cache-Busting Info: v1.12.2 (739c6a62) built at 1787599406945 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="5cee5513" /><meta name="build-time" content="1787597020926" />
+    <meta name="build-hash" content="739c6a62" /><meta name="build-time" content="1787599406945" />
 
     <!-- SEO -->
     <meta
@@ -63,7 +63,7 @@
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-Dv3hajLl.js?v=5cee5513"></script>
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-kLr7ixOT.js?v=739c6a62"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-CnETCl0T.js">
     <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-Dl6Rqphm.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
@@ -607,13 +607,6 @@
 
         <div class="settings-separator"></div>
 
-        <!-- Notizen Button (only visible when notesCollectionEnabled, Issue #371) -->
-        <div id="notesSection" class="settings-section" style="display: none">
-          <button id="notesBtn" class="btn">Notizen</button>
-        </div>
-
-        <div id="notesSeparator" class="settings-separator" style="display: none"></div>
-
         <!-- JSON Export & Import -->
         <div class="settings-section">
           <h4 id="dataManagementTitle" class="settings-section-title">DATEN</h4>
@@ -631,7 +624,7 @@
               class="btn"
               title="Apple Reminders / Erinnerungen .ics-Export importieren"
             >
-              Import .ics
+              Import .ics (BETA)
             </button>
             <input type="file" id="importIcsFileInput" accept=".ics" style="display: none" />
           </div>
@@ -776,16 +769,16 @@
 
         <div class="settings-separator"></div>
 
-        <!-- Notes Collection Settings (Issue #371) -->
+        <!-- Task Notes Settings -->
         <div class="settings-section">
-          <h4 class="settings-section-title" id="personalizeNotesCollectionTitle">NOTIZEN</h4>
+          <h4 class="settings-section-title" id="personalizeTaskNotesTitle">NOTIZEN</h4>
           <label class="smart-functions-toggle">
-            <input type="checkbox" id="notesCollectionToggle" />
-            <span id="notesCollectionLabel">Notizen-Übersicht aktivieren</span>
+            <input type="checkbox" id="taskNotesToggle" />
+            <span id="taskNotesLabel">Notizfeld bei Aufgaben aktivieren</span>
           </label>
-          <p class="settings-info" id="notesCollectionDesc">
-            Zeigt einen „Notizen"-Menüpunkt für eine freie Notizliste unabhängig von Aufgaben.
-            Notizen an einzelnen Aufgaben bleiben davon unberührt.
+          <p class="settings-info" id="taskNotesDesc">
+            Zeigt ein optionales Notizfeld im "Neue Aufgabe"-Dialog, um zusätzliche Details zu einer
+            Aufgabe festzuhalten.
           </p>
         </div>
 
@@ -961,28 +954,6 @@
       </div>
     </div>
 
-    <!-- Notes Modal (standalone notes collection, Issue #371) -->
-    <div id="notesModal" class="modal">
-      <div class="modal-content notes-modal">
-        <h3 id="notesModalTitle">Notizen</h3>
-
-        <div id="notesListContainer" class="notes-list-container"></div>
-
-        <div class="notes-add-row">
-          <input
-            type="text"
-            id="notesAddInput"
-            placeholder="Neue Notiz…"
-            maxlength="500"
-            autocomplete="off"
-          />
-          <button id="notesAddBtn" class="btn">Hinzufügen</button>
-        </div>
-
-        <button id="notesCancelBtn" class="btn cancel-btn">Close</button>
-      </div>
-    </div>
-
     <!-- Edit Recurring Task Modal -->
     <div id="editRecurringModal" class="modal">
       <div class="modal-content quick-add-modal">
@@ -1086,6 +1057,6 @@
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
 
     <!-- Register Service Worker with Cache Busting -->
-    <script src="js/sw-register.js?v=1776883834344"></script>
+    <script src="js/sw-register.js?v=1787598227405"></script>
   </body>
 </html>
