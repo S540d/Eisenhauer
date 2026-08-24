@@ -621,6 +621,16 @@
             <button id="exportCsvBtn" class="btn">Export CSV</button>
             <button id="exportMarkdownBtn" class="btn">Export Markdown</button>
           </div>
+          <div class="settings-data-buttons settings-export-extra">
+            <button
+              id="importIcsBtn"
+              class="btn"
+              title="Apple Reminders / Erinnerungen .ics-Export importieren"
+            >
+              Import .ics
+            </button>
+            <input type="file" id="importIcsFileInput" accept=".ics" style="display: none" />
+          </div>
         </div>
 
         <div class="settings-separator"></div>
@@ -966,25 +976,6 @@
         </div>
 
         <button id="notesCancelBtn" class="btn cancel-btn">Close</button>
-      </div>
-    </div>
-
-    <!-- Edit Notes Modal (edit notes on an existing task, Issue #371) -->
-    <div id="editNotesModal" class="modal">
-      <div class="modal-content quick-add-modal">
-        <h3 id="editNotesTitle">Notiz bearbeiten</h3>
-        <p id="editNotesTaskName" class="quick-add-category"></p>
-
-        <textarea
-          id="editNotesTextarea"
-          class="quick-add-notes-input"
-          placeholder="Notiz (optional)"
-          maxlength="500"
-          rows="4"
-        ></textarea>
-
-        <button id="editNotesSaveBtn" class="btn">Save</button>
-        <button id="editNotesCancelBtn" class="btn cancel-btn">Cancel</button>
       </div>
     </div>
 

@@ -21,10 +21,13 @@ import {
 import localforage from 'localforage';
 
 // State
+/** Currently signed-in Firebase user, or null if signed out */
 let currentUser = null;
+/** Whether the app is running in guest (no-account) mode */
 let isGuestMode = false;
 
 // UI Functions (implementations)
+/** Show the login screen and hide the app screen */
 function showLogin() {
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('appScreen');
@@ -32,6 +35,7 @@ function showLogin() {
   if (appScreen) appScreen.style.display = 'none';
 }
 
+/** Show the app screen and hide the login screen; clears header user info */
 function showApp() {
   const loginScreen = document.getElementById('loginScreen');
   const appScreen = document.getElementById('appScreen');
@@ -59,6 +63,7 @@ function isSessionStorageAvailable() {
 }
 
 // Sign-in functions
+/** Sign in with Google via Firebase popup auth; alerts the user on failure */
 async function signInWithGoogle() {
   try {
     // FIX: Using popup for all devices (including mobile/TWA)
@@ -90,6 +95,7 @@ async function signInWithGoogle() {
   }
 }
 
+/** Sign in with Apple via Firebase popup auth; alerts the user on failure */
 async function signInWithApple() {
   try {
     // FIX: Using popup for all devices (including mobile/TWA)
@@ -120,6 +126,7 @@ async function signInWithApple() {
 }
 
 // Sign out
+/** Sign out of Firebase Auth, or exit guest mode if no Firebase session is active */
 async function signOut() {
   try {
     const wasGuestMode = isGuestMode;
@@ -146,6 +153,7 @@ async function signOut() {
 }
 
 // Guest mode
+/** Enter guest mode (no Firebase account), requesting persistent storage if available */
 async function continueAsGuest() {
   isGuestMode = true;
   await localforage.setItem('guestMode', 'true');

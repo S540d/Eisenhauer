@@ -104,31 +104,6 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     textSpan.appendChild(recurringIndicator);
   }
 
-  // Add notes indicator/edit button (always available, not gated by any flag, Issue #371)
-  if (callbacks.onEditNotes) {
-    const notesIndicator = document.createElement('button');
-    notesIndicator.className = 'notes-indicator';
-    notesIndicator.type = 'button';
-    notesIndicator.classList.toggle('has-notes', !!task.notes);
-    const notesLabel = translations[currentLanguage]?.editNotes?.ariaLabel || 'Edit note';
-    notesIndicator.setAttribute('aria-label', notesLabel);
-    notesIndicator.title = task.notes || notesLabel;
-
-    notesIndicator.innerHTML = `
- <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
- <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
- <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
- </svg>
- `;
-
-    notesIndicator.addEventListener('click', (e) => {
-      e.stopPropagation();
-      callbacks.onEditNotes(task);
-    });
-
-    textSpan.appendChild(notesIndicator);
-  }
-
   // Add delete button inline after text (only for Done tasks on desktop)
   const isTouchDevice = () => 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   const isDoneTask = task.segment === SEGMENTS.DONE;
@@ -1740,55 +1715,6 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
 
   const newCancelBtn = cancelBtn.cloneNode(true);
   cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-  newCancelBtn.addEventListener('click', handleCancel);
-}
-
-/**
- * Open edit-notes modal for an existing task (always available, Issue #371)
- * @param {object} task - Task to edit
- * @param {function} onSave - Callback(taskId, newNotes|null) when saved
- * @param {object} translations - Translations object
- * @param {string} currentLanguage - Current language
- */
-export function openEditNotesModal(task, onSave, translations, currentLanguage) {
-  const modal = document.getElementById('editNotesModal');
-  const taskNameElement = document.getElementById('editNotesTaskName');
-  const titleElement = document.getElementById('editNotesTitle');
-  const textarea = document.getElementById('editNotesTextarea');
-  const saveBtn = document.getElementById('editNotesSaveBtn');
-  const cancelBtn = document.getElementById('editNotesCancelBtn');
-
-  if (!modal || !textarea) return;
-
-  const lang = translations[currentLanguage]?.editNotes;
-
-  taskNameElement.textContent = task.text;
-  titleElement.textContent = lang?.title || 'Edit note';
-  textarea.placeholder = lang?.placeholder || '';
-  textarea.value = task.notes || '';
-
-  modal.style.display = 'flex';
-  setTimeout(() => textarea.focus(), 100);
-
-  const handleSave = () => {
-    const value = textarea.value.trim();
-    onSave(task.id, value.length ? value : null);
-    modal.style.display = 'none';
-  };
-
-  const handleCancel = () => {
-    modal.style.display = 'none';
-  };
-
-  // Remove old listeners and add new ones
-  const newSaveBtn = saveBtn.cloneNode(true);
-  saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
-  newSaveBtn.textContent = lang?.save || 'Save';
-  newSaveBtn.addEventListener('click', handleSave);
-
-  const newCancelBtn = cancelBtn.cloneNode(true);
-  cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-  newCancelBtn.textContent = lang?.cancel || 'Cancel';
   newCancelBtn.addEventListener('click', handleCancel);
 }
 

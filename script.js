@@ -56,6 +56,7 @@ import {
   filterByCategory,
   sameTaskId,
   updateTask,
+  createTaskObject,
 } from './js/modules/tasks.js';
 import {
   addNote,
@@ -82,6 +83,7 @@ import {
   requestPersistentStorage,
   getSyncStatus,
   importGuestTasksToFirestore,
+  importGuestNotesToFirestore,
 } from './js/modules/storage.js';
 import {
   renderAllTasks,
@@ -90,7 +92,6 @@ import {
   openSettingsModal,
   openMetricsModal,
   openEditRecurringModal,
-  openEditNotesModal,
   openNotesModal,
   closeNotesModal,
   renderNotesList,
@@ -102,9 +103,11 @@ import {
   setupDropZones,
 } from './js/modules/ui.js';
 import { exportCsv, exportMarkdown } from './js/modules/export.js';
+import { parseIcsTodos, mergeIcsTodos } from './js/modules/ics-import.js';
 import { suggestSegment, SEGMENT_SUGGEST_LABELS } from './js/modules/smart-suggest.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
+import { ErrorHandler } from './js/modules/error-handler.js';
 import {
   isSupported as remindersSupported,
   requestPermission as requestReminderPermission,
@@ -431,7 +434,13 @@ function handleReorderTask(taskId, segment, direction) {
     if (currentUser && db && !isGuestMode) {
       // In authenticated mode, save all tasks in the segment
       // (Firestore doesn't have ordering, so we save the entire array)
-      saveAllTasks();
+      saveAllTasks().catch((error) => {
+        ErrorHandler.handleStorageError(error, {
+          operation: 'saveAllTasks',
+          data: { segment },
+          silent: false,
+        });
+      });
     } else {
       // Save to LocalForage (guest mode)
       saveGuestTasks(tasks);
@@ -541,40 +550,6 @@ function handleEditRecurring(task) {
 }
 
 /**
- * Handle edit task notes (always available, not gated by any flag, Issue #371)
- * @param {object} task - Task to edit
- */
-function handleEditNotes(task) {
-  openEditNotesModal(
-    task,
-    (taskId, newNotes) => {
-      for (const segment in tasks) {
-        const taskIndex = tasks[segment].findIndex((t) => sameTaskId(t.id, taskId));
-        if (taskIndex !== -1) {
-          if (newNotes === null) {
-            delete tasks[segment][taskIndex].notes;
-          } else {
-            tasks[segment][taskIndex].notes = newNotes;
-          }
-
-          const updatedTask = tasks[segment][taskIndex];
-          if (currentUser && db && !isGuestMode) {
-            updateTaskInFirestore(updatedTask, currentUser.uid, db, window.firebase);
-          } else {
-            saveGuestTasks(tasks);
-          }
-
-          renderTasksWithCallbacks();
-          break;
-        }
-      }
-    },
-    translations,
-    getCurrentLanguage()
-  );
-}
-
-/**
  * Render all tasks with all callbacks (Drag & Drop 2.0)
  */
 function renderTasksWithCallbacks() {
@@ -584,7 +559,6 @@ function renderTasksWithCallbacks() {
     onDragEnd: handleMoveTask,
     onSwipeDelete: handleDeleteTask,
     onEditRecurring: handleEditRecurring,
-    onEditNotes: handleEditNotes,
     onReorder: handleReorderTask,
     onDismissDemo: handleDismissDemo,
     onEditTask: handleOpenEditTask,
@@ -1032,11 +1006,22 @@ function setupEventListeners() {
     });
   }
 
+  // Persist an imported/merged notes array (Issue #385: notes were missing
+  // from the JSON backup entirely, so a restore could never bring them back)
+  const saveImportedNotes = async (notesArray) => {
+    setAllNotesState(notesArray);
+    if (currentUser && db && !isGuestMode) {
+      await Promise.all(notesArray.map((note) => saveNoteToFirestore(note, currentUser.uid, db)));
+    } else {
+      await saveGuestNotes(notesArray);
+    }
+  };
+
   // Export button
   const exportBtn = document.getElementById('exportBtn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-      exportData(tasks, APP_VERSION);
+      exportData(tasks, APP_VERSION, getAllNotes());
     });
   }
 
@@ -1047,12 +1032,20 @@ function setupEventListeners() {
     importBtn.addEventListener('click', () => importFile.click());
     importFile.addEventListener('change', (e) => {
       if (e.target.files.length > 0) {
-        importData(e.target.files[0], tasks, async (importedTasks) => {
-          setAllTasks(importedTasks);
-          await saveAllTasks();
-          renderTasksWithCallbacks();
-          alert(getTranslation('importSuccess') || 'Data imported successfully!');
-        });
+        importData(
+          e.target.files[0],
+          tasks,
+          async (importedTasks, importedNotes) => {
+            setAllTasks(importedTasks);
+            await saveAllTasks();
+            if (importedNotes) {
+              await saveImportedNotes(importedNotes);
+            }
+            renderTasksWithCallbacks();
+            alert(getTranslation('importSuccess') || 'Data imported successfully!');
+          },
+          getAllNotes()
+        );
       }
     });
   }
@@ -1061,7 +1054,7 @@ function setupEventListeners() {
   const exportJsonBtn = document.getElementById('exportJsonBtn');
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', () => {
-      exportData(tasks, APP_VERSION);
+      exportData(tasks, APP_VERSION, getAllNotes());
     });
   }
 
@@ -1078,6 +1071,54 @@ function setupEventListeners() {
   if (exportMarkdownBtn) {
     exportMarkdownBtn.addEventListener('click', () => {
       exportMarkdown(tasks, getCurrentLanguage());
+    });
+  }
+
+  // Import .ics button (Issue #351) - opens hidden file input
+  const importIcsBtn = document.getElementById('importIcsBtn');
+  const importIcsFileInput = document.getElementById('importIcsFileInput');
+  if (importIcsBtn && importIcsFileInput) {
+    importIcsBtn.addEventListener('click', () => importIcsFileInput.click());
+    importIcsFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      // Reset so selecting the same file again still fires 'change'
+      importIcsFileInput.value = '';
+      if (!file) return;
+
+      const lang = getTranslation();
+      try {
+        const content = await file.text();
+        const todos = parseIcsTodos(content);
+
+        if (todos.length === 0) {
+          showWarning(lang.settings.icsImportEmpty);
+          return;
+        }
+
+        const {
+          tasks: mergedTasks,
+          importedCount,
+          skippedCount,
+        } = mergeIcsTodos(todos, tasks, createTaskObject);
+
+        if (importedCount === 0) {
+          showWarning(lang.settings.icsImportAllDuplicates);
+          return;
+        }
+
+        setAllTasks(mergedTasks);
+        await saveAllTasks();
+        renderTasksWithCallbacks();
+
+        const message =
+          skippedCount > 0
+            ? `${lang.settings.icsImportSuccess} (${importedCount}) — ${lang.settings.icsImportSkipped} (${skippedCount})`
+            : `${lang.settings.icsImportSuccess} (${importedCount})`;
+        showSuccess(message);
+      } catch (error) {
+        ErrorHandler.handleError(error, { operation: 'ics-import', silent: true });
+        showError(lang.settings.icsImportError);
+      }
     });
   }
 
@@ -1155,38 +1196,54 @@ function setupEventListeners() {
         return;
       }
 
-      // Count guest tasks first
+      // Count guest tasks and standalone notes first (Issue #385: notes had no
+      // guest→login migration path at all, unlike tasks)
       const guestTasks = await loadGuestTasks();
       let guestTaskCount = 0;
       Object.keys(guestTasks).forEach((segmentId) => {
         guestTaskCount += guestTasks[segmentId].length;
       });
 
-      if (guestTaskCount === 0) {
-        showWarning('Keine Gast-Tasks zum Importieren gefunden');
+      const guestNotes = await loadGuestNotes();
+      const guestNoteCount = guestNotes.length;
+
+      if (guestTaskCount === 0 && guestNoteCount === 0) {
+        showWarning('Keine Gast-Daten zum Importieren gefunden');
         return;
       }
 
       // Show confirmation dialog
+      const parts = [];
+      if (guestTaskCount > 0) parts.push(`${guestTaskCount} Gast-Tasks`);
+      if (guestNoteCount > 0) parts.push(`${guestNoteCount} Gast-Notizen`);
       const confirmed = confirm(
-        `Du hast ${guestTaskCount} Gast-Tasks.\n\nMöchtest du diese in deinen Account importieren?\n\nDie Gast-Daten werden nach dem Import gelöscht.`
+        `Du hast ${parts.join(' und ')}.\n\nMöchtest du diese in deinen Account importieren?\n\nDie Gast-Daten werden nach dem Import gelöscht.`
       );
 
       if (!confirmed) return;
 
-      // Perform import
-      const result = await window.importGuestTasksToFirestore(currentUser.uid, db);
+      // Perform import (independently, so a notes failure doesn't hide a
+      // successful task import or vice versa)
+      const taskResult =
+        guestTaskCount > 0
+          ? await window.importGuestTasksToFirestore(currentUser.uid, db)
+          : { success: true, taskCount: 0 };
+      const noteResult =
+        guestNoteCount > 0
+          ? await importGuestNotesToFirestore(currentUser.uid, db)
+          : { success: true, noteCount: 0 };
 
-      if (result.success) {
+      if (taskResult.success && noteResult.success) {
         showSuccess(
-          `${result.taskCount} Gast-Tasks erfolgreich importiert! Seite wird neu geladen...`
+          `${taskResult.taskCount} Gast-Tasks und ${noteResult.noteCount} Gast-Notizen erfolgreich importiert! Seite wird neu geladen...`
         );
         // Reload tasks and close modal
         setTimeout(() => {
           location.reload();
         }, 1500);
       } else {
-        showError(`Import fehlgeschlagen: ${result.error}`);
+        const errors = [taskResult.error, noteResult.error].filter(Boolean).join('; ');
+        showError(`Import fehlgeschlagen: ${errors}`);
       }
     });
   }

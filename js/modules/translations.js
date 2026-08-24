@@ -3,6 +3,7 @@
  * Handles all language-related functionality
  */
 
+/** All UI strings, keyed by language code ('de' / 'en') */
 export const translations = {
   de: {
     taskInputPlaceholder: 'Neue Aufgabe',
@@ -62,6 +63,12 @@ export const translations = {
       q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
       q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
       notesBtn: 'Notizen',
+      importIcsBtn: 'Import .ics',
+      icsImportSuccess: 'Aufgaben importiert',
+      icsImportSkipped: 'bereits vorhanden, übersprungen',
+      icsImportEmpty: 'Keine Aufgaben in der Datei gefunden',
+      icsImportAllDuplicates: 'Alle Aufgaben aus der Datei sind bereits vorhanden',
+      icsImportError: 'Import fehlgeschlagen – Datei konnte nicht gelesen werden',
     },
     personalize: {
       title: 'Personalisieren',
@@ -159,13 +166,6 @@ export const translations = {
       empty: 'Noch keine Notizen',
       deleteAriaLabel: 'Notiz löschen',
       sourceBadgePrefix: '→ Aufgabe',
-    },
-    editNotes: {
-      title: 'Notiz bearbeiten',
-      placeholder: 'Notiz (optional)',
-      save: 'Speichern',
-      cancel: 'Abbrechen',
-      ariaLabel: 'Notiz bearbeiten',
     },
     metrics: {
       title: '📊 Produktivitäts-Statistiken',
@@ -300,6 +300,12 @@ export const translations = {
       q4DetoxSuccess: 'Q4 tasks archived!',
       q4DetoxEmpty: 'No Q4 tasks to archive',
       notesBtn: 'Notes',
+      importIcsBtn: 'Import .ics',
+      icsImportSuccess: 'Tasks imported',
+      icsImportSkipped: 'already existed, skipped',
+      icsImportEmpty: 'No tasks found in the file',
+      icsImportAllDuplicates: 'All tasks in the file already exist',
+      icsImportError: 'Import failed – could not read the file',
     },
     personalize: {
       title: 'Personalize',
@@ -398,13 +404,6 @@ export const translations = {
       deleteAriaLabel: 'Delete note',
       sourceBadgePrefix: '→ Task',
     },
-    editNotes: {
-      title: 'Edit note',
-      placeholder: 'Note (optional)',
-      save: 'Save',
-      cancel: 'Cancel',
-      ariaLabel: 'Edit note',
-    },
     metrics: {
       title: '📊 Productivity Statistics',
       close: 'Close',
@@ -482,6 +481,7 @@ export const translations = {
   },
 };
 
+/** Currently active language code ('de' or 'en') */
 export let currentLanguage = 'en';
 
 /**
@@ -493,18 +493,35 @@ export function detectBrowserLanguage() {
   return ['en', 'de'].includes(browserLang) ? browserLang : 'en';
 }
 
+/**
+ * Set the currently active language
+ * @param {string} lang - Language code ('de' or 'en')
+ */
 export function setLanguage(lang) {
   currentLanguage = lang;
 }
 
+/**
+ * Get the currently active language code
+ * @returns {string} 'de' or 'en'
+ */
 export function getCurrentLanguage() {
   return currentLanguage;
 }
 
+/**
+ * Get the translation object for the currently active language
+ * @returns {Object} Translation strings for the current language
+ */
 export function getTranslation() {
   return translations[currentLanguage];
 }
 
+/**
+ * Build a human-readable description of a task's recurrence config
+ * @param {Object} recurring - Recurring config with `interval` and interval-specific fields
+ * @returns {string} Localized description of the recurrence
+ */
 export function getRecurringDescription(recurring) {
   const lang = translations[currentLanguage].recurring;
 
@@ -589,6 +606,10 @@ export function initLoginTranslations() {
   }
 }
 
+/**
+ * Update all translatable UI text in the DOM for the current language
+ * @param {Function} renderAllTasksCallback - Called to re-render tasks with the new language
+ */
 export function updateLanguageUI(renderAllTasksCallback) {
   const lang = translations[currentLanguage];
 
@@ -797,6 +818,11 @@ export function updateLanguageUI(renderAllTasksCallback) {
     exportMarkdownBtn.textContent = lang.settings.exportMarkdownBtn;
   }
 
+  const importIcsBtn = document.getElementById('importIcsBtn');
+  if (importIcsBtn) {
+    importIcsBtn.textContent = lang.settings.importIcsBtn;
+  }
+
   const personalizeBtn = document.getElementById('personalizeBtn');
   if (personalizeBtn) {
     personalizeBtn.textContent = lang.settings.personalizeBtn;
@@ -880,27 +906,6 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const quickAddNotes = document.getElementById('quickAddNotes');
   if (quickAddNotes) {
     quickAddNotes.placeholder = lang.quickAddModal.notesPlaceholder;
-  }
-
-  // Update edit-notes modal texts
-  const editNotesTitle = document.getElementById('editNotesTitle');
-  if (editNotesTitle) {
-    editNotesTitle.textContent = lang.editNotes.title;
-  }
-
-  const editNotesTextarea = document.getElementById('editNotesTextarea');
-  if (editNotesTextarea) {
-    editNotesTextarea.placeholder = lang.editNotes.placeholder;
-  }
-
-  const editNotesSaveBtn = document.getElementById('editNotesSaveBtn');
-  if (editNotesSaveBtn) {
-    editNotesSaveBtn.textContent = lang.editNotes.save;
-  }
-
-  const editNotesCancelBtn = document.getElementById('editNotesCancelBtn');
-  if (editNotesCancelBtn) {
-    editNotesCancelBtn.textContent = lang.editNotes.cancel;
   }
 
   // Update Q4-Detox section (title, description, button)

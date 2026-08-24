@@ -164,6 +164,7 @@ export function suggestSegment(text) {
   return best[1] > 0 ? parseInt(best[0]) : null;
 }
 
+/** Display labels for smart-suggested segments (Q1–Q4), per language */
 export const SEGMENT_SUGGEST_LABELS = {
   de: {
     1: 'Sofort! (Q1)',

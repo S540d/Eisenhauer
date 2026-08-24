@@ -1161,61 +1161,6 @@ body.dark-mode .recurring-indicator:hover {
   color: #d1d5db;
 }
 
-/* Notes Task Icon Button */
-.notes-indicator {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 4px;
-  padding: 2px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #d1d5db; /* Light gray - always visible */
-  opacity: 1;
-  transition:
-    opacity 0.2s ease,
-    transform 0.1s ease;
-  vertical-align: middle;
-  min-width: 16px;
-  min-height: 16px;
-}
-
-.notes-indicator:hover {
-  opacity: 0.7;
-  color: #9ca3af;
-}
-
-.notes-indicator:active {
-  transform: scale(0.9);
-}
-
-.notes-indicator svg {
-  width: 12px;
-  height: 12px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.notes-indicator.has-notes {
-  color: var(--primary-color);
-}
-
-body.dark-mode .notes-indicator {
-  color: #9ca3af;
-}
-
-body.dark-mode .notes-indicator:hover {
-  color: #d1d5db;
-}
-
-body.dark-mode .notes-indicator.has-notes {
-  color: var(--primary-color);
-}
-
 /* Dark Mode: Ensure checkbox/radio labels are visible */
 body.dark-mode .recurring-option label,
 body.dark-mode .recurring-option span,
