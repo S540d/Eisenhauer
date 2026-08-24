@@ -27,7 +27,6 @@ import {
   checkPersistentStorage,
   saveGuestTasks,
   loadGuestTasks,
-  saveGuestNotes,
   loadGuestNotes,
   importData,
   updateTaskInFirestore,
@@ -407,25 +406,7 @@ describe('Storage Module', () => {
     });
   });
 
-  describe('saveGuestNotes (Issue #371)', () => {
-    it('should save notes to localforage', async () => {
-      const notes = [{ id: 'n1', text: 'Note 1', createdAt: 1 }];
-
-      const setItemSpy = vi.spyOn(localforage, 'setItem').mockResolvedValue(undefined);
-
-      await saveGuestNotes(notes);
-
-      expect(setItemSpy).toHaveBeenCalledWith('eisenhauer-notes', notes);
-    });
-
-    it('should handle errors gracefully', async () => {
-      vi.spyOn(localforage, 'setItem').mockRejectedValue(new Error('Storage full'));
-
-      await expect(saveGuestNotes([])).resolves.not.toThrow();
-    });
-  });
-
-  describe('loadGuestNotes (Issue #371)', () => {
+  describe('loadGuestNotes (leftover read-only helper for notes migration)', () => {
     it('should load notes from localforage', async () => {
       const notes = [{ id: 'n1', text: 'Note 1', createdAt: 1 }];
       vi.spyOn(localforage, 'getItem').mockResolvedValue(notes);
