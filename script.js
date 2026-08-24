@@ -56,6 +56,7 @@ import {
   filterByCategory,
   sameTaskId,
   updateTask,
+  createTaskObject,
 } from './js/modules/tasks.js';
 import {
   addNote,
@@ -102,6 +103,7 @@ import {
   setupDropZones,
 } from './js/modules/ui.js';
 import { exportCsv, exportMarkdown } from './js/modules/export.js';
+import { parseIcsTodos, mergeIcsTodos } from './js/modules/ics-import.js';
 import { suggestSegment, SEGMENT_SUGGEST_LABELS } from './js/modules/smart-suggest.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
@@ -1069,6 +1071,54 @@ function setupEventListeners() {
   if (exportMarkdownBtn) {
     exportMarkdownBtn.addEventListener('click', () => {
       exportMarkdown(tasks, getCurrentLanguage());
+    });
+  }
+
+  // Import .ics button (Issue #351) - opens hidden file input
+  const importIcsBtn = document.getElementById('importIcsBtn');
+  const importIcsFileInput = document.getElementById('importIcsFileInput');
+  if (importIcsBtn && importIcsFileInput) {
+    importIcsBtn.addEventListener('click', () => importIcsFileInput.click());
+    importIcsFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      // Reset so selecting the same file again still fires 'change'
+      importIcsFileInput.value = '';
+      if (!file) return;
+
+      const lang = getTranslation();
+      try {
+        const content = await file.text();
+        const todos = parseIcsTodos(content);
+
+        if (todos.length === 0) {
+          showWarning(lang.settings.icsImportEmpty);
+          return;
+        }
+
+        const {
+          tasks: mergedTasks,
+          importedCount,
+          skippedCount,
+        } = mergeIcsTodos(todos, tasks, createTaskObject);
+
+        if (importedCount === 0) {
+          showWarning(lang.settings.icsImportAllDuplicates);
+          return;
+        }
+
+        setAllTasks(mergedTasks);
+        await saveAllTasks();
+        renderTasksWithCallbacks();
+
+        const message =
+          skippedCount > 0
+            ? `${lang.settings.icsImportSuccess} (${importedCount}) — ${lang.settings.icsImportSkipped} (${skippedCount})`
+            : `${lang.settings.icsImportSuccess} (${importedCount})`;
+        showSuccess(message);
+      } catch (error) {
+        ErrorHandler.handleError(error, { operation: 'ics-import', silent: true });
+        showError(lang.settings.icsImportError);
+      }
     });
   }
 

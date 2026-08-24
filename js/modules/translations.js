@@ -62,6 +62,12 @@ export const translations = {
       q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
       q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
       notesBtn: 'Notizen',
+      importIcsBtn: 'Import .ics',
+      icsImportSuccess: 'Aufgaben importiert',
+      icsImportSkipped: 'bereits vorhanden, übersprungen',
+      icsImportEmpty: 'Keine Aufgaben in der Datei gefunden',
+      icsImportAllDuplicates: 'Alle Aufgaben aus der Datei sind bereits vorhanden',
+      icsImportError: 'Import fehlgeschlagen – Datei konnte nicht gelesen werden',
     },
     personalize: {
       title: 'Personalisieren',
@@ -293,6 +299,12 @@ export const translations = {
       q4DetoxSuccess: 'Q4 tasks archived!',
       q4DetoxEmpty: 'No Q4 tasks to archive',
       notesBtn: 'Notes',
+      importIcsBtn: 'Import .ics',
+      icsImportSuccess: 'Tasks imported',
+      icsImportSkipped: 'already existed, skipped',
+      icsImportEmpty: 'No tasks found in the file',
+      icsImportAllDuplicates: 'All tasks in the file already exist',
+      icsImportError: 'Import failed – could not read the file',
     },
     personalize: {
       title: 'Personalize',
@@ -781,6 +793,11 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const exportMarkdownBtn = document.getElementById('exportMarkdownBtn');
   if (exportMarkdownBtn) {
     exportMarkdownBtn.textContent = lang.settings.exportMarkdownBtn;
+  }
+
+  const importIcsBtn = document.getElementById('importIcsBtn');
+  if (importIcsBtn) {
+    importIcsBtn.textContent = lang.settings.importIcsBtn;
   }
 
   const personalizeBtn = document.getElementById('personalizeBtn');
