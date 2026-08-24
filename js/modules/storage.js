@@ -442,19 +442,11 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
 }
 
 /**
- * Save guest notes to LocalForage (IndexedDB)
- * @param {Array} notes - Flat array of note objects
- */
-export async function saveGuestNotes(notes) {
-  try {
-    await localforage.setItem(STORAGE_KEYS.NOTES, notes);
-  } catch (_error) {
-    // Guest note save failure is non-fatal; data remains in memory
-  }
-}
-
-/**
- * Load guest notes from LocalForage
+ * Load guest notes from LocalForage.
+ *
+ * Read-only leftover from the removed standalone notes-overview feature —
+ * kept solely so notes-migration.js can migrate any notes a guest had
+ * already saved into Q4 tasks before this storage key is cleared for good.
  * @returns {Promise<Array>} Notes array
  */
 export async function loadGuestNotes() {
@@ -467,7 +459,11 @@ export async function loadGuestNotes() {
 }
 
 /**
- * Load user notes from Firestore
+ * Load user notes from Firestore.
+ *
+ * Read-only leftover from the removed standalone notes-overview feature —
+ * kept solely so notes-migration.js can migrate any notes a user had
+ * already saved into Q4 tasks before the Firestore collection is cleared.
  * @param {string} userId - User ID
  * @param {object} db - Firestore database instance
  * @returns {Promise<Array>} Notes array
@@ -497,73 +493,30 @@ export async function loadUserNotes(userId, db) {
 }
 
 /**
- * Save a single note to Firestore (with offline queue support)
- * @param {object} note - Note object
- * @param {string} userId - User ID
- * @param {object} db - Firestore database instance
+ * Permanently clear the standalone notes collection after it has been
+ * migrated into Q4 tasks (see notes-migration.js). Clears both the guest
+ * LocalForage entry and, if a signed-in user is given, the Firestore
+ * `users/{userId}/notes` subcollection.
+ * @param {string|null} userId - User ID, or null/undefined for guest-only
+ * @param {object|null} db - Firestore database instance, or null for guest-only
  */
-export async function saveNoteToFirestore(note, userId, db) {
+export async function clearMigratedNotes(userId, db) {
+  await localforage.removeItem(STORAGE_KEYS.NOTES);
+
   if (!userId || !db) return;
-
-  if (!note || typeof note.text !== 'string') {
-    console.error('Invalid note data', note);
-    return;
-  }
-
-  const noteData = {
-    text: note.text,
-    createdAt: note.createdAt || serverTimestamp(),
-  };
-
-  if (note.sourceTaskId) {
-    noteData.sourceTaskId = note.sourceTaskId;
-  }
 
   try {
-    await offlineQueue.add(
-      'saveNote',
-      async () => {
-        const noteRef = doc(collection(db, 'users', userId, 'notes'), note.id.toString());
-        await setDoc(noteRef, noteData);
-      },
-      {
-        noteId: note.id,
-        userId,
-        noteData,
-      },
-      3 // maxRetries
-    );
-  } catch (error) {
-    console.warn('Firebase note save failed, continuing with local storage:', error);
-    ErrorHandler.handleStorageError(error, {
-      operation: 'saveNoteToFirestore',
-      data: { noteId: note.id },
-      silent: false,
-    });
+    const notesRef = collection(db, 'users', userId, 'notes');
+    const snapshot = await getDocs(notesRef);
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(db);
+    snapshot.forEach((docSnap) => batch.delete(docSnap.ref));
+    await batch.commit();
+  } catch (_error) {
+    // Non-fatal: notes were already migrated into tasks, so a failed cleanup
+    // just leaves stale (now-invisible) documents behind for a later retry.
   }
-}
-
-/**
- * Delete a note from Firestore (with offline queue support)
- * @param {string} noteId - Note ID
- * @param {string} userId - User ID
- * @param {object} db - Firestore database instance
- */
-export async function deleteNoteFromFirestore(noteId, userId, db) {
-  if (!userId || !db) return;
-
-  await offlineQueue.add(
-    'deleteNote',
-    async () => {
-      const noteRef = doc(collection(db, 'users', userId, 'notes'), noteId.toString());
-      await deleteDoc(noteRef);
-    },
-    {
-      noteId,
-      userId,
-    },
-    3 // maxRetries
-  );
 }
 
 /**
@@ -670,76 +623,15 @@ export async function importGuestTasksToFirestore(userId, db) {
 }
 
 /**
- * Import guest notes to user account (explicit user action)
- * Mirrors importGuestTasksToFirestore — without this, standalone notes
- * created as a guest silently stay invisible after signing in (Issue #385).
- * @param {string} userId - User ID
- * @param {object} db - Firestore database instance
- * @returns {object} { success, noteCount, error }
- */
-export async function importGuestNotesToFirestore(userId, db) {
-  try {
-    const guestNotes = await loadGuestNotes();
-
-    if (!guestNotes || guestNotes.length === 0) {
-      return {
-        success: false,
-        noteCount: 0,
-        error: 'Keine Gast-Notizen zum Importieren gefunden',
-      };
-    }
-
-    const batch = writeBatch(db);
-    let importedCount = 0;
-
-    guestNotes.forEach((note) => {
-      if (!note || typeof note.text !== 'string') return;
-
-      const docRef = doc(collection(db, 'users', userId, 'notes'), note.id.toString());
-      const noteData = {
-        text: note.text,
-        createdAt: note.createdAt || serverTimestamp(),
-      };
-
-      if (note.sourceTaskId) {
-        noteData.sourceTaskId = note.sourceTaskId;
-      }
-
-      batch.set(docRef, noteData);
-      importedCount++;
-    });
-
-    await batch.commit();
-
-    // Delete guest notes after successful import
-    await localforage.removeItem(STORAGE_KEYS.NOTES);
-
-    return {
-      success: true,
-      noteCount: importedCount,
-      error: null,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      noteCount: 0,
-      error: error.message || 'Fehler beim Importieren der Gast-Notizen',
-    };
-  }
-}
-
-/**
  * Export data as JSON file
  * @param {object} tasks - Tasks object
  * @param {string} version - App version
- * @param {Array} [notes] - Standalone notes (Issue #385: previously missing from backup)
  */
-export function exportData(tasks, version, notes = []) {
+export function exportData(tasks, version) {
   const exportData = {
     version: version || 'unknown',
     exportDate: new Date().toISOString(),
     tasks: tasks,
-    notes: notes,
   };
 
   const dataStr = JSON.stringify(exportData, null, 2);
@@ -757,16 +649,18 @@ export function exportData(tasks, version, notes = []) {
 }
 
 /**
- * Import data from JSON file
+ * Import data from JSON file.
+ *
+ * Older backups may still contain a top-level `notes` array from the removed
+ * standalone notes-overview feature; those are intentionally ignored since
+ * there's no longer a place to put them (existing installations already had
+ * their notes migrated into Q4 tasks, see notes-migration.js).
  * @param {File} file - File to import
  * @param {object} currentTasks - Current tasks object
- * @param {function} saveCallback - Callback to save imported tasks; called with
- *   (finalTasks, finalNotes) when the backup contains standalone notes (Issue #385),
- *   or (finalTasks) alone otherwise, to keep older callers unaffected.
- * @param {Array} [currentNotes] - Current standalone notes, for merging
+ * @param {function} saveCallback - Callback to save imported tasks, called with (finalTasks)
  * @returns {Promise<object>} Imported tasks object
  */
-export function importData(file, currentTasks, saveCallback, currentNotes = []) {
+export function importData(file, currentTasks, saveCallback) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -779,9 +673,7 @@ export function importData(file, currentTasks, saveCallback, currentNotes = []) 
           throw new Error('Ungültiges Datenformat: Keine Tasks gefunden');
         }
 
-        const hasImportedNotes = Array.isArray(importedData.notes);
         let finalTasks;
-        let finalNotes;
 
         if (
           confirm(
@@ -802,29 +694,14 @@ export function importData(file, currentTasks, saveCallback, currentNotes = []) 
               finalTasks[segmentId].push(task);
             });
           });
-
-          if (hasImportedNotes) {
-            finalNotes = [...currentNotes];
-            importedData.notes.forEach((note) => {
-              // Generate new ID to avoid conflicts, same as tasks above
-              finalNotes.push({ ...note, id: Date.now() + Math.random() });
-            });
-          }
         } else {
           // Replace: Overwrite existing tasks
           finalTasks = importedData.tasks;
-          if (hasImportedNotes) {
-            finalNotes = importedData.notes;
-          }
         }
 
         // Call save callback if provided
         if (saveCallback) {
-          if (hasImportedNotes) {
-            await saveCallback(finalTasks, finalNotes);
-          } else {
-            await saveCallback(finalTasks);
-          }
+          await saveCallback(finalTasks);
         }
         resolve(finalTasks);
       } catch (error) {

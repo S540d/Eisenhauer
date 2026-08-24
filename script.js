@@ -59,12 +59,6 @@ import {
   createTaskObject,
 } from './js/modules/tasks.js';
 import {
-  addNote,
-  deleteNote,
-  getAllNotes,
-  setAllNotes as setAllNotesState,
-} from './js/modules/notes.js';
-import {
   initStorage,
   saveGuestTasks,
   loadGuestTasks,
@@ -73,17 +67,14 @@ import {
   saveAllTasksToFirestore,
   updateTaskInFirestore,
   deleteTaskFromFirestore,
-  saveGuestNotes,
-  loadGuestNotes,
-  loadUserNotes,
-  saveNoteToFirestore,
-  deleteNoteFromFirestore,
   exportData,
   importData,
   requestPersistentStorage,
   getSyncStatus,
   importGuestTasksToFirestore,
-  importGuestNotesToFirestore,
+  loadGuestNotes,
+  loadUserNotes,
+  clearMigratedNotes,
 } from './js/modules/storage.js';
 import {
   renderAllTasks,
@@ -92,9 +83,6 @@ import {
   openSettingsModal,
   openMetricsModal,
   openEditRecurringModal,
-  openNotesModal,
-  closeNotesModal,
-  renderNotesList,
   openTutorialModal,
   shouldShowTutorial,
   showDragHint,
@@ -104,6 +92,11 @@ import {
 } from './js/modules/ui.js';
 import { exportCsv, exportMarkdown } from './js/modules/export.js';
 import { parseIcsTodos, mergeIcsTodos } from './js/modules/ics-import.js';
+import {
+  isNotesMigrationDone,
+  markNotesMigrationDone,
+  migrateNotesToTasks,
+} from './js/modules/notes-migration.js';
 import { suggestSegment, SEGMENT_SUGGEST_LABELS } from './js/modules/smart-suggest.js';
 import { showWarning, showError, showSuccess } from './js/modules/notifications.js';
 import { showUndoDelete, showUndoToggle } from './js/modules/undo.js';
@@ -204,16 +197,29 @@ async function loadAllTasks() {
 }
 
 /**
- * Load all standalone notes (Guest or Firebase)
+ * One-time migration of the removed standalone notes-overview feature: any
+ * notes a user had already saved there are converted into Q4 tasks so
+ * nothing is silently lost, then the old notes storage is cleared. Runs at
+ * most once per device (tracked via localStorage), since the source data is
+ * deleted as part of the migration. Must run after loadAllTasks() so it can
+ * append to the already-loaded tasks.
  */
-async function loadAllNotes() {
-  if (currentUser && db && !isGuestMode) {
-    const loadedNotes = await loadUserNotes(currentUser.uid, db);
-    setAllNotesState(loadedNotes);
-  } else {
-    const loadedNotes = await loadGuestNotes();
-    setAllNotesState(loadedNotes);
+async function runNotesMigrationIfNeeded() {
+  if (isNotesMigrationDone()) return;
+
+  const existingNotes =
+    currentUser && db && !isGuestMode
+      ? await loadUserNotes(currentUser.uid, db)
+      : await loadGuestNotes();
+
+  if (existingNotes.length > 0) {
+    const migratedTasks = migrateNotesToTasks(existingNotes, getAllTasks(), createTaskObject);
+    setAllTasks(migratedTasks);
+    await saveAllTasks();
   }
+
+  await clearMigratedNotes(currentUser && !isGuestMode ? currentUser.uid : null, db);
+  markNotesMigrationDone();
 }
 
 /**
@@ -805,74 +811,15 @@ function setupEventListeners() {
     });
   }
 
-  // Notes collection menu entry (Issue #371) - visibility only, task-notes stay
-  // available regardless of this flag.
-  const notesSection = document.getElementById('notesSection');
-  const notesSeparator = document.getElementById('notesSeparator');
-  if (notesSection) {
-    const updateNotesMenuVisibility = () => {
-      const enabled = localStorage.getItem('notesCollectionEnabled') === 'true';
-      notesSection.style.display = enabled ? '' : 'none';
-      if (notesSeparator) notesSeparator.style.display = enabled ? '' : 'none';
-    };
-    updateNotesMenuVisibility();
-    window.updateNotesMenuVisibility = updateNotesMenuVisibility;
-  }
-
-  // Standalone notes modal (Issue #371)
-  const renderNotesListWithCallbacks = () => {
-    renderNotesList(getAllNotes(), translations, getCurrentLanguage(), {
-      onDelete: handleDeleteNote,
-    });
+  // Task notes toggle: shows/hides the notes field in the Quick Add modal.
+  // Exposed on window so ui.js's toggle handler can re-apply it after a
+  // change, mirroring updateCategorySwitcherVisibility.
+  window.updateTaskNotesVisibility = () => {
+    const quickAddNotesRow = document.querySelector('.quick-add-notes-row');
+    if (!quickAddNotesRow) return;
+    const enabled = localStorage.getItem('taskNotesEnabled') !== 'false';
+    quickAddNotesRow.style.display = enabled ? '' : 'none';
   };
-  window.openNotesModalWithData = () => {
-    openNotesModal();
-    renderNotesListWithCallbacks();
-  };
-
-  const notesCancelBtn = document.getElementById('notesCancelBtn');
-  if (notesCancelBtn) {
-    notesCancelBtn.addEventListener('click', () => closeNotesModal());
-  }
-
-  const notesAddBtn = document.getElementById('notesAddBtn');
-  const notesAddInput = document.getElementById('notesAddInput');
-  const handleAddNote = () => {
-    const text = notesAddInput.value.trim();
-    if (!text) return;
-
-    const note = addNote(text);
-    if (currentUser && db && !isGuestMode) {
-      saveNoteToFirestore(note, currentUser.uid, db);
-    } else {
-      saveGuestNotes(getAllNotes());
-    }
-
-    notesAddInput.value = '';
-    renderNotesListWithCallbacks();
-  };
-  if (notesAddBtn && notesAddInput) {
-    notesAddBtn.addEventListener('click', handleAddNote);
-    notesAddInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleAddNote();
-      }
-    });
-  }
-
-  function handleDeleteNote(noteId) {
-    const removed = deleteNote(noteId);
-    if (!removed) return;
-
-    if (currentUser && db && !isGuestMode) {
-      deleteNoteFromFirestore(removed.id, currentUser.uid, db);
-    } else {
-      saveGuestNotes(getAllNotes());
-    }
-
-    renderNotesListWithCallbacks();
-  }
 
   // Settings button (header)
   const settingsBtn = document.getElementById('settingsBtnHeader');
@@ -1006,22 +953,11 @@ function setupEventListeners() {
     });
   }
 
-  // Persist an imported/merged notes array (Issue #385: notes were missing
-  // from the JSON backup entirely, so a restore could never bring them back)
-  const saveImportedNotes = async (notesArray) => {
-    setAllNotesState(notesArray);
-    if (currentUser && db && !isGuestMode) {
-      await Promise.all(notesArray.map((note) => saveNoteToFirestore(note, currentUser.uid, db)));
-    } else {
-      await saveGuestNotes(notesArray);
-    }
-  };
-
   // Export button
   const exportBtn = document.getElementById('exportBtn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
-      exportData(tasks, APP_VERSION, getAllNotes());
+      exportData(tasks, APP_VERSION);
     });
   }
 
@@ -1032,20 +968,12 @@ function setupEventListeners() {
     importBtn.addEventListener('click', () => importFile.click());
     importFile.addEventListener('change', (e) => {
       if (e.target.files.length > 0) {
-        importData(
-          e.target.files[0],
-          tasks,
-          async (importedTasks, importedNotes) => {
-            setAllTasks(importedTasks);
-            await saveAllTasks();
-            if (importedNotes) {
-              await saveImportedNotes(importedNotes);
-            }
-            renderTasksWithCallbacks();
-            alert(getTranslation('importSuccess') || 'Data imported successfully!');
-          },
-          getAllNotes()
-        );
+        importData(e.target.files[0], tasks, async (importedTasks) => {
+          setAllTasks(importedTasks);
+          await saveAllTasks();
+          renderTasksWithCallbacks();
+          alert(getTranslation('importSuccess') || 'Data imported successfully!');
+        });
       }
     });
   }
@@ -1054,7 +982,7 @@ function setupEventListeners() {
   const exportJsonBtn = document.getElementById('exportJsonBtn');
   if (exportJsonBtn) {
     exportJsonBtn.addEventListener('click', () => {
-      exportData(tasks, APP_VERSION, getAllNotes());
+      exportData(tasks, APP_VERSION);
     });
   }
 
@@ -1196,54 +1124,35 @@ function setupEventListeners() {
         return;
       }
 
-      // Count guest tasks and standalone notes first (Issue #385: notes had no
-      // guest→login migration path at all, unlike tasks)
       const guestTasks = await loadGuestTasks();
       let guestTaskCount = 0;
       Object.keys(guestTasks).forEach((segmentId) => {
         guestTaskCount += guestTasks[segmentId].length;
       });
 
-      const guestNotes = await loadGuestNotes();
-      const guestNoteCount = guestNotes.length;
-
-      if (guestTaskCount === 0 && guestNoteCount === 0) {
+      if (guestTaskCount === 0) {
         showWarning('Keine Gast-Daten zum Importieren gefunden');
         return;
       }
 
-      // Show confirmation dialog
-      const parts = [];
-      if (guestTaskCount > 0) parts.push(`${guestTaskCount} Gast-Tasks`);
-      if (guestNoteCount > 0) parts.push(`${guestNoteCount} Gast-Notizen`);
       const confirmed = confirm(
-        `Du hast ${parts.join(' und ')}.\n\nMöchtest du diese in deinen Account importieren?\n\nDie Gast-Daten werden nach dem Import gelöscht.`
+        `Du hast ${guestTaskCount} Gast-Tasks.\n\nMöchtest du diese in deinen Account importieren?\n\nDie Gast-Daten werden nach dem Import gelöscht.`
       );
 
       if (!confirmed) return;
 
-      // Perform import (independently, so a notes failure doesn't hide a
-      // successful task import or vice versa)
-      const taskResult =
-        guestTaskCount > 0
-          ? await window.importGuestTasksToFirestore(currentUser.uid, db)
-          : { success: true, taskCount: 0 };
-      const noteResult =
-        guestNoteCount > 0
-          ? await importGuestNotesToFirestore(currentUser.uid, db)
-          : { success: true, noteCount: 0 };
+      const taskResult = await window.importGuestTasksToFirestore(currentUser.uid, db);
 
-      if (taskResult.success && noteResult.success) {
+      if (taskResult.success) {
         showSuccess(
-          `${taskResult.taskCount} Gast-Tasks und ${noteResult.noteCount} Gast-Notizen erfolgreich importiert! Seite wird neu geladen...`
+          `${taskResult.taskCount} Gast-Tasks erfolgreich importiert! Seite wird neu geladen...`
         );
         // Reload tasks and close modal
         setTimeout(() => {
           location.reload();
         }, 1500);
       } else {
-        const errors = [taskResult.error, noteResult.error].filter(Boolean).join('; ');
-        showError(`Import fehlgeschlagen: ${errors}`);
+        showError(`Import fehlgeschlagen: ${taskResult.error}`);
       }
     });
   }
@@ -1458,7 +1367,7 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     } else {
       await loadAllTasks();
     }
-    await loadAllNotes();
+    await runNotesMigrationIfNeeded();
 
     // Wait for DOM to be fully visible after showApp()
     setTimeout(() => {
@@ -1511,7 +1420,7 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
   } else {
     // Tasks already loaded: just re-sync with Firebase in background
     await loadAllTasks();
-    await loadAllNotes();
+    await runNotesMigrationIfNeeded();
     renderTasksWithCallbacks();
   }
 };
@@ -1603,7 +1512,7 @@ async function initApp() {
       isGuestMode = true;
       window.showApp();
       await loadAllTasks();
-      await loadAllNotes();
+      await runNotesMigrationIfNeeded();
       setupEventListeners();
       if (!keyboardDragManager) {
         keyboardDragManager = new KeyboardDragManager(handleMoveTask);
@@ -1616,7 +1525,7 @@ async function initApp() {
       isGuestMode = false;
       window.showApp();
       await loadAllTasks();
-      await loadAllNotes();
+      await runNotesMigrationIfNeeded();
       setupEventListeners();
       if (!keyboardDragManager) {
         keyboardDragManager = new KeyboardDragManager(handleMoveTask);

@@ -34,18 +34,9 @@ export const STORAGE_KEYS = {
 export const UPDATE_CHECK_INTERVAL = 10000; // 10 seconds
 /** Maximum allowed length for a task's text */
 export const MAX_TASK_LENGTH = 140;
-/** Maximum allowed length for a note's text */
-export const MAX_NOTES_LENGTH = 500;
 
 // Smart Rules Configuration
 /** Thresholds used by the Smart Urgency Rules feature */
 export const SMART_RULES = {
   urgentThresholdDays: 3, // Tasks become urgent if due date is within 3 days
-};
-
-/** STORAGE_KEYS extended with Smart Features/Notes feature toggles */
-export const STORAGE_KEYS_EXTENDED = {
-  ...STORAGE_KEYS,
-  SMART_FUNCTIONS_ENABLED: 'smartFunctionsEnabled',
-  NOTES_COLLECTION_ENABLED: 'notesCollectionEnabled',
 };
