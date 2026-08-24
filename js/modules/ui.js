@@ -616,16 +616,6 @@ export function openSettingsModal(
       return;
     }
 
-    // Handle Notizen button click (standalone notes collection, Issue #371)
-    if (target.closest('#notesBtn')) {
-      e.preventDefault();
-      closeSettingsModal();
-      if (window.openNotesModalWithData) {
-        window.openNotesModalWithData();
-      }
-      return;
-    }
-
     // Handle close button click
     if (target.closest('#settingsCancelBtn')) {
       closeSettingsModal();
@@ -842,10 +832,12 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     categoryFilterToggle.checked = localStorage.getItem('categoryFilterEnabled') === 'true';
   }
 
-  // Notes collection toggle reflects whether the standalone notes overview is enabled
-  const notesCollectionToggle = document.getElementById('notesCollectionToggle');
-  if (notesCollectionToggle) {
-    notesCollectionToggle.checked = localStorage.getItem('notesCollectionEnabled') === 'true';
+  // Task notes toggle reflects whether the notes field in the Quick Add modal
+  // is shown; defaults to enabled (unset !== 'false') so existing users see
+  // no change after the standalone notes-overview feature was removed.
+  const taskNotesToggle = document.getElementById('taskNotesToggle');
+  if (taskNotesToggle) {
+    taskNotesToggle.checked = localStorage.getItem('taskNotesEnabled') !== 'false';
   }
 
   // Update reminders toggle + dropdown state
@@ -941,13 +933,13 @@ export function openPersonalizeModal(currentLanguage = 'en') {
       return;
     }
 
-    // Handle notes collection toggle (show/hide the "Notizen" menu entry only)
-    if (target.id === 'notesCollectionToggle') {
+    // Handle task notes toggle (show/hide the notes field in Quick Add)
+    if (target.id === 'taskNotesToggle') {
       const isEnabled = target.checked;
-      localStorage.setItem('notesCollectionEnabled', isEnabled.toString());
+      localStorage.setItem('taskNotesEnabled', isEnabled.toString());
 
-      if (window.updateNotesMenuVisibility) {
-        window.updateNotesMenuVisibility();
+      if (window.updateTaskNotesVisibility) {
+        window.updateTaskNotesVisibility();
       }
       return;
     }
@@ -1386,8 +1378,13 @@ export function openQuickAddModal(
     document.getElementById('quickDueDateToggle')?.classList.add('icon-toggle-checked');
   }
 
-  // Reset notes field (always visible, not gated by any flag), prefilled
-  // from the task being edited when applicable.
+  // Notes field visibility follows the "task notes" personalize toggle
+  // (default enabled), prefilled from the task being edited when applicable.
+  const quickAddNotesRow = document.querySelector('.quick-add-notes-row');
+  const taskNotesEnabled = localStorage.getItem('taskNotesEnabled') !== 'false';
+  if (quickAddNotesRow) {
+    quickAddNotesRow.style.display = taskNotesEnabled ? '' : 'none';
+  }
   const quickAddNotes = document.getElementById('quickAddNotes');
   if (quickAddNotes) {
     quickAddNotes.value = existingTask?.notes || '';
@@ -1716,90 +1713,6 @@ export function openEditRecurringModal(task, onSave, translations, currentLangua
   const newCancelBtn = cancelBtn.cloneNode(true);
   cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
   newCancelBtn.addEventListener('click', handleCancel);
-}
-
-/**
- * Render the standalone notes list (Issue #371)
- * @param {Array} notesArray - Flat array of note objects
- * @param {object} translations - Translations object
- * @param {string} currentLanguage - Current language
- * @param {object} callbacks - { onDelete(noteId) }
- */
-export function renderNotesList(notesArray, translations, currentLanguage, callbacks = {}) {
-  const container = document.getElementById('notesListContainer');
-  if (!container) return;
-
-  const lang = translations[currentLanguage]?.notes;
-  container.innerHTML = '';
-
-  if (!notesArray.length) {
-    const empty = document.createElement('p');
-    empty.className = 'notes-empty-state';
-    empty.textContent = lang?.empty || 'No notes yet';
-    container.appendChild(empty);
-    return;
-  }
-
-  const sorted = [...notesArray].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  const dateLocale = currentLanguage === 'de' ? 'de-DE' : 'en-US';
-
-  sorted.forEach((note) => {
-    const item = document.createElement('div');
-    item.className = 'note-item';
-    item.dataset.noteId = note.id;
-
-    const content = document.createElement('div');
-    content.className = 'note-item-content';
-
-    const textSpan = document.createElement('span');
-    textSpan.className = 'note-text';
-    textSpan.textContent = note.text;
-    content.appendChild(textSpan);
-
-    const dateSpan = document.createElement('span');
-    dateSpan.className = 'note-date';
-    dateSpan.textContent = new Date(note.createdAt).toLocaleDateString(dateLocale);
-    content.appendChild(dateSpan);
-
-    if (note.sourceTaskId) {
-      const badge = document.createElement('span');
-      badge.className = 'note-source-badge';
-      badge.textContent = `${lang?.sourceBadgePrefix || '→ Task'} ${note.sourceTaskId}`;
-      content.appendChild(badge);
-    }
-
-    item.appendChild(content);
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'note-delete-btn';
-    deleteBtn.type = 'button';
-    deleteBtn.setAttribute('aria-label', lang?.deleteAriaLabel || 'Delete note');
-    deleteBtn.textContent = '✕';
-    deleteBtn.addEventListener('click', () => callbacks.onDelete?.(note.id));
-    item.appendChild(deleteBtn);
-
-    container.appendChild(item);
-  });
-}
-
-/**
- * Open the standalone notes modal (Issue #371)
- */
-export function openNotesModal() {
-  const modal = document.getElementById('notesModal');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
-}
-
-/**
- * Close the standalone notes modal
- */
-export function closeNotesModal() {
-  const modal = document.getElementById('notesModal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
 }
 
 /**
