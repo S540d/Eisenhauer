@@ -832,7 +832,8 @@ function setupEventListeners() {
         APP_VERSION,
         new Date().toISOString().split('T')[0],
         isGuestMode,
-        getCurrentLanguage()
+        getCurrentLanguage(),
+        storage
       );
     });
   }

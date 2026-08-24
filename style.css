@@ -1658,24 +1658,6 @@ body.dark-mode .search-highlight {
   border-color: var(--text-primary);
 }
 
-.char-counter {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  pointer-events: none;
-}
-
-.char-counter.warning {
-  color: #f59e0b;
-}
-
-.char-counter.error {
-  color: #ef4444;
-}
-
 #quickRecurringOptions.recurring-options {
   overflow: hidden;
   max-height: 0;

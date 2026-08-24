@@ -10,6 +10,7 @@ import { DragManager } from './drag-manager.js';
 import { announceDragStart, announceDragEnd } from './accessibility.js';
 import { translations } from './translations.js';
 import { shouldShowSegmentDemo } from './onboarding.js';
+import { listBackups } from './backup.js';
 
 /**
  * Create a task DOM element
@@ -539,7 +540,8 @@ export function openSettingsModal(
   version,
   buildDate,
   isGuestMode = false,
-  currentLanguage = 'en'
+  currentLanguage = 'en',
+  storage = null
 ) {
   const settingsModal = document.getElementById('settingsModal');
 
@@ -686,22 +688,46 @@ export function openSettingsModal(
       backupSection.style.display = 'block';
       if (backupSeparator) backupSeparator.style.display = 'block';
 
-      // Update last backup timestamp
+      // Update last backup timestamp. localStorage's 'lastAutoBackup' is
+      // per-device and can disagree across a user's devices (issue #396),
+      // so show it only as an immediate placeholder while the account-wide
+      // backup list (the actual source of truth in Firebase Storage) loads.
       const lastBackupInfo = document.getElementById('lastBackupInfo');
       const lastAutoBackup = localStorage.getItem('lastAutoBackup');
 
       if (lastBackupInfo) {
         const lang = currentLanguage === 'de' ? 'de' : 'en';
         const neverText = currentLanguage === 'de' ? 'Nie' : 'Never';
+        const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
 
-        if (lastAutoBackup) {
-          const date = new Date(parseInt(lastAutoBackup));
-          const formattedDate = date.toLocaleString(lang === 'de' ? 'de-DE' : 'en-US');
-          const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
-          lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
-        } else {
-          const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
-          lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}`;
+        const renderLastBackup = (timestamp) => {
+          if (timestamp) {
+            const formattedDate = new Date(timestamp).toLocaleString(
+              lang === 'de' ? 'de-DE' : 'en-US'
+            );
+            lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
+          } else {
+            lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}`;
+          }
+        };
+
+        renderLastBackup(lastAutoBackup ? parseInt(lastAutoBackup) : null);
+
+        if (storage && currentUser?.uid) {
+          listBackups(storage, currentUser.uid)
+            .then((backups) => {
+              // Guard against the modal having been closed/reopened for a
+              // different user while this request was in flight.
+              if (document.getElementById('lastBackupInfo') !== lastBackupInfo) return;
+              if (backups.length > 0) {
+                renderLastBackup(backups[0].timestamp);
+              } else if (!lastAutoBackup) {
+                renderLastBackup(null);
+              }
+            })
+            .catch(() => {
+              // Keep the localStorage-based placeholder on failure.
+            });
         }
       }
     } else {
