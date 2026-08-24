@@ -151,7 +151,7 @@ function calculateNextOccurrence(recurringConfig, fromTimestamp = Date.now()) {
 /**
  * Create a new task object
  */
-function createTaskObject(
+export function createTaskObject(
   taskText,
   segmentId,
   recurringConfig = null,
