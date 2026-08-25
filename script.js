@@ -19,7 +19,7 @@ window.localforage = localforage;
 window.Chart = Chart;
 
 // Import Firebase services (Modular SDK V2)
-import { auth, db, storage } from './js/modules/firebase-init.js';
+import { auth, db } from './js/modules/firebase-init.js';
 import {
   initAuth,
   signInWithGoogle,
@@ -65,6 +65,7 @@ import {
   loadUserTasks,
   saveTaskToFirestore,
   saveAllTasksToFirestore,
+  replaceAllTasksInFirestore,
   updateTaskInFirestore,
   deleteTaskFromFirestore,
   exportData,
@@ -82,6 +83,7 @@ import {
   openQuickAddModal,
   openSettingsModal,
   openMetricsModal,
+  openBackupRestoreModal,
   openEditRecurringModal,
   openTutorialModal,
   shouldShowTutorial,
@@ -114,6 +116,9 @@ import {
 import { KeyboardDragManager } from './js/modules/accessibility.js';
 import {
   uploadBackup,
+  listBackups,
+  downloadBackup,
+  restoreBackup,
   shouldAutoBackup,
   markAutoBackupCompleted,
   trackBackupFailure,
@@ -174,6 +179,73 @@ async function saveAllTasks() {
     await saveAllTasksToFirestore(tasks, currentUser.uid, db);
   } else {
     await saveGuestTasks(tasks);
+  }
+}
+
+/**
+ * Restore a backup, replacing every current task (Issue #396).
+ *
+ * Restoring is destructive, so a safety backup of the *current* state is taken
+ * before overwriting. If that snapshot fails the restore is aborted rather than
+ * proceeding without a way back — losing the current tasks with no recourse is
+ * exactly the data loss this feature exists to prevent.
+ *
+ * @param {object} backup - Backup metadata entry from listBackups()
+ */
+async function handleRestoreBackup(backup) {
+  const lang = translations[getCurrentLanguage()] || translations.en;
+
+  if (!currentUser || isGuestMode) {
+    showWarning(lang.backupRestore.loginRequired);
+    return;
+  }
+
+  // Load the chosen backup FIRST. The safety snapshot below counts against
+  // MAX_BACKUPS and triggers rotation, which would delete the oldest backup —
+  // potentially the very one being restored. Reading it into memory beforehand
+  // makes the restore immune to that, and avoids taking a snapshot at all when
+  // the backup turns out to be unreadable.
+  let backupData;
+  try {
+    backupData = await downloadBackup(db, currentUser.uid, backup.id);
+  } catch (error) {
+    console.error('Loading backup failed:', error);
+    showError(
+      getCurrentLanguage() === 'de'
+        ? 'Backup konnte nicht geladen werden.'
+        : 'Could not load backup.'
+    );
+    return;
+  }
+
+  try {
+    // Safety net: snapshot the current state before overwriting it.
+    await uploadBackup(db, currentUser.uid, tasks, getCurrentLanguage(), false);
+  } catch (error) {
+    console.error('Safety backup before restore failed:', error);
+    showError(
+      getCurrentLanguage() === 'de'
+        ? 'Sicherungs-Backup fehlgeschlagen – Wiederherstellung abgebrochen.'
+        : 'Safety backup failed - restore aborted.'
+    );
+    return;
+  }
+
+  try {
+    await restoreBackup(
+      backupData,
+      (restoredTasks) => setAllTasks(restoredTasks),
+      async () => {
+        await replaceAllTasksInFirestore(getAllTasks(), currentUser.uid, db);
+      },
+      getCurrentLanguage()
+    );
+
+    renderTasksWithCallbacks();
+  } catch (error) {
+    console.error('Restore failed:', error);
+    // restoreBackup() already surfaced a user-facing error for its own failures;
+    // this also covers a failure while loading the backup document.
   }
 }
 
@@ -833,7 +905,7 @@ function setupEventListeners() {
         new Date().toISOString().split('T')[0],
         isGuestMode,
         getCurrentLanguage(),
-        storage
+        db
       );
     });
   }
@@ -1174,7 +1246,7 @@ function setupEventListeners() {
 
       try {
         // Create backup
-        await uploadBackup(storage, currentUser.uid, tasks, getCurrentLanguage());
+        await uploadBackup(db, currentUser.uid, tasks, getCurrentLanguage());
 
         // Mark backup as completed to reset auto-backup timer
         markAutoBackupCompleted();
@@ -1192,6 +1264,22 @@ function setupEventListeners() {
         console.error('Backup creation failed:', error);
         // Error notification is shown by uploadBackup function
       }
+    });
+  }
+
+  // Restore backup button (Issue #396)
+  const restoreBackupBtn = document.getElementById('restoreBackupBtn');
+  if (restoreBackupBtn) {
+    restoreBackupBtn.addEventListener('click', async () => {
+      const lang = translations[getCurrentLanguage()] || translations.en;
+
+      if (!currentUser || isGuestMode) {
+        showWarning(lang.backupRestore.loginRequired);
+        return;
+      }
+
+      const backups = await listBackups(db, currentUser.uid);
+      openBackupRestoreModal(backups, handleRestoreBackup, getCurrentLanguage());
     });
   }
 
@@ -1403,7 +1491,7 @@ window.onAuthStateChanged = async function (user, guestMode = false) {
     // Auto-backup (only for authenticated users, not guest mode)
     if (user && !guestMode && shouldAutoBackup()) {
       try {
-        await uploadBackup(storage, user.uid, tasks, getCurrentLanguage(), false);
+        await uploadBackup(db, user.uid, tasks, getCurrentLanguage(), false);
         markAutoBackupCompleted();
       } catch (error) {
         console.error('Auto-backup failed:', error);

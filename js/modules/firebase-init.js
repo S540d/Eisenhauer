@@ -19,7 +19,6 @@ import {
   persistentLocalCache,
   persistentMultipleTabManager,
 } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
 
 // Current environment from Vite build
 const CURRENT_ENV = import.meta.env.VITE_ENV || 'production';
@@ -94,8 +93,10 @@ googleProvider.setCustomParameters({
 
 const appleProvider = new OAuthProvider('apple.com');
 
-// Initialize Firebase Storage
-const storage = getStorage(app);
+// Note: Firebase Cloud Storage is intentionally NOT initialized. It requires the
+// paid Blaze plan (since October 2024) and this project runs on the free Spark
+// plan, so every Storage call failed. Backups live in Firestore instead — see
+// js/modules/backup.js and docs/DATENSICHERUNG.md (Issues #359 / #396).
 
 // Note: Firebase Analytics / Google Analytics is intentionally NOT used
 // (privacy). Visitor counts are tracked via GitHub Pages Insights instead.
@@ -107,4 +108,4 @@ export const firebaseEnvironment = {
   projectId: firebaseConfig.projectId,
 };
 
-export { app, auth, db, storage, googleProvider, appleProvider };
+export { app, auth, db, googleProvider, appleProvider };
