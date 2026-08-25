@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.12.2 (edbd6d7e) built at 1787685463899 -->
+<!-- Cache-Busting Info: v1.12.2 (85f41128) built at 1787687759051 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="edbd6d7e" /><meta name="build-time" content="1787685463899" />
+    <meta name="build-hash" content="85f41128" /><meta name="build-time" content="1787687759051" />
 
     <!-- SEO -->
     <meta
@@ -59,13 +59,13 @@
     <!-- Note: frame-ancestors is not supported via meta, clickjacking protection requires HTTP header -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app https://firebasestorage.googleapis.com wss://*.firebaseio.com https://*.ingest.sentry.io; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com https://apis.google.com https://accounts.google.com; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.ingest.sentry.io; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com https://apis.google.com https://accounts.google.com; base-uri 'self'; form-action 'self';"
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-BuUZkClh.js"></script>
-    <link rel="modulepreload" crossorigin href="/Eisenhauer/testing/assets/firebase-CnETCl0T.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/testing/assets/index-7cLeWmpt.css">
+    <script type="module" crossorigin src="/Eisenhauer/testing/assets/index-CxcnycWM.js"></script>
+    <link rel="modulepreload" crossorigin href="/Eisenhauer/testing/assets/firebase-opd4ehoM.js">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/testing/assets/index-BYra71Oc.css">
   <link rel="manifest" href="/Eisenhauer/testing/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/testing/registerSW.js"></script></head>
   <body>
     <!-- Splash Screen -->
@@ -634,7 +634,10 @@
         <!-- Cloud Backup (only visible when authenticated) -->
         <div id="backupSection" class="settings-section" style="display: none">
           <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP (BETA)</h4>
-          <button id="createBackupBtn" class="btn">Backup erstellen</button>
+          <div class="settings-data-buttons">
+            <button id="createBackupBtn" class="btn">Backup erstellen</button>
+            <button id="restoreBackupBtn" class="btn">Wiederherstellen</button>
+          </div>
           <p id="lastBackupInfo" class="settings-info" style="margin-top: 8px"></p>
         </div>
 
@@ -950,6 +953,21 @@
           </div>
         </div>
         <button id="metricsCancelBtn" class="btn cancel-btn">Close</button>
+      </div>
+    </div>
+
+    <!-- Backup Restore Modal (Issue #396) -->
+    <div id="backupRestoreModal" class="modal">
+      <div class="modal-content">
+        <h3 id="backupRestoreTitle">Backup wiederherstellen</h3>
+        <p id="backupRestoreWarning" class="settings-info backup-restore-warning">
+          Beim Wiederherstellen werden alle aktuellen Aufgaben ersetzt.
+        </p>
+        <ul id="backupRestoreList" class="backup-restore-list"></ul>
+        <p id="backupRestoreEmpty" class="settings-info" style="display: none">
+          Noch keine Backups vorhanden.
+        </p>
+        <button id="backupRestoreCancelBtn" class="btn cancel-btn">Schliessen</button>
       </div>
     </div>
 
