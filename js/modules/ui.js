@@ -541,7 +541,7 @@ export function openSettingsModal(
   buildDate,
   isGuestMode = false,
   currentLanguage = 'en',
-  storage = null
+  db = null
 ) {
   const settingsModal = document.getElementById('settingsModal');
 
@@ -713,8 +713,8 @@ export function openSettingsModal(
 
         renderLastBackup(lastAutoBackup ? parseInt(lastAutoBackup) : null);
 
-        if (storage && currentUser?.uid) {
-          listBackups(storage, currentUser.uid)
+        if (db && currentUser?.uid) {
+          listBackups(db, currentUser.uid)
             .then((backups) => {
               // Guard against the modal having been closed/reopened for a
               // different user while this request was in flight.
@@ -1072,6 +1072,93 @@ export function closeMetricsModal() {
   if (metricsModal) {
     metricsModal.classList.remove('active');
     metricsModal.style.display = 'none';
+  }
+}
+
+/**
+ * Open the backup restore modal and render the available backups (Issue #396).
+ *
+ * Restoring replaces every task, so this deliberately requires two deliberate
+ * actions: picking a backup, then confirming. The caller is responsible for
+ * taking a safety snapshot before overwriting anything.
+ *
+ * @param {Array} backups - Backup metadata from listBackups()
+ * @param {Function} onRestore - Called with the chosen backup once confirmed
+ * @param {string} currentLanguage - Current language ('de' | 'en')
+ */
+export function openBackupRestoreModal(backups, onRestore, currentLanguage = 'en') {
+  const modal = document.getElementById('backupRestoreModal');
+  if (!modal) return;
+
+  const lang = translations[currentLanguage] || translations.en;
+  const list = document.getElementById('backupRestoreList');
+  const empty = document.getElementById('backupRestoreEmpty');
+
+  if (list) {
+    list.textContent = '';
+
+    backups.forEach((backup) => {
+      const item = document.createElement('li');
+      item.className = 'backup-restore-item';
+
+      const info = document.createElement('div');
+      info.className = 'backup-restore-info';
+
+      const dateLine = document.createElement('span');
+      dateLine.className = 'backup-restore-date';
+      dateLine.textContent = backup.date.toLocaleString(
+        currentLanguage === 'de' ? 'de-DE' : 'en-US'
+      );
+      info.appendChild(dateLine);
+
+      if (typeof backup.taskCount === 'number') {
+        const countLine = document.createElement('span');
+        countLine.className = 'backup-restore-count';
+        countLine.textContent = `${backup.taskCount} ${lang.backupRestore.tasks}`;
+        info.appendChild(countLine);
+      }
+
+      item.appendChild(info);
+
+      const restoreBtn = document.createElement('button');
+      restoreBtn.className = 'btn';
+      restoreBtn.textContent = lang.backupRestore.restoreAction;
+      restoreBtn.addEventListener('click', () => {
+        const confirmed = window.confirm(lang.backupRestore.confirm);
+        if (!confirmed) return;
+        closeBackupRestoreModal();
+        onRestore(backup);
+      });
+      item.appendChild(restoreBtn);
+
+      list.appendChild(item);
+    });
+  }
+
+  if (empty) {
+    empty.style.display = backups.length === 0 ? '' : 'none';
+  }
+
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+
+  const cancelBtn = document.getElementById('backupRestoreCancelBtn');
+  if (cancelBtn) {
+    // Remove old listener by cloning, matching the pattern used by the other modals
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    newCancelBtn.addEventListener('click', () => closeBackupRestoreModal());
+  }
+}
+
+/**
+ * Close the backup restore modal
+ */
+export function closeBackupRestoreModal() {
+  const modal = document.getElementById('backupRestoreModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
   }
 }
 

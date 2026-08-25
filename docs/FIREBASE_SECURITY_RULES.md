@@ -1,5 +1,24 @@
 # Firebase Security Rules Documentation
 
+> ## ⚠️ Teilweise überholt (Stand 2026-08-25, Issue #396)
+>
+> **Die maßgebliche Quelle für die Firestore-Regeln ist jetzt [`../firestore.rules`](../firestore.rules)**
+> — versioniert und über `npm run rules:deploy` deploybar. Konzept, Datenmodell und Audit stehen in
+> [`DATENSICHERUNG.md`](./DATENSICHERUNG.md).
+>
+> Konkret ist in diesem Dokument **falsch**:
+>
+> - **`segment`** wird hier als String-Enum (`'important-urgent'`, …) beschrieben. Real sind es
+>   **Integers 1–5**.
+> - **Textlimit 500 Zeichen.** Real sind es **140** (`maxlength` im Input und in den Rules).
+> - **`createdAt is timestamp`.** Die App schreibt normalerweise eine **Zahl** (`Date.now()`).
+> - Die aufgeführten optionalen Felder sind unvollständig — es fehlen `notes`, `dueDate`,
+>   `category`, `recurring`, `completedAt`.
+> - **Der gesamte Cloud-Storage-Abschnitt ist gegenstandslos.** Storage erfordert seit Oktober 2024
+>   den Blaze-Tarif; das Projekt läuft auf Spark. Backups liegen seit Issue #396 in Firestore.
+>
+> Die Abschnitte zu Deploy-Verfahren, Rules Playground und Audit-Checkliste sind weiterhin gültig.
+
 ## Overview
 
 This document describes the Firebase Security Rules for Firestore and Storage used across all three environments (Production, Staging, Testing).

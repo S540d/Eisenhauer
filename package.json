@@ -16,6 +16,8 @@
     "preview": "vite preview",
     "deploy": "npm run build && git add -A && git commit -m 'build: Vite production bundle' || true && git checkout gh-pages && git merge main --no-edit && git push origin gh-pages && git checkout main",
     "deploy:force": "npm run build && git add -A && git commit -m 'build: force Vite rebuild' || true && git checkout gh-pages && git reset --hard main && git push origin gh-pages --force && git checkout main",
+    "rules:deploy": "firebase deploy --only firestore:rules --project eisenhauer-matrix",
+    "rules:deploy:testing": "firebase deploy --only firestore:rules --project eisenhauer-testing",
     "cache:update": "node update-cache-version.js",
     "version:update": "node update-version.js",
     "format": "prettier --write .",

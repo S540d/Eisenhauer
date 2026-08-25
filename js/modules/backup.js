@@ -1,13 +1,92 @@
 /**
  * Backup Module
- * Handles automatic cloud backups to Firebase Storage
+ * Handles cloud backups of the task matrix.
+ *
+ * Storage backend: **Firestore**, subcollection `users/{userId}/backups/{backupId}`.
+ *
+ * Historical note (Issue #359 / #396): backups used to be JSON blobs in Firebase
+ * Cloud Storage. Since October 2024 Firebase requires the paid Blaze plan for
+ * Cloud Storage, and this project runs on the free Spark plan, so every upload
+ * failed with a permission error — the feature was structurally broken, not
+ * merely buggy. Firestore stays free on Spark and the app already uses it for
+ * tasks, so backups now live there too.
  */
 
-import { ref, uploadBytes, listAll, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  writeBatch,
+  serverTimestamp,
+} from 'firebase/firestore';
 import { showSuccess, showError } from './notifications.js';
 
 const MAX_BACKUPS = 4; // Keep last 4 backups
 const BACKUP_PREFIX = 'backup-';
+
+/**
+ * Firestore rejects any document of 1 MiB or more. We budget well below that:
+ * the serialized JSON is only an estimate of the stored size (Firestore adds
+ * field-name and index overhead), so a backup that measures close to the limit
+ * would still be rejected server-side with an opaque error. Refusing early lets
+ * us show the user something actionable instead.
+ */
+const MAX_BACKUP_BYTES = 800 * 1024;
+
+/**
+ * Coerce a timestamp field to epoch milliseconds.
+ *
+ * Task timestamps are normally plain numbers (`Date.now()`, see createTaskObject
+ * in tasks.js, and the numeric comparison in getVisibleTasks). A task written
+ * without an explicit createdAt however gets Firestore's serverTimestamp(), and
+ * reading that back yields a Timestamp object which JSON.stringify would flatten
+ * into `{seconds, nanoseconds}` — restoring that shape would silently break every
+ * numeric date comparison. Normalising on the way into the backup keeps restored
+ * tasks in the one format the app logic actually expects.
+ *
+ * @param {*} value - Raw timestamp value
+ * @returns {number|null} Epoch milliseconds, or null if not interpretable
+ */
+function toEpochMillis(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'number') return value;
+
+  // Firestore Timestamp instance
+  if (typeof value.toMillis === 'function') return value.toMillis();
+
+  // Plain object from a serialized Firestore Timestamp
+  if (typeof value.seconds === 'number') {
+    return value.seconds * 1000 + Math.floor((value.nanoseconds || 0) / 1e6);
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Date.parse(value);
+    return isNaN(parsed) ? null : parsed;
+  }
+
+  return null;
+}
+
+/**
+ * Normalise a single task for storage in a backup.
+ * @param {object} task - Task object
+ * @returns {object} Task with normalised timestamps
+ */
+function normalizeTask(task) {
+  if (!task || typeof task !== 'object') return task;
+
+  const normalized = { ...task };
+
+  const createdAt = toEpochMillis(task.createdAt);
+  if (createdAt !== null) normalized.createdAt = createdAt;
+
+  const completedAt = toEpochMillis(task.completedAt);
+  if (completedAt !== null) normalized.completedAt = completedAt;
+
+  return normalized;
+}
 
 /**
  * Create backup data object
@@ -15,14 +94,16 @@ const BACKUP_PREFIX = 'backup-';
  * @returns {object} Backup data
  */
 function createBackupData(tasks) {
-  // Ensure tasks is a valid object before attempting to deep clone
-  const safeTasks =
-    tasks && typeof tasks === 'object'
-      ? JSON.parse(JSON.stringify(tasks)) // Deep clone
-      : {};
+  const safeTasks = {};
+
+  if (tasks && typeof tasks === 'object') {
+    Object.entries(tasks).forEach(([segment, segmentTasks]) => {
+      safeTasks[segment] = Array.isArray(segmentTasks) ? segmentTasks.map(normalizeTask) : [];
+    });
+  }
 
   return {
-    version: '1.0',
+    version: '2.0', // 2.0 = Firestore-backed backup (1.0 was the Storage blob format)
     timestamp: Date.now(),
     createdAt: new Date().toISOString(),
     tasks: safeTasks,
@@ -30,23 +111,36 @@ function createBackupData(tasks) {
 }
 
 /**
- * Upload backup to Firebase Storage
- * @param {object} storage - Firebase Storage instance
+ * Count the tasks contained in a backup payload, for display in the restore UI.
+ * @param {object} tasks - Tasks object keyed by segment
+ * @returns {number} Total task count
+ */
+function countTasks(tasks) {
+  if (!tasks || typeof tasks !== 'object') return 0;
+  return Object.values(tasks).reduce(
+    (total, segment) => total + (Array.isArray(segment) ? segment.length : 0),
+    0
+  );
+}
+
+/**
+ * Upload a backup to Firestore
+ * @param {object} db - Firestore database instance
  * @param {string} userId - User ID
  * @param {object} tasks - Tasks object
  * @param {string} currentLanguage - Current language for notifications
  * @param {boolean} showNotification - Whether to show success/error notifications (default: true)
- * @returns {Promise<string>} Backup filename
+ * @returns {Promise<string>} Backup document ID
  */
 export async function uploadBackup(
-  storage,
+  db,
   userId,
   tasks,
   currentLanguage = 'en',
   showNotification = true
 ) {
-  if (!storage || !userId) {
-    throw new Error('Storage and userId are required');
+  if (!db || !userId) {
+    throw new Error('Database and userId are required');
   }
 
   if (!tasks) {
@@ -54,30 +148,44 @@ export async function uploadBackup(
   }
 
   try {
-    // Create backup data
     const backupData = createBackupData(tasks);
-    const timestamp = Date.now();
-    const filename = `${BACKUP_PREFIX}${timestamp}.json`;
-    const filepath = `users/${userId}/backups/${filename}`;
+    const backupId = `${BACKUP_PREFIX}${backupData.timestamp}`;
 
-    // Create blob
-    const blob = new Blob([JSON.stringify(backupData, null, 2)], {
-      type: 'application/json',
+    // Serialize the task tree into a single string field. Storing it opaquely
+    // (rather than as nested Firestore maps/arrays) keeps the document shape
+    // flat and stable, so security rules can validate it without needing to
+    // know the task schema, and a future task-model change cannot silently
+    // invalidate old backups.
+    const payload = JSON.stringify(backupData.tasks);
+    const byteSize = new Blob([payload]).size;
+
+    if (byteSize > MAX_BACKUP_BYTES) {
+      const message =
+        currentLanguage === 'de'
+          ? 'Backup zu gross für die Cloud. Bitte nutze den lokalen Export.'
+          : 'Backup too large for the cloud. Please use the local export instead.';
+      throw new Error(message);
+    }
+
+    const backupRef = doc(collection(db, 'users', userId, 'backups'), backupId);
+    await setDoc(backupRef, {
+      version: backupData.version,
+      timestamp: backupData.timestamp,
+      createdAt: serverTimestamp(),
+      taskCount: countTasks(backupData.tasks),
+      byteSize,
+      payload,
     });
 
-    // Upload to Firebase Storage
-    const storageRef = ref(storage, filepath);
-    await uploadBytes(storageRef, blob);
-
     // Clean up old backups
-    await cleanupOldBackups(storage, userId);
+    await cleanupOldBackups(db, userId);
 
     if (showNotification) {
       const message = currentLanguage === 'de' ? 'Backup erstellt' : 'Backup created';
       showSuccess(message);
     }
 
-    return filename;
+    return backupId;
   } catch (error) {
     console.error('Backup upload failed:', error);
     if (showNotification) {
@@ -89,39 +197,38 @@ export async function uploadBackup(
 }
 
 /**
- * List all backups for a user
- * @param {object} storage - Firebase Storage instance
+ * List all backups for a user, newest first.
+ * @param {object} db - Firestore database instance
  * @param {string} userId - User ID
- * @returns {Promise<Array>} List of backup metadata
+ * @returns {Promise<Array>} List of backup metadata (without the payload)
  */
-export async function listBackups(storage, userId) {
-  if (!storage || !userId) {
+export async function listBackups(db, userId) {
+  if (!db || !userId) {
     return [];
   }
 
   try {
-    const backupsRef = ref(storage, `users/${userId}/backups`);
-    const result = await listAll(backupsRef);
+    const backupsRef = collection(db, 'users', userId, 'backups');
+    const snapshot = await getDocs(backupsRef);
 
-    const backups = await Promise.all(
-      result.items.map(async (itemRef) => {
-        const url = await getDownloadURL(itemRef);
-        const filename = itemRef.name;
+    const backups = [];
+    snapshot.forEach((docSnap) => {
+      const data = docSnap.data() || {};
 
-        // Extract timestamp from filename
-        const timestampMatch = filename.match(/backup-(\d+)\.json/);
-        const timestamp = timestampMatch ? parseInt(timestampMatch[1]) : 0;
+      // Fall back to the document ID when the timestamp field is missing, so a
+      // partially written document still sorts and renders sensibly.
+      const idMatch = String(docSnap.id).match(/(\d+)/);
+      const timestamp =
+        typeof data.timestamp === 'number' ? data.timestamp : idMatch ? parseInt(idMatch[1]) : 0;
 
-        return {
-          filename,
-          path: itemRef.fullPath,
-          url,
-          timestamp,
-          date: new Date(timestamp),
-          size: 0, // Size not available without downloading
-        };
-      })
-    );
+      backups.push({
+        id: docSnap.id,
+        timestamp,
+        date: new Date(timestamp),
+        taskCount: typeof data.taskCount === 'number' ? data.taskCount : null,
+        byteSize: typeof data.byteSize === 'number' ? data.byteSize : null,
+      });
+    });
 
     // Sort by timestamp descending (newest first)
     return backups.sort((a, b) => b.timestamp - a.timestamp);
@@ -132,20 +239,44 @@ export async function listBackups(storage, userId) {
 }
 
 /**
- * Download and parse backup
- * @param {string} url - Backup URL
- * @returns {Promise<object>} Backup data
+ * Load a single backup's task data from Firestore.
+ * @param {object} db - Firestore database instance
+ * @param {string} userId - User ID
+ * @param {string} backupId - Backup document ID
+ * @returns {Promise<object>} Backup data in the shape { version, timestamp, tasks }
  */
-export async function downloadBackup(url) {
+export async function downloadBackup(db, userId, backupId) {
+  if (!db || !userId || !backupId) {
+    throw new Error('Database, userId and backupId are required');
+  }
+
   try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    const backupRef = doc(collection(db, 'users', userId, 'backups'), backupId);
+    const snapshot = await getDoc(backupRef);
+
+    if (!snapshot.exists()) {
+      throw new Error('Backup not found');
     }
-    const data = await response.json();
-    return data;
+
+    const data = snapshot.data() || {};
+
+    let tasks;
+    if (typeof data.payload === 'string') {
+      tasks = JSON.parse(data.payload);
+    } else if (data.tasks && typeof data.tasks === 'object') {
+      // Tolerate a backup written as nested maps rather than a JSON string.
+      tasks = data.tasks;
+    } else {
+      throw new Error('Backup is empty or malformed');
+    }
+
+    return {
+      version: data.version || '2.0',
+      timestamp: data.timestamp || 0,
+      tasks,
+    };
   } catch (error) {
-    console.error('Failed to download backup:', error);
+    console.error('Failed to load backup:', error);
     throw error;
   }
 }
@@ -189,21 +320,22 @@ export async function restoreBackup(
 
 /**
  * Clean up old backups (keep only MAX_BACKUPS)
- * @param {object} storage - Firebase Storage instance
+ * @param {object} db - Firestore database instance
  * @param {string} userId - User ID
  */
-async function cleanupOldBackups(storage, userId) {
+async function cleanupOldBackups(db, userId) {
   try {
-    const backups = await listBackups(storage, userId);
+    const backups = await listBackups(db, userId);
 
     if (backups.length > MAX_BACKUPS) {
       // Delete oldest backups
       const toDelete = backups.slice(MAX_BACKUPS);
 
-      for (const backup of toDelete) {
-        const backupRef = ref(storage, backup.path);
-        await deleteObject(backupRef);
-      }
+      const batch = writeBatch(db);
+      toDelete.forEach((backup) => {
+        batch.delete(doc(collection(db, 'users', userId, 'backups'), backup.id));
+      });
+      await batch.commit();
     }
   } catch (error) {
     console.error('Failed to cleanup old backups:', error);

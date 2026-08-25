@@ -2575,6 +2575,54 @@ body.dark-mode .settings-warning {
   flex: 1;
 }
 
+/* Backup restore modal (Issue #396) */
+.backup-restore-warning {
+  margin-bottom: 12px;
+}
+
+.backup-restore-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.backup-restore-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--grid-color);
+  border-radius: 8px;
+  background: var(--card-bg);
+}
+
+.backup-restore-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.backup-restore-date {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.backup-restore-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.backup-restore-item .btn {
+  flex-shrink: 0;
+}
+
 /* Undo Toast Notification */
 .undo-toast {
   position: fixed;
