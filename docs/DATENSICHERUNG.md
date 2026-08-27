@@ -148,7 +148,7 @@ statt in eine Warteschlange zu wandern – das Sicherungs-Backup aus Schritt 3 b
 
 | # | Befund | Schwere | Empfehlung |
 |---|---|---|---|
-| B1 | **Deployte Regeln unbekannt.** Was in der Firebase Console aktiv ist, lässt sich aus dem Repo nicht verifizieren. Die neuen Regeln sind ein *Vorschlag*, bis sie deployt sind. | Hoch | Vor dem Deploy in der Rules Playground testen, siehe Abschnitt 5 |
+| B1 | **Deployter Regelstand geklärt** (2026-08-27, #404) – und zwar anders als vermutet: live läuft kein *zu strenger*, sondern ein deutlich *lockerer* Stand ohne jede Feldvalidierung. Der Deploy ist deshalb eine Verschärfung, keine Lockerung. Details in Abschnitt 5.2. | Hoch → offen bis zum Deploy | Regeln gegen echte Daten prüfen, nicht nur in der Playground; Ausgangsstand liegt in [`docs/rules-backup/firestore.rules.pre-404`](rules-backup/firestore.rules.pre-404) |
 | B2 | **Gastmodus ohne Cloud-Absicherung.** Browserdaten-Löschung vernichtet alles unwiderruflich. | Mittel | Erinnerung an regelmässigen Export; bewusst akzeptiert |
 | B3 | **Keine Verschlüsselung der Inhalte.** Aufgabentexte und Notizen liegen im Klartext in Firestore. | Mittel | Clientseitige Verschlüsselung wäre möglich, macht aber serverseitige Validierung unmöglich. Bewusst offen. |
 | B4 | **Kein Firebase App Check.** Keine Geräte-Attestierung; ein gültiges Auth-Token genügt. | Niedrig | Optional, für zwei Nutzer unverhältnismässig |
@@ -230,6 +230,47 @@ zwei Codepfade hätten also nur den nicht funktionierenden Pfad konserviert.
 
 ❌ Backup mit zu grossem Payload (>900000 Zeichen)                  → DENY
 ```
+
+---
+
+### 5.2 Ausgangsstand vor dem Rollout (#404)
+
+Am 2026-08-27 wurde der tatsächlich deployte Regelstand aus der Firebase Console gesichert:
+[`docs/rules-backup/firestore.rules.pre-404`](rules-backup/firestore.rules.pre-404). Er war in
+**beiden** Projekten wortgleich (`eisenhauer-matrix`, Stand Oktober 2025; `eisenhauer-testing`,
+Stand Januar 2026) und lautet im Kern:
+
+```
+match /users/{userId} {
+  allow read, write: if request.auth != null && request.auth.uid == userId;
+  match /tasks/{taskId} {
+    allow read, write: if request.auth != null && request.auth.uid == userId;
+  }
+}
+```
+
+Daraus folgen zwei Dinge, die den Rollout anders einordnen, als Abschnitt 5 zunächst nahelegt:
+
+1. **Backups sind bestätigt blockiert.** Es gibt keinen `match`-Block für die `backups`-Subcollection.
+   Firestore-Regeln vererben sich **nicht** auf Subcollections, der Pfad fällt also auf
+   `match /{document=**} { allow read, write: if false; }` durch – jeder Backup-Write wird abgelehnt.
+   Das ist die Ursache, unabhängig vom Spark/Blaze-Thema aus #254/#359.
+
+2. **Der Deploy ist eine Verschärfung.** Das Obermengen-Argument weiter oben gilt gegenüber dem
+   *alten Repo-Stand*, nicht gegenüber dem *deployten* Stand. Live findet gar keine Feldvalidierung
+   statt; `firestore.rules` führt gegenüber diesem Stand fünf neue Verbote ein:
+
+   | Neue Einschränkung | Bewertung |
+   |---|---|
+   | Feld-Whitelist (9 Felder) | Unkritisch: die App hat laut History von `js/modules/storage.js` nie andere Felder geschrieben (`taskId` ist reine Offline-Queue-Metadatenspalte und landet nicht in Firestore). |
+   | `allow write: if false` auf `/users/{userId}` | Unkritisch: kein Codepfad schreibt das User-Dokument; der Backup-Status stammt aus `listBackups()`. |
+   | `text.size() <= 140` | Client erzwingt das (`index.html`, `validateTask` in `tasks.js`) – für Altdaten aus früheren Versionen aber nicht garantiert. |
+   | `segment is int` (1–5), `checked is bool` | Aus dem Code plausibel, an echten Daten nicht aus dem Repo verifizierbar. |
+   | `createdAt` beim Update unveränderlich | Fallstrick: `updateTaskInFirestore()` sendet `task.createdAt \|\| serverTimestamp()`. Steht in Firestore ein `Timestamp` (aus genau diesem Fallback) und der Client schickt eine Zahl, schlägt der Gleichheitsvergleich fehl und das Update wird abgelehnt. |
+
+   Die letzten drei Zeilen lassen sich **nur an echten Daten** klären (Console → Firestore Database →
+   Daten): Feldnamen, Typ von `createdAt` und Typ von `segment` an einigen Task-Dokumenten prüfen,
+   bevor die Regeln nach Produktion gehen.
 
 ---
 
