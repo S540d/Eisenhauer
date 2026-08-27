@@ -307,7 +307,19 @@ Der in Abschnitt 5 beschriebene Ablauf „erst Testing, dort mit alter und neuer
 dann Produktion" ist damit aktuell **nicht durchführbar**. Für den Rollout aus #404 wurde stattdessen
 auf die Vorabprüfungen gesetzt (vollständiger Datencheck, siehe 5.2, plus die Playground-Fälle oben)
 und direkt gegen Produktion verifiziert. Bei einem einzelnen Nutzer mit vorliegendem lokalem Export
-und 30-Sekunden-Rollback vertretbar; als Dauerzustand ist es das nicht.
+und 30-Sekunden-Rollback vertretbar; als Dauerzustand ist es das nicht. Erfasst als **#406**.
+
+**Deploy nach Produktion (2026-08-27).** `npm run rules:deploy` ausgeführt, `eisenhauer-matrix`
+führt die Regeln aus `firestore.rules` inklusive `match /backups/{backupId}`. Anschliessend gegen
+die laufende Produktions-App verifiziert – Aufgaben anlegen, mit Notiz/Fälligkeit/Kategorie ändern,
+eine bestehende Aufgabe bearbeiten, abhaken und wieder abwählen: alles ohne Berechtigungsfehler.
+
+Das ist zugleich der Rückwärtskompatibilitäts-Nachweis: Produktion liefert zu diesem Zeitpunkt noch
+den App-Stand von `main` aus, also einen Client, der **älter** ist als die Regeln. Genau der Fall,
+den Abschnitt 5 absichern will.
+
+Backup und Restore sind in diesem Schritt noch **nicht** prüfbar – die Restore-UI aus #403 wird erst
+mit dem Release `testing` → `main` ausgeliefert. Verifikation dafür siehe #404, Phase 3.
 
 ---
 
