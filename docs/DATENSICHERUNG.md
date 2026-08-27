@@ -273,6 +273,12 @@ Daraus folgen zwei Dinge, die den Rollout anders einordnen, als Abschnitt 5 zun�
    (Einstellungen → Daten → Export) enthält also jedes gespeicherte Feld. Zu prüfen sind darin
    unerlaubte Feldnamen, fehlende `createdAt`, Texte über 140 Zeichen und nicht-boolesche `checked`.
 
+**Ergebnis der Prüfung (2026-08-27, Produktion):** ein JSON-Export mit **16 Aufgaben** wurde gegen
+alle fünf Bedingungen geprüft – keine Verstösse. Kein unerlaubtes Feld, kein fehlendes oder
+falsch typisiertes `createdAt`, kein Text über 140 Zeichen, kein ungültiges `segment`, kein
+nicht-boolesches `checked`. Der Deploy von `firestore.rules` ist am realen Bestand damit
+verträglich; die Verschärfung trifft keine vorhandene Aufgabe.
+
 ---
 
 ## 6. Wiederherstellung im Ernstfall (Runbook)
