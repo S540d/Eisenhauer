@@ -115,7 +115,10 @@ Cloud-Backup liegt seit Issue #396 in **Firestore** (`users/{userId}/backups/{ba
 - **`hasOnlyAllowedFields()` ist bewusst eine Obermenge** aller je geschriebenen Felder: Die PWA wird per Service Worker gecacht, ältere Client-Versionen müssen nach einem Rules-Deploy weiterlaufen.
 - **Regel für neue optionale Task-Felder:** erst in `hasOnlyAllowedFields()` deployen, **dann** den Client ausliefern, der das Feld schreibt. Sonst lehnen die Rules die Writes ab.
 - `docs/FIREBASE_SECURITY_RULES.md` ist in Teilen überholt (dokumentiert `segment` als String-Enum und 500 Zeichen Textlimit) und oben entsprechend markiert.
-- **Achtung:** Was tatsächlich in der Firebase Console deployt ist, lässt sich aus dem Repo nicht verifizieren. Die Regeln sind ein Vorschlag, bis sie deployt sind – Testfälle für die Rules Playground stehen in `docs/DATENSICHERUNG.md`, Abschnitt 5.1.
+- **Seit 2026-08-27 sind die Regeln deployt** (Rollout #404), in `eisenhauer-matrix` **und** `eisenhauer-testing`. Der vorherige Stand liegt als Rollback-Pfad unter `docs/rules-backup/firestore.rules.pre-404`.
+- **Der vorherige deployte Stand war nicht zu streng, sondern zu locker:** `allow read, write: if request.auth.uid == userId` ohne jede Feldvalidierung, und **ohne** `match`-Block für `backups`. Da Firestore-Regeln sich nicht auf Subcollections vererben, fiel jeder Backup-Write auf das abschliessende Deny durch – das war die Ursache des kaputten Cloud-Backups. Der Deploy war damit eine **Verschärfung**, nicht die im Dokument beschriebene harmlose Obermengen-Erweiterung.
+- **Vor jeder künftigen Regelverschärfung** dieselbe Prüfung fahren wie in #404: JSON-Export der echten Daten gegen die neuen Bedingungen laufen lassen (deckt alle Aufgaben ab, nicht nur eine Stichprobe – `loadUserTasks()` liest per `docSnap.data()` das rohe Dokument), dann die Playground-Fälle aus `docs/DATENSICHERUNG.md`, Abschnitt 5.1.
+- **`npm run rules:deploy:testing` ist derzeit wirkungslos** – die Testing-App zeigt auf das Produktionsprojekt, kein Client spricht mit `eisenhauer-testing` (#406).
 
 ### Export CSV & Markdown (Issue #179, PR #332)
 
@@ -221,13 +224,16 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-07-29, nach Konsolidierung)
+## Offene Issues (Backlog-Stand 2026-08-27)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert (erledigte geschlossen, Duplikate zusammengeführt, Alt-Issues aus 2025 abgeräumt).
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen.
 
 | # | Titel | Prio |
 |---|-------|------|
-| #359 | **Cloud-Backup: Blaze-Tarif nötig** – Architekturentscheidung offen (Firestore-Migration empfohlen). Bündelt auch die allgemeine Spark-/Blaze-Tarif-Frage (vormals #254) | Medium |
+| #404 | **Rollout Datensicherung** – Phase 1 (Rules) und 2 (Release) durch; offen sind Restore, Cross-Device-Anzeige und Rotation (Phase 3), danach #396 schliessen und `docs/last-backup.txt` nachtragen | High |
+| #406 | **Testing-Umgebung nicht isoliert** – `/Eisenhauer/testing/` zeigt auf das Produktionsprojekt; `rules:deploy:testing` deployt ins Leere, Tests auf der Testing-URL laufen auf Live-Daten | High |
+| #409 | **„Letztes Backup" zeigt fehlgeschlagene Versuche** – `trackBackupFailure()` schreibt `lastAutoBackup` auch im Fehlerfall, die Anzeige liest denselben Schlüssel. Falsche Sicherheitsaussage | High |
+| #408 | Einstellungen → Daten: Buttons eindeutig beschriften (u. a. „Import .ics (BETA)"; nur JSON ist rückimportierbar) | Medium |
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
 | #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
 | #385 | Robustheits-Lücken aus dem Review von PR #382: Bulk-Save ohne Offline-Queue/Retry, Notizen ohne Gast→Login-Migration + fehlend im Backup, kein Click-Suppress nach Long-Press | Medium |
@@ -257,6 +263,8 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **#396 / #359** – Cloud-Backup auf Firestore migriert (PR #403), per Release #407 auf `main`; Security Rules am 2026-08-27 nach Produktion deployt und verifiziert (#404). #359 geschlossen: Architekturentscheidung ist Option 1 (Firestore), kein Blaze-Upgrade. #396 bleibt offen bis Phase 3 aus #404 durch ist
 
 - **PR #383** – `updateTaskInFirestore()` löscht geleerte optionale Felder jetzt explizit per `deleteField()` (`completedAt`, `recurring`, `dueDate`, `category`; `notes` war seit PR #373 schon korrekt). Vorher blieb ein im Edit-Dialog geleertes Feld wegen `merge: true` in Firestore stehen und tauchte nach dem Reload wieder auf; `completedAt` verfälschte zusätzlich die Metriken. Nur der Firebase-Modus war betroffen. Gefunden beim Review von PR #382, siehe Abschnitt „Optionale Task-Felder löschen" oben
 - **PR #378** – Bestehende Aufgaben lassen sich per Klick auf den Task-Text im wiederverwendeten Quick-Add-Modal bearbeiten (Prefill + `updateTask()` statt neuer Aufgabe); siehe Abschnitt „Bestehende Aufgaben bearbeiten" oben
