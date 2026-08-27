@@ -230,7 +230,6 @@ Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026
 
 | # | Titel | Prio |
 |---|-------|------|
-| #404 | **Rollout Datensicherung** – Phase 1 (Rules) und 2 (Release) durch; offen sind Restore, Cross-Device-Anzeige und Rotation (Phase 3), danach #396 schliessen und `docs/last-backup.txt` nachtragen | High |
 | #406 | **Testing-Umgebung nicht isoliert** – `/Eisenhauer/testing/` zeigt auf das Produktionsprojekt; `rules:deploy:testing` deployt ins Leere, Tests auf der Testing-URL laufen auf Live-Daten | High |
 | #409 | **„Letztes Backup" zeigt fehlgeschlagene Versuche** – `trackBackupFailure()` schreibt `lastAutoBackup` auch im Fehlerfall, die Anzeige liest denselben Schlüssel. Falsche Sicherheitsaussage | High |
 | #408 | Einstellungen → Daten: Buttons eindeutig beschriften (u. a. „Import .ics (BETA)"; nur JSON ist rückimportierbar) | Medium |
@@ -264,7 +263,7 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 
 ### Kürzlich erledigt
 
-- **#396 / #359** – Cloud-Backup auf Firestore migriert (PR #403), per Release #407 auf `main`; Security Rules am 2026-08-27 nach Produktion deployt und verifiziert (#404). #359 geschlossen: Architekturentscheidung ist Option 1 (Firestore), kein Blaze-Upgrade. #396 bleibt offen bis Phase 3 aus #404 durch ist
+- **#396 / #359 / #404** – Cloud-Backup auf Firestore migriert (PR #403), per Release #407 auf `main`, Security Rules am 2026-08-27 nach Produktion deployt. Rollout #404 vollständig durch: Backup, Restore, Cross-Device-Anzeige und Rotation in Produktion verifiziert. Architekturentscheidung ist Option 1 (Firestore), kein Blaze-Upgrade. Aus dem Rollout entstanden #406, #408 und #409
 
 - **PR #383** – `updateTaskInFirestore()` löscht geleerte optionale Felder jetzt explizit per `deleteField()` (`completedAt`, `recurring`, `dueDate`, `category`; `notes` war seit PR #373 schon korrekt). Vorher blieb ein im Edit-Dialog geleertes Feld wegen `merge: true` in Firestore stehen und tauchte nach dem Reload wieder auf; `completedAt` verfälschte zusätzlich die Metriken. Nur der Firebase-Modus war betroffen. Gefunden beim Review von PR #382, siehe Abschnitt „Optionale Task-Felder löschen" oben
 - **PR #378** – Bestehende Aufgaben lassen sich per Klick auf den Task-Text im wiederverwendeten Quick-Add-Modal bearbeiten (Prefill + `updateTask()` statt neuer Aufgabe); siehe Abschnitt „Bestehende Aufgaben bearbeiten" oben

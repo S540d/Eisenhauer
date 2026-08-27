@@ -318,8 +318,15 @@ Das ist zugleich der Rückwärtskompatibilitäts-Nachweis: Produktion liefert zu
 den App-Stand von `main` aus, also einen Client, der **älter** ist als die Regeln. Genau der Fall,
 den Abschnitt 5 absichern will.
 
-Backup und Restore sind in diesem Schritt noch **nicht** prüfbar – die Restore-UI aus #403 wird erst
-mit dem Release `testing` → `main` ausgeliefert. Verifikation dafür siehe #404, Phase 3.
+**Phase 3 – in Produktion verifiziert (2026-08-27).** Nach dem Release #407 und dem Deploy manuell
+geprüft: Backup erstellen, Wiederherstellen, geräteübergreifende Anzeige von „Letztes Backup" und die
+Rotation auf `MAX_BACKUPS = 4`. Damit ist die Kette aus Abschnitt 2 und 3 durchgehend belegt, nicht
+mehr nur beschrieben.
+
+Eine Ungenauigkeit blieb dabei zurück und ist als **#409** erfasst: `trackBackupFailure()` schreibt
+`lastAutoBackup` auch im Fehlerfall, und die Anzeige liest denselben Schlüssel – ein gescheiterter
+Versuch sieht damit aus wie ein erfolgreiches Backup. Das ist keine Fehlfunktion der Sicherung, aber
+eine falsche Aussage über sie.
 
 ---
 
