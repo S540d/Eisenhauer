@@ -265,12 +265,13 @@ Daraus folgen zwei Dinge, die den Rollout anders einordnen, als Abschnitt 5 zun�
    | Feld-Whitelist (9 Felder) | Unkritisch: die App hat laut History von `js/modules/storage.js` nie andere Felder geschrieben (`taskId` ist reine Offline-Queue-Metadatenspalte und landet nicht in Firestore). |
    | `allow write: if false` auf `/users/{userId}` | Unkritisch: kein Codepfad schreibt das User-Dokument; der Backup-Status stammt aus `listBackups()`. |
    | `text.size() <= 140` | Client erzwingt das (`index.html`, `validateTask` in `tasks.js`) – für Altdaten aus früheren Versionen aber nicht garantiert. |
-   | `segment is int` (1–5), `checked is bool` | Aus dem Code plausibel, an echten Daten nicht aus dem Repo verifizierbar. |
-   | `createdAt` beim Update unveränderlich | Fallstrick: `updateTaskInFirestore()` sendet `task.createdAt \|\| serverTimestamp()`. Steht in Firestore ein `Timestamp` (aus genau diesem Fallback) und der Client schickt eine Zahl, schlägt der Gleichheitsvergleich fehl und das Update wird abgelehnt. |
+   | `segment is int` (1–5), `checked is bool` | `segment` unkritisch: `loadUserTasks()` normalisiert per `Number(task.segment)`, alle Schreibpfade senden also einen int, selbst wenn in Firestore ein String steht. `checked` an echten Daten zu prüfen. |
+   | `createdAt` beim Update unveränderlich | Fallstrick, aber ein engerer als zunächst angenommen: ein gespeicherter `Timestamp` ist unkritisch (der Client liest ihn roh aus und schickt denselben Wert zurück, `validCreatedAt` erlaubt beide Typen). Gefährlich ist ein Dokument **ohne** `createdAt`: `updateTaskInFirestore()` fällt dann auf `serverTimestamp()` zurück, der Vergleich mit `resource.data.createdAt` schlägt fehl und jedes Update wird abgelehnt. |
 
-   Die letzten drei Zeilen lassen sich **nur an echten Daten** klären (Console → Firestore Database →
-   Daten): Feldnamen, Typ von `createdAt` und Typ von `segment` an einigen Task-Dokumenten prüfen,
-   bevor die Regeln nach Produktion gehen.
+   Der Rest lässt sich **nur an echten Daten** klären, und zwar vollständig statt stichprobenartig:
+   `loadUserTasks()` übernimmt mit `docSnap.data()` das rohe Firestore-Dokument, ein JSON-Export
+   (Einstellungen → Daten → Export) enthält also jedes gespeicherte Feld. Zu prüfen sind darin
+   unerlaubte Feldnamen, fehlende `createdAt`, Texte über 140 Zeichen und nicht-boolesche `checked`.
 
 ---
 
