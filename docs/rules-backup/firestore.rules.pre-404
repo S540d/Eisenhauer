@@ -1,0 +1,45 @@
+// ROLLBACK-STAND der Firestore Security Rules VOR dem Rollout aus Issue #404.
+//
+// Erfasst am 2026-08-27 aus der Firebase Console. Wortgleich identisch in
+// BEIDEN Projekten:
+//   - eisenhauer-matrix   (Produktion, Stand laut Console: Oktober 2025)
+//   - eisenhauer-testing  (Testing,    Stand laut Console: Januar 2026)
+//
+// Warum diese Datei existiert: der bisher deployte Stand war nirgends
+// versioniert (es gab bis #396 kein firebase.json und damit keinen Deploy-Weg
+// aus dem Repo). Ohne diese Kopie gaebe es nach dem Deploy von firestore.rules
+// keinen Rueckweg.
+//
+// Wiederherstellen im Notfall: Inhalt unterhalb dieses Kommentarblocks in der
+// Console unter Firestore Database -> Regeln einfuegen und veroeffentlichen.
+//
+// WICHTIG - dieser Stand ist bewusst NICHT die Zielkonfiguration:
+//   * Es gibt keinen match-Block fuer /users/{userId}/backups/{backupId}.
+//     Firestore-Regeln vererben sich nicht auf Subcollections, der Pfad faellt
+//     also auf "match /{document=**} { allow read, write: if false; }" durch.
+//     JEDER Backup-Write wird abgelehnt - das ist die bestaetigte Ursache
+//     dafuer, dass Cloud-Backup nicht funktioniert (unabhaengig vom
+//     Spark/Blaze-Thema aus #254/#359).
+//   * Es findet keinerlei Feldvalidierung statt. Ein Rollback auf diesen Stand
+//     ist deshalb nur als Notfallmassnahme gedacht, nicht als Dauerzustand.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Nur das eigene User-Dokument lesbar und schreibbar
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      // Tasks Subcollection
+      match /tasks/{taskId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Alles andere ist explizit verboten
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

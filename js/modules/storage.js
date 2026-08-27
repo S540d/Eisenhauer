@@ -369,6 +369,76 @@ export async function saveAllTasksToFirestore(tasksBySegment, userId, db) {
 }
 
 /**
+ * Replace the user's entire task collection in Firestore (Issue #396, backup restore).
+ *
+ * saveAllTasksToFirestore only writes the tasks it is given, so a task that no
+ * longer exists in the new set would survive as an orphaned document. Restoring
+ * a backup must reproduce that backup exactly, so this deletes every existing
+ * task document first and then writes the restored set.
+ *
+ * Deliberately NOT routed through the offline queue: a half-applied restore
+ * (deletes replayed later without their writes) would destroy data. It therefore
+ * fails loudly instead, and the caller keeps the pre-restore safety backup.
+ *
+ * @param {object} tasksBySegment - Tasks keyed by segment id
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ */
+export async function replaceAllTasksInFirestore(tasksBySegment, userId, db) {
+  if (!userId || !db) return;
+
+  const tasksRef = collection(db, 'users', userId, 'tasks');
+  const BATCH_LIMIT = 500;
+
+  // 1. Delete every existing task document
+  const existing = await getDocs(tasksRef);
+  const staleRefs = [];
+  existing.forEach((docSnap) => staleRefs.push(docSnap.ref));
+
+  for (let i = 0; i < staleRefs.length; i += BATCH_LIMIT) {
+    const batch = writeBatch(db);
+    staleRefs.slice(i, i + BATCH_LIMIT).forEach((ref) => batch.delete(ref));
+    await batch.commit();
+  }
+
+  // 2. Write the restored tasks
+  const allTasks = Object.values(tasksBySegment || {})
+    .flat()
+    .filter(
+      (task) =>
+        task &&
+        typeof task.text === 'string' &&
+        task.segment &&
+        task.id !== undefined &&
+        task.id !== null
+    );
+
+  for (let i = 0; i < allTasks.length; i += BATCH_LIMIT) {
+    const batch = writeBatch(db);
+
+    allTasks.slice(i, i + BATCH_LIMIT).forEach((task) => {
+      const docRef = doc(tasksRef, task.id.toString());
+      const taskData = {
+        text: task.text,
+        segment: task.segment,
+        checked: task.checked || false,
+        createdAt: task.createdAt || serverTimestamp(),
+      };
+
+      if (task.completedAt) taskData.completedAt = task.completedAt;
+      if (task.recurring) taskData.recurring = task.recurring;
+      if (task.dueDate) taskData.dueDate = task.dueDate;
+      if (task.category) taskData.category = task.category;
+      if (task.notes) taskData.notes = task.notes;
+
+      batch.set(docRef, taskData);
+    });
+
+    await batch.commit();
+  }
+}
+
+/**
  * Update a task in Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID

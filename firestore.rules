@@ -27,12 +27,37 @@ service cloud.firestore {
       return checked is bool;
     }
 
+    // createdAt is written as epoch milliseconds by the app (createTaskObject in
+    // tasks.js uses Date.now(), and getVisibleTasks compares it numerically).
+    // A task saved without an explicit createdAt falls back to serverTimestamp(),
+    // so both a number and a timestamp are legitimate here.
+    function validCreatedAt(value) {
+      return value is int || value is timestamp;
+    }
+
     function hasRequiredFields() {
       return request.resource.data.keys().hasAll(['text', 'segment', 'checked', 'createdAt']);
     }
 
+    // The optional fields are every field the app has ever written. Keeping this
+    // list a superset (rather than exactly the current model) is deliberate: the
+    // PWA is served from a service-worker cache, so older app versions writing a
+    // narrower field set must keep working during a rollout. Adding a new optional
+    // task field means adding it here BEFORE shipping the client that writes it.
     function hasOnlyAllowedFields() {
-      return request.resource.data.keys().hasOnly(['text', 'segment', 'checked', 'createdAt']);
+      return request.resource.data.keys().hasOnly([
+        'text', 'segment', 'checked', 'createdAt',
+        'completedAt', 'recurring', 'dueDate', 'category', 'notes'
+      ]);
+    }
+
+    function validTask() {
+      return hasRequiredFields()
+             && hasOnlyAllowedFields()
+             && validTaskText(request.resource.data.text)
+             && validSegment(request.resource.data.segment)
+             && validChecked(request.resource.data.checked)
+             && validCreatedAt(request.resource.data.createdAt);
     }
 
     // User kann nur eigene Daten zugreifen
@@ -46,25 +71,38 @@ service cloud.firestore {
         // Lesen: nur eigene Tasks
         allow read: if isOwner(userId);
 
-        // Erstellen: strikte Validierung
-        allow create: if isOwner(userId)
-                      && hasRequiredFields()
-                      && hasOnlyAllowedFields()
-                      && validTaskText(request.resource.data.text)
-                      && validSegment(request.resource.data.segment)
-                      && validChecked(request.resource.data.checked)
-                      && request.resource.data.createdAt == request.time;
+        // Erstellen: strikte Validierung.
+        // Bewusst KEIN `createdAt == request.time`: ein Restore aus einem Backup
+        // legt historische Aufgaben mit ihrem ursprünglichen Zeitstempel neu an,
+        // und die App schreibt createdAt ohnehin clientseitig als Zahl.
+        allow create: if isOwner(userId) && validTask();
 
-        // Update: nur bestimmte Felder änderbar
+        // Update: gleiche Validierung; createdAt darf sich nicht ändern
         allow update: if isOwner(userId)
-                      && hasOnlyAllowedFields()
-                      && validTaskText(request.resource.data.text)
-                      && validSegment(request.resource.data.segment)
-                      && validChecked(request.resource.data.checked)
-                      // createdAt darf nicht geändert werden
+                      && validTask()
                       && request.resource.data.createdAt == resource.data.createdAt;
 
         // Löschen: nur eigene Tasks
+        allow delete: if isOwner(userId);
+      }
+
+      // Backups Subcollection (Issue #396 / #359)
+      // Ein Backup ist ein Dokument mit dem serialisierten Task-Baum im Feld
+      // `payload`. Firestore lehnt Dokumente ab 1 MiB ohnehin ab; die Regel
+      // begrenzt zusätzlich explizit, damit ein einzelner Nutzer die Collection
+      // nicht mit übergrossen Dokumenten füllt.
+      match /backups/{backupId} {
+        allow read: if isOwner(userId);
+
+        allow create, update: if isOwner(userId)
+                      && request.resource.data.keys().hasAll(['version', 'timestamp', 'payload'])
+                      && request.resource.data.keys().hasOnly([
+                           'version', 'timestamp', 'createdAt', 'taskCount', 'byteSize', 'payload'
+                         ])
+                      && request.resource.data.payload is string
+                      && request.resource.data.payload.size() <= 900000
+                      && request.resource.data.timestamp is int;
+
         allow delete: if isOwner(userId);
       }
     }

@@ -57,7 +57,7 @@
     <!-- Note: frame-ancestors is not supported via meta, clickjacking protection requires HTTP header -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebasestorage.app https://firebasestorage.googleapis.com wss://*.firebaseio.com https://*.ingest.sentry.io; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com https://apis.google.com https://accounts.google.com; base-uri 'self'; form-action 'self';"
+      content="default-src 'self'; script-src 'self' https://apis.google.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com wss://*.firebaseio.com https://*.ingest.sentry.io; img-src 'self' data: blob:; font-src 'self'; frame-src https://*.firebaseapp.com https://apis.google.com https://accounts.google.com; base-uri 'self'; form-action 'self';"
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
@@ -631,7 +631,10 @@
         <!-- Cloud Backup (only visible when authenticated) -->
         <div id="backupSection" class="settings-section" style="display: none">
           <h4 id="backupTitle" class="settings-section-title">CLOUD BACKUP (BETA)</h4>
-          <button id="createBackupBtn" class="btn">Backup erstellen</button>
+          <div class="settings-data-buttons">
+            <button id="createBackupBtn" class="btn">Backup erstellen</button>
+            <button id="restoreBackupBtn" class="btn">Wiederherstellen</button>
+          </div>
           <p id="lastBackupInfo" class="settings-info" style="margin-top: 8px"></p>
         </div>
 
@@ -947,6 +950,21 @@
           </div>
         </div>
         <button id="metricsCancelBtn" class="btn cancel-btn">Close</button>
+      </div>
+    </div>
+
+    <!-- Backup Restore Modal (Issue #396) -->
+    <div id="backupRestoreModal" class="modal">
+      <div class="modal-content">
+        <h3 id="backupRestoreTitle">Backup wiederherstellen</h3>
+        <p id="backupRestoreWarning" class="settings-info backup-restore-warning">
+          Beim Wiederherstellen werden alle aktuellen Aufgaben ersetzt.
+        </p>
+        <ul id="backupRestoreList" class="backup-restore-list"></ul>
+        <p id="backupRestoreEmpty" class="settings-info" style="display: none">
+          Noch keine Backups vorhanden.
+        </p>
+        <button id="backupRestoreCancelBtn" class="btn cancel-btn">Schliessen</button>
       </div>
     </div>
 

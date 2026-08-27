@@ -48,6 +48,7 @@ export const translations = {
       personalizeBtn: 'Personalisieren',
       backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Backup erstellen',
+      restoreBackupBtn: 'Wiederherstellen',
       lastBackup: 'Letztes Backup',
       never: 'Nie',
       sendFeedback: 'Feedback senden',
@@ -157,6 +158,18 @@ export const translations = {
       disableRecurring: 'Wiederholung entfernen (Aufgabe einmalig machen)',
       deleteTask: 'Diese Aufgabe dauerhaft löschen',
       save: 'Speichern',
+    },
+    backupRestore: {
+      title: 'Backup wiederherstellen',
+      warning:
+        'Beim Wiederherstellen werden alle aktuellen Aufgaben ersetzt. Vorher wird automatisch ein Sicherungs-Backup des jetzigen Standes angelegt.',
+      empty: 'Noch keine Backups vorhanden.',
+      tasks: 'Aufgaben',
+      restoreAction: 'Wiederherstellen',
+      confirm:
+        'Wirklich wiederherstellen? Alle aktuellen Aufgaben werden durch den Stand dieses Backups ersetzt.',
+      close: 'Schliessen',
+      loginRequired: 'Du musst angemeldet sein, um ein Backup wiederherzustellen',
     },
     metrics: {
       title: '📊 Produktivitäts-Statistiken',
@@ -276,6 +289,7 @@ export const translations = {
       personalizeBtn: 'Personalize',
       backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Create Backup',
+      restoreBackupBtn: 'Restore',
       lastBackup: 'Last backup',
       never: 'Never',
       sendFeedback: 'Send Feedback',
@@ -385,6 +399,18 @@ export const translations = {
       disableRecurring: 'Remove recurring (make one-time task)',
       deleteTask: 'Delete this task permanently',
       save: 'Save',
+    },
+    backupRestore: {
+      title: 'Restore Backup',
+      warning:
+        'Restoring replaces all current tasks. A safety backup of the current state is created automatically beforehand.',
+      empty: 'No backups yet.',
+      tasks: 'tasks',
+      restoreAction: 'Restore',
+      confirm:
+        'Really restore? All current tasks will be replaced with the state from this backup.',
+      close: 'Close',
+      loginRequired: 'You must be logged in to restore a backup',
     },
     metrics: {
       title: '📊 Productivity Statistics',
@@ -957,6 +983,32 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const createBackupBtn = document.getElementById('createBackupBtn');
   if (createBackupBtn) {
     createBackupBtn.textContent = lang.settings.createBackupBtn;
+  }
+
+  const restoreBackupBtn = document.getElementById('restoreBackupBtn');
+  if (restoreBackupBtn) {
+    restoreBackupBtn.textContent = lang.settings.restoreBackupBtn;
+  }
+
+  // Backup restore modal (Issue #396)
+  const backupRestoreTitle = document.getElementById('backupRestoreTitle');
+  if (backupRestoreTitle) {
+    backupRestoreTitle.textContent = lang.backupRestore.title;
+  }
+
+  const backupRestoreWarning = document.getElementById('backupRestoreWarning');
+  if (backupRestoreWarning) {
+    backupRestoreWarning.textContent = lang.backupRestore.warning;
+  }
+
+  const backupRestoreEmpty = document.getElementById('backupRestoreEmpty');
+  if (backupRestoreEmpty) {
+    backupRestoreEmpty.textContent = lang.backupRestore.empty;
+  }
+
+  const backupRestoreCancelBtn = document.getElementById('backupRestoreCancelBtn');
+  if (backupRestoreCancelBtn) {
+    backupRestoreCancelBtn.textContent = lang.backupRestore.close;
   }
 
   // Update last backup info text (label and "never" word) while preserving timestamp

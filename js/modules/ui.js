@@ -10,6 +10,7 @@ import { DragManager } from './drag-manager.js';
 import { announceDragStart, announceDragEnd } from './accessibility.js';
 import { translations } from './translations.js';
 import { shouldShowSegmentDemo } from './onboarding.js';
+import { listBackups } from './backup.js';
 
 /**
  * Create a task DOM element
@@ -539,7 +540,8 @@ export function openSettingsModal(
   version,
   buildDate,
   isGuestMode = false,
-  currentLanguage = 'en'
+  currentLanguage = 'en',
+  db = null
 ) {
   const settingsModal = document.getElementById('settingsModal');
 
@@ -686,22 +688,46 @@ export function openSettingsModal(
       backupSection.style.display = 'block';
       if (backupSeparator) backupSeparator.style.display = 'block';
 
-      // Update last backup timestamp
+      // Update last backup timestamp. localStorage's 'lastAutoBackup' is
+      // per-device and can disagree across a user's devices (issue #396),
+      // so show it only as an immediate placeholder while the account-wide
+      // backup list (the actual source of truth in Firebase Storage) loads.
       const lastBackupInfo = document.getElementById('lastBackupInfo');
       const lastAutoBackup = localStorage.getItem('lastAutoBackup');
 
       if (lastBackupInfo) {
         const lang = currentLanguage === 'de' ? 'de' : 'en';
         const neverText = currentLanguage === 'de' ? 'Nie' : 'Never';
+        const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
 
-        if (lastAutoBackup) {
-          const date = new Date(parseInt(lastAutoBackup));
-          const formattedDate = date.toLocaleString(lang === 'de' ? 'de-DE' : 'en-US');
-          const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
-          lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
-        } else {
-          const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
-          lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}`;
+        const renderLastBackup = (timestamp) => {
+          if (timestamp) {
+            const formattedDate = new Date(timestamp).toLocaleString(
+              lang === 'de' ? 'de-DE' : 'en-US'
+            );
+            lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
+          } else {
+            lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}`;
+          }
+        };
+
+        renderLastBackup(lastAutoBackup ? parseInt(lastAutoBackup) : null);
+
+        if (db && currentUser?.uid) {
+          listBackups(db, currentUser.uid)
+            .then((backups) => {
+              // Guard against the modal having been closed/reopened for a
+              // different user while this request was in flight.
+              if (document.getElementById('lastBackupInfo') !== lastBackupInfo) return;
+              if (backups.length > 0) {
+                renderLastBackup(backups[0].timestamp);
+              } else if (!lastAutoBackup) {
+                renderLastBackup(null);
+              }
+            })
+            .catch(() => {
+              // Keep the localStorage-based placeholder on failure.
+            });
         }
       }
     } else {
@@ -1050,6 +1076,93 @@ export function closeMetricsModal() {
 }
 
 /**
+ * Open the backup restore modal and render the available backups (Issue #396).
+ *
+ * Restoring replaces every task, so this deliberately requires two deliberate
+ * actions: picking a backup, then confirming. The caller is responsible for
+ * taking a safety snapshot before overwriting anything.
+ *
+ * @param {Array} backups - Backup metadata from listBackups()
+ * @param {Function} onRestore - Called with the chosen backup once confirmed
+ * @param {string} currentLanguage - Current language ('de' | 'en')
+ */
+export function openBackupRestoreModal(backups, onRestore, currentLanguage = 'en') {
+  const modal = document.getElementById('backupRestoreModal');
+  if (!modal) return;
+
+  const lang = translations[currentLanguage] || translations.en;
+  const list = document.getElementById('backupRestoreList');
+  const empty = document.getElementById('backupRestoreEmpty');
+
+  if (list) {
+    list.textContent = '';
+
+    backups.forEach((backup) => {
+      const item = document.createElement('li');
+      item.className = 'backup-restore-item';
+
+      const info = document.createElement('div');
+      info.className = 'backup-restore-info';
+
+      const dateLine = document.createElement('span');
+      dateLine.className = 'backup-restore-date';
+      dateLine.textContent = backup.date.toLocaleString(
+        currentLanguage === 'de' ? 'de-DE' : 'en-US'
+      );
+      info.appendChild(dateLine);
+
+      if (typeof backup.taskCount === 'number') {
+        const countLine = document.createElement('span');
+        countLine.className = 'backup-restore-count';
+        countLine.textContent = `${backup.taskCount} ${lang.backupRestore.tasks}`;
+        info.appendChild(countLine);
+      }
+
+      item.appendChild(info);
+
+      const restoreBtn = document.createElement('button');
+      restoreBtn.className = 'btn';
+      restoreBtn.textContent = lang.backupRestore.restoreAction;
+      restoreBtn.addEventListener('click', () => {
+        const confirmed = window.confirm(lang.backupRestore.confirm);
+        if (!confirmed) return;
+        closeBackupRestoreModal();
+        onRestore(backup);
+      });
+      item.appendChild(restoreBtn);
+
+      list.appendChild(item);
+    });
+  }
+
+  if (empty) {
+    empty.style.display = backups.length === 0 ? '' : 'none';
+  }
+
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+
+  const cancelBtn = document.getElementById('backupRestoreCancelBtn');
+  if (cancelBtn) {
+    // Remove old listener by cloning, matching the pattern used by the other modals
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    newCancelBtn.addEventListener('click', () => closeBackupRestoreModal());
+  }
+}
+
+/**
+ * Close the backup restore modal
+ */
+export function closeBackupRestoreModal() {
+  const modal = document.getElementById('backupRestoreModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+
+/**
  * Show drag hint to user
  */
 export function showDragHint() {
@@ -1314,6 +1427,7 @@ export function openQuickAddModal(
   const quickAddCategory = document.getElementById('quickAddCategory');
   const quickAddTitle = document.getElementById('quickAddTitle');
   const quickAddSubmitBtn = document.getElementById('quickAddSubmitBtn');
+  const quickAddCharCount = document.getElementById('quickAddCharCount');
   const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
   const quickRecurringOptions = document.getElementById('quickRecurringOptions');
   const quickDueDateEnabled = document.getElementById('quickDueDateEnabled');
@@ -1324,6 +1438,24 @@ export function openQuickAddModal(
 
   // Reset modal
   quickAddInput.value = existingTask ? existingTask.text : '';
+
+  // Character counter (140 = hard limit enforced by the input's maxlength
+  // and by addTaskToSegment()/updateTask() in tasks.js)
+  const maxLength = parseInt(quickAddInput.getAttribute('maxlength'), 10) || 140;
+  const updateCharCount = () => {
+    if (!quickAddCharCount) return;
+    const length = quickAddInput.value.length;
+    quickAddCharCount.textContent = `${length}/${maxLength}`;
+    quickAddCharCount.classList.toggle('error', length >= maxLength);
+    quickAddCharCount.classList.toggle('warning', length < maxLength && length >= maxLength - 20);
+  };
+  updateCharCount();
+  if (quickAddInput._eisenhauerCharCountHandler) {
+    quickAddInput.removeEventListener('input', quickAddInput._eisenhauerCharCountHandler);
+  }
+  quickAddInput._eisenhauerCharCountHandler = updateCharCount;
+  quickAddInput.addEventListener('input', updateCharCount);
+
   quickRecurringEnabled.checked = false;
   quickRecurringOptions.classList.remove('expanded');
   document.getElementById('quickRecurringToggle')?.classList.remove('icon-toggle-checked');

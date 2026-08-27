@@ -92,13 +92,30 @@ Play Console meldete für Release 25 (1.12.1), dass die R8-Optimierung nicht gre
 - Metriken einsehbar im **Firebase Console → Analytics → Events** (DAU/WAU/MAU unter „Active users")
 - Voraussetzung: `VITE_FIREBASE_MEASUREMENT_ID` muss als GitHub Actions Secret gesetzt sein (production environment)
 
-### Cloud-Backup: blockiert durch Firebase-Tarif (Issue #355, #359)
+### Cloud-Backup: auf Firestore migriert (Issue #396, #359 – Option 1)
 
-Cloud-Backup (`js/modules/backup.js`, Firebase **Storage**) schlägt aktuell fehl. Root-Cause-Analyse zu #355 fand einen Pfad-Mismatch zwischen dem tatsächlichen Upload-Pfad (`users/{userId}/backups/{filename}`) und dem in `docs/FIREBASE_SECURITY_RULES.md` dokumentierten Storage-Rule-Pfad (`backups/{userId}/{backupFile}`) – **das ist aber nicht der eigentliche Blocker**: Seit Oktober 2024 verlangt Firebase für Cloud Storage grundsätzlich den kostenpflichtigen **Blaze-Tarif** (Projekt läuft auf Spark, siehe #254). Ein reiner Pfad-Fix lässt sich ohne Blaze-Upgrade nicht mal in der Firebase Console deployen/testen.
+Cloud-Backup liegt seit Issue #396 in **Firestore** (`users/{userId}/backups/{backupId}`), nicht mehr in Firebase **Storage**. Storage verlangt seit Oktober 2024 den kostenpflichtigen **Blaze-Tarif**, das Projekt läuft auf **Spark** (#254) – deshalb schlug dort *jeder* Upload fehl. Firestore bleibt auf Spark kostenlos.
 
-- **Nicht erneut versuchen:** einen reinen Storage-Rules-Pfad-Fix zu implementieren (siehe PR #358, verworfen) – löst das Problem nicht.
-- **Architekturentscheidung offen in #359:** Firestore-Migration (empfohlen, bleibt im kostenlosen Spark-Tarif) vs. Feature entfernen vs. So lassen. Details, Trade-offs und TODO-Checkliste stehen in #359.
-- Bis zur Entscheidung: `reportBackupError()`-Ansatz (Fehler an Sentry statt nur `console.error`) wurde in PR #358 skizziert, aber ebenfalls verworfen – bei Umsetzung von #359 erneut aufgreifen.
+**Maßgebliche Doku: [`docs/DATENSICHERUNG.md`](docs/DATENSICHERUNG.md)** (Konzept, Datenmodell, Sicherheitsaudit, Migrationsplan, Runbook).
+
+- Das Backup-Dokument speichert den Task-Baum als **JSON-String im Feld `payload`** (nicht als verschachtelte Map) – Dokument bleibt flach, Rules brauchen das Task-Schema nicht zu kennen.
+- **Grössenlimit:** `uploadBackup()` bricht ab 800 KiB ab (Firestore-Hardlimit ist 1 MiB; der Puffer deckt Firestore-Overhead ab).
+- **Zeitstempel:** `normalizeTask()` normalisiert `createdAt`/`completedAt` auf Epoch-Millisekunden. Ein Firestore-`Timestamp` überlebt `JSON.stringify` nicht und würde den numerischen Vergleich in `getVisibleTasks` brechen.
+- **Restore existiert jetzt:** vorher waren `restoreBackup()`/`downloadBackup()` exportiert, aber **nirgends aufgerufen** – es gab keine UI. Jetzt: Einstellungen → Cloud Backup → „Wiederherstellen".
+- Restore nutzt `replaceAllTasksInFirestore()` (storage.js), **nicht** `saveAllTasksToFirestore()` – letzteres löscht keine entfernten Tasks, der Backup-Stand würde also nicht reproduziert. Bewusst **ohne** Offline-Queue: ein halb angewendeter Restore würde Daten vernichten.
+- Vor jedem Restore wird automatisch ein **Sicherungs-Backup** des aktuellen Standes angelegt; scheitert das, bricht der Restore ab. Das Backup wird **vor** dem Snapshot geladen, sonst könnte die Rotation (`MAX_BACKUPS = 4`) genau das gewählte Backup löschen.
+- **Firebase Storage ist vollständig entfernt** (`getStorage()`-Init, SDK-Import, CSP-Origins). Nicht wieder einführen, solange das Projekt auf Spark läuft.
+- **Alte Storage-Backups** (vor dem Spark-Downgrade) sind auf Spark nicht lesbar und wurden **nicht** migriert – siehe `docs/DATENSICHERUNG.md`, Abschnitt 5.
+
+### Firestore Security Rules: jetzt versioniert (Issue #396)
+
+`firestore.rules` war bis #396 **reine Dokumentation** – es gab kein `firebase.json`, also keinen Deploy-Weg. Die Datei war ausserdem stark gedriftet: `hasOnlyAllowedFields()` erlaubte nur `text`/`segment`/`checked`/`createdAt`, die App schreibt aber längst `notes`, `dueDate`, `category`, `recurring`, `completedAt`; die Create-Regel forderte `createdAt == request.time`, während die App eine Zahl schreibt.
+
+- Deploy jetzt über `npm run rules:deploy` (bzw. `rules:deploy:testing`), Konfiguration in `firebase.json`.
+- **`hasOnlyAllowedFields()` ist bewusst eine Obermenge** aller je geschriebenen Felder: Die PWA wird per Service Worker gecacht, ältere Client-Versionen müssen nach einem Rules-Deploy weiterlaufen.
+- **Regel für neue optionale Task-Felder:** erst in `hasOnlyAllowedFields()` deployen, **dann** den Client ausliefern, der das Feld schreibt. Sonst lehnen die Rules die Writes ab.
+- `docs/FIREBASE_SECURITY_RULES.md` ist in Teilen überholt (dokumentiert `segment` als String-Enum und 500 Zeichen Textlimit) und oben entsprechend markiert.
+- **Achtung:** Was tatsächlich in der Firebase Console deployt ist, lässt sich aus dem Repo nicht verifizieren. Die Regeln sind ein Vorschlag, bis sie deployt sind – Testfälle für die Rules Playground stehen in `docs/DATENSICHERUNG.md`, Abschnitt 5.1.
 
 ### Export CSV & Markdown (Issue #179, PR #332)
 
