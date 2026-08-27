@@ -281,6 +281,36 @@ verträglich; die Verschärfung trifft keine vorhandene Aufgabe.
 
 ---
 
+### 5.3 Durchführung des Rollouts (#404)
+
+**Playground (2026-08-27).** Alle sieben Fälle aus Abschnitt 5.1 wurden gegen `firestore.rules`
+simuliert und verhielten sich wie spezifiziert – insbesondere:
+
+- *Task anlegen wie eine alte App-Version* (nur die vier Pflichtfelder) → **ALLOW**. Das ist der
+  Nachweis für den Parallelbetrieb: eine per Service Worker gecachte ältere Version bleibt gültig.
+- *Backup anlegen* → **ALLOW**, gegen den vorherigen Stand wäre derselbe Aufruf abgelehnt worden.
+  Damit ist die Ursache aus #396 nicht nur vermutet, sondern gezeigt.
+
+Zwei Ablehnungen während der Simulation gingen auf Eingabefehler zurück, nicht auf die Regeln
+(Feldname `Version` statt `version`; `createdAt` als String statt als Zahl). Beide belegen
+nebenbei, dass `hasAll()` bzw. `validCreatedAt()` greifen.
+
+**Die Testumgebung ist nicht isoliert.** Beim Verifizieren fiel auf, dass die unter
+`https://s540d.github.io/Eisenhauer/testing/` ausgelieferte App auf das **Produktions**-Firebase-Projekt
+`eisenhauer-matrix` zeigt, nicht auf `eisenhauer-testing`. Konsequenzen:
+
+- `npm run rules:deploy:testing` deployt in ein Projekt, mit dem kein Client spricht – der
+  Testing-Deploy kann nichts verifizieren.
+- Jeder Test auf der Testing-URL läuft auf Live-Daten.
+
+Der in Abschnitt 5 beschriebene Ablauf „erst Testing, dort mit alter und neuer App-Version prüfen,
+dann Produktion" ist damit aktuell **nicht durchführbar**. Für den Rollout aus #404 wurde stattdessen
+auf die Vorabprüfungen gesetzt (vollständiger Datencheck, siehe 5.2, plus die Playground-Fälle oben)
+und direkt gegen Produktion verifiziert. Bei einem einzelnen Nutzer mit vorliegendem lokalem Export
+und 30-Sekunden-Rollback vertretbar; als Dauerzustand ist es das nicht.
+
+---
+
 ## 6. Wiederherstellung im Ernstfall (Runbook)
 
 **Fall 1 – Aufgaben versehentlich gelöscht, Nutzer angemeldet**
