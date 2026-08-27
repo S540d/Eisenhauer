@@ -1620,18 +1620,37 @@ body.dark-mode .search-highlight {
 
 .quick-add-input-wrapper input {
   width: 100%;
-  padding: 8px 10px;
+  padding: 8px 48px 8px 10px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem;
   background: var(--task-bg);
   color: var(--text-primary);
   transition: border-color 0.2s;
+  box-sizing: border-box;
 }
 
 .quick-add-input-wrapper input:focus {
   outline: none;
   border-color: var(--text-primary);
+}
+
+.char-counter {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.char-counter.warning {
+  color: #f59e0b;
+}
+
+.char-counter.error {
+  color: #ef4444;
 }
 
 .quick-add-notes-row {

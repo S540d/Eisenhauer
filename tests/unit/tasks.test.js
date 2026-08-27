@@ -144,6 +144,15 @@ describe('Tasks', () => {
       expect(getTask(task.id, SEGMENTS.DO).notes).toBeNull();
     });
 
+    it('should reject task text over 140 characters via updateTask', () => {
+      const task = addTaskToSegment('Task', SEGMENTS.DO);
+
+      expect(() => updateTask(task.id, SEGMENTS.DO, { text: 'x'.repeat(141) })).toThrow(
+        'Task text must not exceed 140 characters'
+      );
+      expect(getTask(task.id, SEGMENTS.DO).text).toBe('Task');
+    });
+
     it('should restore and delete tasks with callbacks', () => {
       const task = {
         id: 101,

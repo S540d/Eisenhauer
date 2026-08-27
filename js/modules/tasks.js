@@ -583,6 +583,10 @@ export function updateTask(taskId, segmentId, updates) {
   const task = tasks[segmentId].find((t) => sameTaskId(t.id, taskId));
   if (!task) return null;
 
+  if (typeof updates.text === 'string' && updates.text.length > 140) {
+    throw new Error('Task text must not exceed 140 characters');
+  }
+
   Object.assign(task, updates);
   return task;
 }

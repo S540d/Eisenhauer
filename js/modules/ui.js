@@ -1427,6 +1427,7 @@ export function openQuickAddModal(
   const quickAddCategory = document.getElementById('quickAddCategory');
   const quickAddTitle = document.getElementById('quickAddTitle');
   const quickAddSubmitBtn = document.getElementById('quickAddSubmitBtn');
+  const quickAddCharCount = document.getElementById('quickAddCharCount');
   const quickRecurringEnabled = document.getElementById('quickRecurringEnabled');
   const quickRecurringOptions = document.getElementById('quickRecurringOptions');
   const quickDueDateEnabled = document.getElementById('quickDueDateEnabled');
@@ -1437,6 +1438,24 @@ export function openQuickAddModal(
 
   // Reset modal
   quickAddInput.value = existingTask ? existingTask.text : '';
+
+  // Character counter (140 = hard limit enforced by the input's maxlength
+  // and by addTaskToSegment()/updateTask() in tasks.js)
+  const maxLength = parseInt(quickAddInput.getAttribute('maxlength'), 10) || 140;
+  const updateCharCount = () => {
+    if (!quickAddCharCount) return;
+    const length = quickAddInput.value.length;
+    quickAddCharCount.textContent = `${length}/${maxLength}`;
+    quickAddCharCount.classList.toggle('error', length >= maxLength);
+    quickAddCharCount.classList.toggle('warning', length < maxLength && length >= maxLength - 20);
+  };
+  updateCharCount();
+  if (quickAddInput._eisenhauerCharCountHandler) {
+    quickAddInput.removeEventListener('input', quickAddInput._eisenhauerCharCountHandler);
+  }
+  quickAddInput._eisenhauerCharCountHandler = updateCharCount;
+  quickAddInput.addEventListener('input', updateCharCount);
+
   quickRecurringEnabled.checked = false;
   quickRecurringOptions.classList.remove('expanded');
   document.getElementById('quickRecurringToggle')?.classList.remove('icon-toggle-checked');
