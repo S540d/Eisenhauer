@@ -16,6 +16,7 @@ function buildQuickAddModalFixture() {
         <div class="quick-add-input-row">
           <div class="quick-add-input-wrapper">
             <input type="text" id="quickAddInput" maxlength="140" autocomplete="off" />
+            <span id="quickAddCharCount" class="char-counter">0/140</span>
           </div>
           <button id="quickAddSubmitBtn" class="btn quick-add-ok-btn">OK</button>
         </div>
@@ -119,5 +120,60 @@ describe('openQuickAddModal keypress listener (Issue #398)', () => {
     );
 
     expect(calls).toBe(0);
+  });
+});
+
+describe('openQuickAddModal character counter (Issue #401)', () => {
+  beforeEach(() => {
+    buildQuickAddModalFixture();
+  });
+
+  it('shows 0/140 when the modal opens for a new task', () => {
+    openQuickAddModal(1, () => {}, translations, 'en');
+
+    expect(document.getElementById('quickAddCharCount').textContent).toBe('0/140');
+  });
+
+  it('updates live as the user types', () => {
+    openQuickAddModal(1, () => {}, translations, 'en');
+
+    const input = document.getElementById('quickAddInput');
+    input.value = 'Buy milk';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect(document.getElementById('quickAddCharCount').textContent).toBe('8/140');
+  });
+
+  it('shows the existing task length when editing', () => {
+    openQuickAddModal(1, () => {}, translations, 'en', {
+      id: 't1',
+      text: '1234567890',
+    });
+
+    expect(document.getElementById('quickAddCharCount').textContent).toBe('10/140');
+  });
+
+  it('flags the counter as error once the 140 char limit is reached', () => {
+    openQuickAddModal(1, () => {}, translations, 'en');
+
+    const input = document.getElementById('quickAddInput');
+    input.value = 'a'.repeat(140);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const counter = document.getElementById('quickAddCharCount');
+    expect(counter.textContent).toBe('140/140');
+    expect(counter.classList.contains('error')).toBe(true);
+  });
+
+  it('does not stack duplicate input listeners across repeated opens', () => {
+    openQuickAddModal(1, () => {}, translations, 'en');
+    openQuickAddModal(1, () => {}, translations, 'en');
+    openQuickAddModal(1, () => {}, translations, 'en');
+
+    const input = document.getElementById('quickAddInput');
+    input.value = 'abc';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    expect(document.getElementById('quickAddCharCount').textContent).toBe('3/140');
   });
 });
