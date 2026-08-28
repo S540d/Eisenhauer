@@ -199,8 +199,8 @@ describe('Translations', () => {
     it('should have settings translations', () => {
       expect(translations.de.settings.dataManagement).toBe('DATEN');
       expect(translations.en.settings.dataManagement).toBe('DATA');
-      expect(translations.de.settings.exportBtn).toBe('Export');
-      expect(translations.en.settings.exportBtn).toBe('Export');
+      expect(translations.de.settings.exportBtn).toBe('Export (JSON)');
+      expect(translations.en.settings.exportBtn).toBe('Export (JSON)');
     });
 
     it('should have quick add modal translations', () => {
@@ -549,7 +549,7 @@ describe('updateLanguageUI', () => {
       updateLanguageUI(mockCallback);
 
       const exportBtn = document.getElementById('exportJsonBtn');
-      expect(exportBtn.textContent).toBe('Export');
+      expect(exportBtn.textContent).toBe('Export (JSON)');
     });
 
     it('should update import guest tasks button to German', () => {
@@ -557,7 +557,7 @@ describe('updateLanguageUI', () => {
       updateLanguageUI(mockCallback);
 
       const importBtn = document.getElementById('importGuestTasksBtn');
-      expect(importBtn.textContent).toBe('Import');
+      expect(importBtn.textContent).toBe('Import (JSON)');
     });
   });
 

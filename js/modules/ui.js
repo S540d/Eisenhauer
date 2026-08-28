@@ -691,23 +691,32 @@ export function openSettingsModal(
       // Update last backup timestamp. localStorage's 'lastAutoBackup' is
       // per-device and can disagree across a user's devices (issue #396),
       // so show it only as an immediate placeholder while the account-wide
-      // backup list (the actual source of truth in Firebase Storage) loads.
+      // backup list (the actual source of truth in Firestore) loads.
       const lastBackupInfo = document.getElementById('lastBackupInfo');
       const lastAutoBackup = localStorage.getItem('lastAutoBackup');
+      // 'lastAutoBackup' only ever records a successful backup (see #409);
+      // a failed attempt is tracked separately, so a nonzero failure count
+      // means the most recent attempt did not succeed.
+      const hasFailedAttempt = parseInt(localStorage.getItem('autoBackupFailureCount') || '0') > 0;
 
       if (lastBackupInfo) {
         const lang = currentLanguage === 'de' ? 'de' : 'en';
         const neverText = currentLanguage === 'de' ? 'Nie' : 'Never';
         const lastBackupLabel = currentLanguage === 'de' ? 'Letztes Backup' : 'Last backup';
+        const failedSuffix = hasFailedAttempt
+          ? currentLanguage === 'de'
+            ? ' · letzter Versuch fehlgeschlagen'
+            : ' · last attempt failed'
+          : '';
 
         const renderLastBackup = (timestamp) => {
           if (timestamp) {
             const formattedDate = new Date(timestamp).toLocaleString(
               lang === 'de' ? 'de-DE' : 'en-US'
             );
-            lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
+            lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}${failedSuffix}`;
           } else {
-            lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}`;
+            lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}${failedSuffix}`;
           }
         };
 

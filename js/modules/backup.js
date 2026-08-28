@@ -352,11 +352,17 @@ export function shouldAutoBackup() {
   const failureCount = parseInt(localStorage.getItem('autoBackupFailureCount') || '0');
   if (failureCount >= 3) return false;
 
-  const lastBackup = localStorage.getItem('lastAutoBackup');
-  if (!lastBackup) return true;
-
-  const lastBackupTime = parseInt(lastBackup);
-  if (isNaN(lastBackupTime)) return true;
+  // 'lastAutoBackup' (last success) and 'lastBackupAttempt' (last try,
+  // success or failure) are separate keys so the UI can tell them apart
+  // (issue #409). The weekly throttle only cares about the more recent
+  // of the two, whichever it was.
+  const lastBackup = parseInt(localStorage.getItem('lastAutoBackup'));
+  const lastAttempt = parseInt(localStorage.getItem('lastBackupAttempt'));
+  const lastBackupTime = Math.max(
+    isNaN(lastBackup) ? -Infinity : lastBackup,
+    isNaN(lastAttempt) ? -Infinity : lastAttempt
+  );
+  if (!isFinite(lastBackupTime)) return true;
 
   const now = Date.now();
   const dayInMs = 24 * 60 * 60 * 1000;
@@ -385,8 +391,10 @@ export function trackBackupFailure() {
   const newCount = failureCount + 1;
   localStorage.setItem('autoBackupFailureCount', newCount.toString());
 
-  // Set last attempt timestamp so shouldAutoBackup() respects weekly interval even on failure
-  localStorage.setItem('lastAutoBackup', Date.now().toString());
+  // Separate key from 'lastAutoBackup' (success only) so shouldAutoBackup()
+  // still respects the weekly interval on failure without making the UI
+  // show a failed attempt as if it were a successful backup (issue #409).
+  localStorage.setItem('lastBackupAttempt', Date.now().toString());
 
   // Notify user only after 3 consecutive failures
   return newCount >= 3;

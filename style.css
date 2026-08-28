@@ -1560,6 +1560,16 @@ body.dark-mode .search-highlight {
   margin-top: 8px;
 }
 
+/* Group captions above the DATEN buttons (issue #408) */
+#dataBackupGroupDesc {
+  margin-bottom: 6px;
+}
+
+#dataExportGroupDesc {
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+
 /* Settings Coffee Link */
 .settings-coffee-link {
   display: block;

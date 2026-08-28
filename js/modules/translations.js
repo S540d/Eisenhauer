@@ -43,14 +43,19 @@ export const translations = {
       account: 'KONTO',
       signOut: 'Abmelden',
       dataManagement: 'DATEN',
-      exportBtn: 'Export',
-      importGuestBtn: 'Import',
+      exportBtn: 'Export (JSON)',
+      importGuestBtn: 'Import (JSON)',
+      exportBtnTitle: 'Vollständige Sicherung als JSON-Datei herunterladen',
+      importGuestBtnTitle: 'Eine zuvor exportierte JSON-Sicherung einspielen',
+      dataBackupGroupDesc: 'Vollständig, lässt sich wieder einspielen',
+      dataExportGroupDesc: 'Zum Weiterverarbeiten, kein Rückweg in die App',
       personalizeBtn: 'Personalisieren',
       backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Backup erstellen',
       restoreBackupBtn: 'Wiederherstellen',
       lastBackup: 'Letztes Backup',
       never: 'Nie',
+      lastBackupFailed: 'letzter Versuch fehlgeschlagen',
       sendFeedback: 'Feedback senden',
       supportMe: 'Unterstütze mich',
       about: 'Über',
@@ -63,7 +68,7 @@ export const translations = {
       q4DetoxConfirm: 'Alle Aufgaben aus "Später!" archivieren?',
       q4DetoxSuccess: 'Q4-Aufgaben archiviert!',
       q4DetoxEmpty: 'Keine Q4-Aufgaben vorhanden',
-      importIcsBtn: 'Import .ics (BETA)',
+      importIcsBtn: 'Aus Apple Erinnerungen importieren (BETA)',
       icsImportSuccess: 'Aufgaben importiert',
       icsImportSkipped: 'bereits vorhanden, übersprungen',
       icsImportEmpty: 'Keine Aufgaben in der Datei gefunden',
@@ -284,14 +289,19 @@ export const translations = {
       account: 'ACCOUNT',
       signOut: 'Sign Out',
       dataManagement: 'DATA',
-      exportBtn: 'Export',
-      importGuestBtn: 'Import',
+      exportBtn: 'Export (JSON)',
+      importGuestBtn: 'Import (JSON)',
+      exportBtnTitle: 'Download a full backup as a JSON file',
+      importGuestBtnTitle: 'Restore a previously exported JSON backup',
+      dataBackupGroupDesc: 'Full backup, can be restored',
+      dataExportGroupDesc: 'For further processing, no way back into the app',
       personalizeBtn: 'Personalize',
       backupTitle: 'CLOUD BACKUP (BETA)',
       createBackupBtn: 'Create Backup',
       restoreBackupBtn: 'Restore',
       lastBackup: 'Last backup',
       never: 'Never',
+      lastBackupFailed: 'last attempt failed',
       sendFeedback: 'Send Feedback',
       supportMe: 'Support Me',
       about: 'About',
@@ -304,7 +314,7 @@ export const translations = {
       q4DetoxConfirm: 'Archive all tasks from "Ignore!"?',
       q4DetoxSuccess: 'Q4 tasks archived!',
       q4DetoxEmpty: 'No Q4 tasks to archive',
-      importIcsBtn: 'Import .ics (BETA)',
+      importIcsBtn: 'Import from Apple Reminders (BETA)',
       icsImportSuccess: 'Tasks imported',
       icsImportSkipped: 'already existed, skipped',
       icsImportEmpty: 'No tasks found in the file',
@@ -809,11 +819,23 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const exportJsonBtn = document.getElementById('exportJsonBtn');
   if (exportJsonBtn) {
     exportJsonBtn.textContent = lang.settings.exportBtn;
+    exportJsonBtn.title = lang.settings.exportBtnTitle;
   }
 
   const importGuestTasksBtn = document.getElementById('importGuestTasksBtn');
   if (importGuestTasksBtn) {
     importGuestTasksBtn.textContent = lang.settings.importGuestBtn;
+    importGuestTasksBtn.title = lang.settings.importGuestBtnTitle;
+  }
+
+  const dataBackupGroupDesc = document.getElementById('dataBackupGroupDesc');
+  if (dataBackupGroupDesc) {
+    dataBackupGroupDesc.textContent = lang.settings.dataBackupGroupDesc;
+  }
+
+  const dataExportGroupDesc = document.getElementById('dataExportGroupDesc');
+  if (dataExportGroupDesc) {
+    dataExportGroupDesc.textContent = lang.settings.dataExportGroupDesc;
   }
 
   const exportCsvBtn = document.getElementById('exportCsvBtn');
@@ -1022,9 +1044,24 @@ export function updateLanguageUI(renderAllTasksCallback) {
       suffix = existingText.slice(colonIndex + 1).trim();
     }
 
+    // Strip a previously rendered "failed attempt" marker (in either
+    // language) so it isn't duplicated or left untranslated below; the
+    // marker is re-derived from localStorage, not from the old text.
+    for (const failedText of [
+      translations.de.settings.lastBackupFailed,
+      translations.en.settings.lastBackupFailed,
+    ]) {
+      suffix = suffix.replace(`· ${failedText}`, '').trim();
+    }
+
     const lowerSuffix = suffix.toLowerCase();
     if (!suffix || lowerSuffix === 'never' || lowerSuffix === 'nie') {
       suffix = lang.settings.never;
+    }
+
+    const hasFailedAttempt = parseInt(localStorage.getItem('autoBackupFailureCount') || '0') > 0;
+    if (hasFailedAttempt) {
+      suffix = `${suffix} · ${lang.settings.lastBackupFailed}`;
     }
 
     lastBackupInfo.textContent = suffix

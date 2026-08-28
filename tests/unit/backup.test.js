@@ -12,6 +12,9 @@ import {
   listBackups,
   downloadBackup,
   restoreBackup,
+  shouldAutoBackup,
+  markAutoBackupCompleted,
+  trackBackupFailure,
 } from '../../js/modules/backup.js';
 import * as notifications from '../../js/modules/notifications.js';
 
@@ -255,6 +258,41 @@ describe('Backup Module', () => {
         'Invalid backup data'
       );
       expect(showErrorSpy).toHaveBeenCalledWith('Restore failed');
+    });
+  });
+
+  describe('auto-backup failure tracking (#409)', () => {
+    beforeEach(() => {
+      localStorage.clear();
+    });
+
+    it('does not record a failed attempt as a successful backup', () => {
+      trackBackupFailure();
+
+      expect(localStorage.getItem('lastAutoBackup')).toBeNull();
+      expect(localStorage.getItem('lastBackupAttempt')).not.toBeNull();
+    });
+
+    it('still throttles retries weekly after a failure', () => {
+      trackBackupFailure();
+
+      expect(shouldAutoBackup()).toBe(false);
+    });
+
+    it('resumes auto-backup after a success clears the failure state', () => {
+      trackBackupFailure();
+      trackBackupFailure();
+      trackBackupFailure();
+      expect(shouldAutoBackup()).toBe(false);
+
+      markAutoBackupCompleted();
+
+      expect(localStorage.getItem('autoBackupFailureCount')).toBeNull();
+      expect(shouldAutoBackup()).toBe(false); // just backed up, still within the week
+    });
+
+    it('allows a backup when neither a success nor an attempt was ever recorded', () => {
+      expect(shouldAutoBackup()).toBe(true);
     });
   });
 });
