@@ -1,1 +1,13 @@
-2026-06-15
+2026-08-27
+
+Erstes erfolgreiches Cloud-Backup nach der Migration von Firebase Storage auf
+Firestore (#396, PR #403, Release #407) und dem Deploy der Security Rules (#404).
+
+Cloud-Backup laeuft seither automatisch, woechentlich (shouldAutoBackup() in
+js/modules/backup.js), mit Rotation auf die letzten vier Staende (MAX_BACKUPS).
+Der Zeitstempel oben bezieht sich auf den manuellen Export als zusaetzliche
+Absicherung - siehe docs/DATENSICHERUNG.md, Abschnitt 1: der lokale Export ist
+die einzige Verteidigungslinie, die auch einen Ausfall des Firebase-Projekts
+ueberlebt.
+
+Vorheriger Eintrag: 2026-06-15 (manueller Export, #257)
