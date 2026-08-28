@@ -224,25 +224,21 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-08-27)
+## Offene Issues (Backlog-Stand 2026-08-28)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen.
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. Am 2026-08-28 wurden #409 und #408 per PR #411 auf `testing` gefixt (Code fertig, Issues bleiben auf GitHub offen bis zum Release-PR nach `main` – siehe Branch-Konvention oben).
 
 | # | Titel | Prio |
 |---|-------|------|
-| #406 | **Testing-Umgebung nicht isoliert** – `/Eisenhauer/testing/` zeigt auf das Produktionsprojekt; `rules:deploy:testing` deployt ins Leere, Tests auf der Testing-URL laufen auf Live-Daten | High |
-| #409 | **„Letztes Backup" zeigt fehlgeschlagene Versuche** – `trackBackupFailure()` schreibt `lastAutoBackup` auch im Fehlerfall, die Anzeige liest denselben Schlüssel. Falsche Sicherheitsaussage | High |
-| #408 | Einstellungen → Daten: Buttons eindeutig beschriften (u. a. „Import .ics (BETA)"; nur JSON ist rückimportierbar) | Medium |
+| #406 | **Testing-Umgebung nicht isoliert** – `/Eisenhauer/testing/` zeigt auf das Produktionsprojekt; `rules:deploy:testing` deployt ins Leere, Tests auf der Testing-URL laufen auf Live-Daten. Braucht Zugriff auf die GitHub-Actions-Secrets der testing-Environment (Ops-Task) | High |
+| #409 | „Letztes Backup" zeigt fehlgeschlagene Versuche – **gefixt in PR #411 auf `testing`**, wartet auf Release nach `main` | High |
+| #408 | Einstellungen → Daten: Buttons eindeutig beschriften – **gefixt in PR #411 auf `testing`**, wartet auf Release nach `main` | Medium |
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
 | #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
-| #385 | Robustheits-Lücken aus dem Review von PR #382: Bulk-Save ohne Offline-Queue/Retry, Notizen ohne Gast→Login-Migration + fehlend im Backup, kein Click-Suppress nach Long-Press | Medium |
-| #348 | Meta: Rest-Punkte aus Cleanup 2026-07-08 – nur noch lokaler Stash + Dependency-Update-PR | Low |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
 | #296 | Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) | Low |
-| #351 | Import von Apple Reminders (.ics) – gehört unter #352 „Capture" | Low |
-| #266 | JSDoc-Kommentare für alle public functions | Low |
 
-> **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
+> **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245, und – bis zum 2026-08-28-Abgleich – #385, #348, #351, #266). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
 
 ### Backlog-Konsolidierung 2026-07-29
 
@@ -262,6 +258,10 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **PR #411** – #409 (fehlgeschlagene Backup-Versuche wurden als Erfolg angezeigt) und #408 (uneindeutige Daten-Button-Labels) behoben, auf `testing`. `trackBackupFailure()` schreibt den Fehlversuch jetzt in einen eigenen Key `lastBackupAttempt` statt in `lastAutoBackup`; die Anzeige hängt bei bekanntem Fehlschlag „· letzter Versuch fehlgeschlagen" an. Export/Import-Buttons benennen jetzt das Format (`Export (JSON)`/`Import (JSON)`), der .ics-Import nennt den Zweck (`Aus Apple Erinnerungen importieren (BETA)`). **Noch offen:** Release-PR `testing` → `main`, danach schließen sich #409/#408 nicht automatisch (Merge-Ziel war `testing`, nicht der Default-Branch) – beim Release-PR explizit „Closes #409"/„Closes #408" mitgeben oder manuell schließen.
+
+- **#385 / #348 / #351 / #266** – vier Issues waren bereits vor dem 2026-08-27-Rollout erledigt, standen aber noch in der Backlog-Tabelle (erst beim Abgleich gegen GitHub am 2026-08-28 aufgefallen): #385 (Robustheits-Lücken aus PR #382-Review: Bulk-Save über Offline-Queue/Retry, Notizen-Migration Gast→Login + im JSON-Backup, Click-Suppress nach Long-Press) in PR #390; #348 (Dependency-Updates Patch-Level + `npm audit fix`, 0 vulnerabilities) in PR #391; #351 (Import von Apple-Reminders-.ics-Export, sichtbarer Button in Einstellungen → Daten, später als BETA markiert in PR #395) in PR #392; #266 (JSDoc für ~34 zuvor undokumentierte Exports in 10 Modulen) in PR #393.
 
 - **#396 / #359 / #404** – Cloud-Backup auf Firestore migriert (PR #403), per Release #407 auf `main`, Security Rules am 2026-08-27 nach Produktion deployt. Rollout #404 vollständig durch: Backup, Restore, Cross-Device-Anzeige und Rotation in Produktion verifiziert. Architekturentscheidung ist Option 1 (Firestore), kein Blaze-Upgrade. Aus dem Rollout entstanden #406, #408 und #409
 
