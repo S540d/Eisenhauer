@@ -1,4 +1,4 @@
-<!-- Cache-Busting Info: v1.12.2 (d5c59c14) built at 1787919019839 -->
+<!-- Cache-Busting Info: v1.12.2 (d253a988) built at 1788071088711 -->
 <!doctype html>
 <html lang="de">
   <head>
@@ -8,7 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
     />
     <title>Eisenhauer Matrix</title>
-    <meta name="build-hash" content="d5c59c14" /><meta name="build-time" content="1787919019839" />
+    <meta name="build-hash" content="d253a988" /><meta name="build-time" content="1788071088711" />
 
     <!-- SEO -->
     <meta
@@ -63,9 +63,9 @@
     />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <script type="module" crossorigin src="/Eisenhauer/assets/index-CTh-iLj6.js?v=d5c59c14"></script>
+    <script type="module" crossorigin src="/Eisenhauer/assets/index-CcETMJid.js?v=d253a988"></script>
     <link rel="modulepreload" crossorigin href="/Eisenhauer/assets/firebase-opd4ehoM.js">
-    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-CKjGNAc6.css">
+    <link rel="stylesheet" crossorigin href="/Eisenhauer/assets/index-BPpUnS97.css">
   <link rel="manifest" href="/Eisenhauer/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/Eisenhauer/registerSW.js"></script></head>
   <body>
     <!-- Splash Screen -->
@@ -610,10 +610,28 @@
         <!-- JSON Export & Import -->
         <div class="settings-section">
           <h4 id="dataManagementTitle" class="settings-section-title">DATEN</h4>
+          <p class="settings-info" id="dataBackupGroupDesc">
+            Vollständig, lässt sich wieder einspielen
+          </p>
           <div class="settings-data-buttons">
-            <button id="exportJsonBtn" class="btn">Export</button>
-            <button id="importGuestTasksBtn" class="btn">Import</button>
+            <button
+              id="exportJsonBtn"
+              class="btn"
+              title="Vollständige Sicherung als JSON-Datei herunterladen"
+            >
+              Export (JSON)
+            </button>
+            <button
+              id="importGuestTasksBtn"
+              class="btn"
+              title="Eine zuvor exportierte JSON-Sicherung einspielen"
+            >
+              Import (JSON)
+            </button>
           </div>
+          <p class="settings-info" id="dataExportGroupDesc">
+            Zum Weiterverarbeiten, kein Rückweg in die App
+          </p>
           <div class="settings-data-buttons settings-export-extra">
             <button id="exportCsvBtn" class="btn">Export CSV</button>
             <button id="exportMarkdownBtn" class="btn">Export Markdown</button>
@@ -624,7 +642,7 @@
               class="btn"
               title="Apple Reminders / Erinnerungen .ics-Export importieren"
             >
-              Import .ics (BETA)
+              Aus Apple Erinnerungen importieren (BETA)
             </button>
             <input type="file" id="importIcsFileInput" accept=".ics" style="display: none" />
           </div>
@@ -1075,6 +1093,6 @@
     <!-- Firebase, localforage, and chart.js are loaded as npm packages and imported in script.js -->
 
     <!-- Register Service Worker with Cache Busting -->
-    <script src="js/sw-register.js?v=1787598227405"></script>
+    <script src="js/sw-register.js?v=1787919577069"></script>
   </body>
 </html>
