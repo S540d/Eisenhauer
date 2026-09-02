@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.sven4321.eisenhauer"
-        minSdk 21  // Android 5.0 Lollipop (per project-templates requirement)
+        minSdk 23  // Android 6.0 Marshmallow – androidbrowserhelper 2.7.2 requires minSdk 23 (Issue #368)
         targetSdk 36  // Android 16 – Google Play target API requirement (deadline 2026-08-31)
         versionCode 29
         versionName "1.12.4"  // Match PWA version
