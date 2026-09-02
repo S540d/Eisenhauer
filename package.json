@@ -55,7 +55,7 @@
   },
   "homepage": "https://s540d.github.io/Eisenhauer/",
   "dependencies": {
-    "@sentry/browser": "^10.71.0",
+    "@sentry/browser": "^10.72.0",
     "chart.js": "^4.5.1",
     "firebase": "^12.18.0",
     "localforage": "^1.10.0"
@@ -68,9 +68,9 @@
     "@typescript-eslint/parser": "^8.68.0",
     "@vitest/coverage-v8": "^4.1.11",
     "@vitest/ui": "^4.1.11",
-    "eslint": "^10.9.0",
+    "eslint": "^10.9.1",
     "globals": "^17.11.0",
-    "happy-dom": "^20.11.6",
+    "happy-dom": "^20.12.0",
     "husky": "^9.1.7",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3",
