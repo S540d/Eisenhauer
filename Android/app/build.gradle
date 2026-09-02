@@ -10,8 +10,8 @@ android {
         applicationId "com.sven4321.eisenhauer"
         minSdk 21  // Android 5.0 Lollipop (per project-templates requirement)
         targetSdk 36  // Android 16 – Google Play target API requirement (deadline 2026-08-31)
-        versionCode 28
-        versionName "1.12.3"  // Match PWA version
+        versionCode 29
+        versionName "1.12.4"  // Match PWA version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
