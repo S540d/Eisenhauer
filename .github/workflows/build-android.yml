@@ -112,14 +112,14 @@ jobs:
           ./gradlew assemble${{ steps.flavor.outputs.cap }}Release --no-daemon
 
       - name: Upload AAB (${{ steps.flavor.outputs.display }})
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: eisenhauer-${{ matrix.flavor }}-v${{ github.run_number }}-aab
           path: Android/app/build/outputs/bundle/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.aab
           retention-days: 90
 
       - name: Upload APK (${{ steps.flavor.outputs.display }})
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: eisenhauer-${{ matrix.flavor }}-v${{ github.run_number }}-apk
           path: Android/app/build/outputs/apk/${{ matrix.flavor }}Release/app-${{ matrix.flavor }}-release.apk
