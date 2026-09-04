@@ -233,19 +233,16 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-09-03)
+## Offene Issues (Backlog-Stand 2026-09-04)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. Am 2026-08-28 wurden #409 und #408 per PR #411 auf `testing` gefixt (Code fertig, Issues bleiben auf GitHub offen bis zum Release-PR nach `main` – siehe Branch-Konvention oben). Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen.
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen (siehe unten).
 
 | # | Titel | Prio |
 |---|-------|------|
 | #406 | **Testing-Umgebung nicht isoliert** – `/Eisenhauer/testing/` zeigt auf das Produktionsprojekt; `rules:deploy:testing` deployt ins Leere, Tests auf der Testing-URL laufen auf Live-Daten. Braucht Zugriff auf die GitHub-Actions-Secrets der testing-Environment (Ops-Task) | High |
-| #409 | „Letztes Backup" zeigt fehlgeschlagene Versuche – **gefixt in PR #411 auf `testing`**, wartet auf Release nach `main` | High |
-| #408 | Einstellungen → Daten: Buttons eindeutig beschriften – **gefixt in PR #411 auf `testing`**, wartet auf Release nach `main` | Medium |
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
 | #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
-| #296 | Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) | Low |
 
 > **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245, und – bis zum 2026-08-28-Abgleich – #385, #348, #351, #266). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
 
@@ -267,6 +264,8 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **#296** – Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) am 2026-09-04 geschlossen (`wontfix`). Grund: Die vorgeschlagene Architektur hätte ein langlebiges Refresh-Token eines Bot-Users im Klartext auf fremden Rechnern (`claude_desktop_config.json`) gespeichert – zusammen mit dem ohnehin öffentlichen Firebase-API-Key eine dauerhaft vergrößerte Angriffsfläche, die auch App Check nicht vollständig entschärft. Bei ohnehin niedriger Priorität steht der Aufwand nicht im Verhältnis zum Risiko. Bei erneutem Bedarf: Ansatz mit kurzlebigen, serverseitig ausgegebenen Tokens statt lokal gespeichertem Dauer-Credential evaluieren.
 
 - **2026-09-03 – Dependabot-Aufräumen:** 8 offene Dependabot-PRs (#418–#425) direkt auf `main` gemergt (CI grün, `review-gate` konfliktfrei): GitHub-Actions-Bumps (setup-node, setup-java, upload-artifact, beide `project-templates`-Reusable-Workflows), sowie npm-Bumps fast-uri, browserslist und die minor-and-patch-Gruppe (sentry/browser, eslint, happy-dom). Damit **Issue #428** (5 High-Severity-Alerts) geschlossen – fast-uri 3.1.7 und browserslist 4.28.8 decken laut Release-Notes alle 5 CVEs ab.
   - **Zwei Major-Bumps bewusst nicht gemergt** (siehe eigener Abschnitt „Blockierte Major-Dependency-Bumps" unten): #426 (Vite 7→8) und #427 (TypeScript 5→7). Beide PRs bleiben offen, kein Handlungsbedarf bis das Ökosystem nachzieht bzw. jemand den Vite-Config-Fix macht.
