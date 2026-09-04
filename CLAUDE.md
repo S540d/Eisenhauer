@@ -209,6 +209,15 @@ Betroffen sind `completedAt`, `recurring`, `dueDate`, `category` und `notes`. Vo
 - Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) mit gemocktem `firebase/firestore`. **Achtung:** Diese Suite ist in der CI per `--exclude` ausgeschlossen, die Tests laufen also nur lokal über `npm test`.
 - Beim Ergänzen weiterer optionaler Task-Felder: immer dem `deleteField()`-Muster folgen.
 
+### Blockierte Major-Dependency-Bumps (Stand 2026-09-03)
+
+Zwei Dependabot-PRs bleiben absichtlich offen, weil ihr `CI/CD - Automated Quality Checks`-Job real fehlschlägt (nicht CI-Flake, per Job-Log verifiziert):
+
+- **#427 – TypeScript 5.9.3 → 7.0.2:** `npm ci` bricht mit `ERESOLVE` ab. `@typescript-eslint/eslint-plugin@8.68.0` verlangt Peer `typescript@">=4.8.4 <6.1.0"` – TS7 (der neue Go-basierte Compiler, überspringt sogar Major 6) wird vom aktuell installierten `@typescript-eslint` schlicht nicht unterstützt. Kein Fix im Repo möglich, bis `@typescript-eslint/*` ein TS7-kompatibles Release bringt. Nichts tun, PR offen lassen.
+- **#426 – Vite 7.3.6 → 8.2.2:** `npm ci` läuft durch, aber `npm run build` bricht mit `TypeError: manualChunks is not a function` ab. Vite 8 nutzt den Rolldown-Bundler, der für `manualChunks` in `vite.config.js` nur noch eine **Funktion** akzeptiert, kein Objekt mehr. Real behebbar, aber erfordert eine Code-Änderung an `vite.config.js` über den reinen Dependency-Bump hinaus – bewusst nicht ungefragt umgesetzt.
+
+Beide PRs vor einem erneuten Dependency-Update-Lauf nicht blind mergen, nur weil `review-gate` grün ist – das prüft nur Merge-Konflikte, nicht den echten Build.
+
 ## Test-Coverage (Stand 2026-06-19)
 
 Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
@@ -224,19 +233,16 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-08-28)
+## Offene Issues (Backlog-Stand 2026-09-04)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. Am 2026-08-28 wurden #409 und #408 per PR #411 auf `testing` gefixt (Code fertig, Issues bleiben auf GitHub offen bis zum Release-PR nach `main` – siehe Branch-Konvention oben).
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen (siehe unten).
 
 | # | Titel | Prio |
 |---|-------|------|
 | #406 | **Testing-Umgebung nicht isoliert** – `/Eisenhauer/testing/` zeigt auf das Produktionsprojekt; `rules:deploy:testing` deployt ins Leere, Tests auf der Testing-URL laufen auf Live-Daten. Braucht Zugriff auf die GitHub-Actions-Secrets der testing-Environment (Ops-Task) | High |
-| #409 | „Letztes Backup" zeigt fehlgeschlagene Versuche – **gefixt in PR #411 auf `testing`**, wartet auf Release nach `main` | High |
-| #408 | Einstellungen → Daten: Buttons eindeutig beschriften – **gefixt in PR #411 auf `testing`**, wartet auf Release nach `main` | Medium |
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
 | #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
-| #296 | Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) | Low |
 
 > **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245, und – bis zum 2026-08-28-Abgleich – #385, #348, #351, #266). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
 
@@ -258,6 +264,12 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **#296** – Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) am 2026-09-04 geschlossen (`wontfix`). Grund: Die vorgeschlagene Architektur hätte ein langlebiges Refresh-Token eines Bot-Users im Klartext auf fremden Rechnern (`claude_desktop_config.json`) gespeichert – zusammen mit dem ohnehin öffentlichen Firebase-API-Key eine dauerhaft vergrößerte Angriffsfläche, die auch App Check nicht vollständig entschärft. Bei ohnehin niedriger Priorität steht der Aufwand nicht im Verhältnis zum Risiko. Bei erneutem Bedarf: Ansatz mit kurzlebigen, serverseitig ausgegebenen Tokens statt lokal gespeichertem Dauer-Credential evaluieren.
+
+- **2026-09-03 – Dependabot-Aufräumen:** 8 offene Dependabot-PRs (#418–#425) direkt auf `main` gemergt (CI grün, `review-gate` konfliktfrei): GitHub-Actions-Bumps (setup-node, setup-java, upload-artifact, beide `project-templates`-Reusable-Workflows), sowie npm-Bumps fast-uri, browserslist und die minor-and-patch-Gruppe (sentry/browser, eslint, happy-dom). Damit **Issue #428** (5 High-Severity-Alerts) geschlossen – fast-uri 3.1.7 und browserslist 4.28.8 decken laut Release-Notes alle 5 CVEs ab.
+  - **Zwei Major-Bumps bewusst nicht gemergt** (siehe eigener Abschnitt „Blockierte Major-Dependency-Bumps" unten): #426 (Vite 7→8) und #427 (TypeScript 5→7). Beide PRs bleiben offen, kein Handlungsbedarf bis das Ökosystem nachzieht bzw. jemand den Vite-Config-Fix macht.
+  - **Wichtig für künftige Dependency-Update-Läufe:** Dependabot-PRs für dieses Repo zielen alle auf `main` (kein `testing`-Zwischenschritt möglich, da Dependabot immer gegen den Default-Branch arbeitet). Trotzdem gilt die GLOBAL-POLICY-Regel „Merge auf main nur mit expliziter schriftlicher Freigabe" – vor jedem Dependabot-Merge-Batch erst den Nutzer fragen, auch wenn CI grün ist.
 
 - **PR #411** – #409 (fehlgeschlagene Backup-Versuche wurden als Erfolg angezeigt) und #408 (uneindeutige Daten-Button-Labels) behoben, auf `testing`. `trackBackupFailure()` schreibt den Fehlversuch jetzt in einen eigenen Key `lastBackupAttempt` statt in `lastAutoBackup`; die Anzeige hängt bei bekanntem Fehlschlag „· letzter Versuch fehlgeschlagen" an. Export/Import-Buttons benennen jetzt das Format (`Export (JSON)`/`Import (JSON)`), der .ics-Import nennt den Zweck (`Aus Apple Erinnerungen importieren (BETA)`). **Noch offen:** Release-PR `testing` → `main`, danach schließen sich #409/#408 nicht automatisch (Merge-Ziel war `testing`, nicht der Default-Branch) – beim Release-PR explizit „Closes #409"/„Closes #408" mitgeben oder manuell schließen.
 
