@@ -70,6 +70,22 @@ Play Console meldete für Release 25 (1.12.1), dass die R8-Optimierung nicht gre
 - **Bei einem Laufzeit-Crash:** keine pauschale `-keep class androidx.** { *; }`-Regel wiedereinsetzen (macht den Fix wirkungslos), sondern eine gezielte Regel für die konkret betroffene Klasse ergänzen.
 - Issue #367 bleibt bis zum erfolgreichen Gerätetest offen.
 
+### App-Start-Crash: ManageDataLauncherActivity fehlte im Manifest (Issue #434, PR #435/#436, gemerged, Release v1.12.5/vc30)
+
+Nach dem androidbrowserhelper-Upgrade 2.5.0 → 2.7.2 (#368/PR #374) stürzte die App auf **allen** Geräten beim Start ab (nicht API-Level-spezifisch – ursprünglicher Verdacht auf den zeitgleich angehobenen `minSdk` 21→23 traf nicht zu, ebenso wenig der R8-Verdacht aus #367). Logcat zeigte:
+
+```
+IllegalArgumentException: Component class
+com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity
+does not exist in com.sven4321.eisenhauer
+```
+
+- **Root Cause:** `androidbrowserhelper` referenziert `ManageDataLauncherActivity` zur Laufzeit per `PackageManager.setComponentEnabledSetting()` (in `LauncherActivity.launchTwa` → `addSiteSettingsShortcut`). Die Komponente ist **nicht** Teil der AAR selbst (verifiziert per AAR-Extraktion) – sie muss von der konsumierenden App explizit im eigenen `AndroidManifest.xml` deklariert werden. Das wurde beim 2.5.0→2.7.2-Upgrade übersehen.
+- **Fix:** `android:manageSpaceActivity`-Attribut am `<application>`-Element + `<activity>`-Deklaration mit `MANAGE_SPACE_URL`-Meta-Data (nutzt den bestehenden `${defaultUrl}`-Platzhalter pro Product-Flavor). Kein ProGuard/R8-Bezug – `-keep class com.google.androidbrowserhelper.** { *; }` deckte die Klasse bereits ab, das Problem lag rein im fehlenden Manifest-Eintrag.
+- **Verifiziert:** Debug-Build lokal auf dem ursprünglich betroffenen Gerät installiert (`adb install`), Logcat bestätigt sauberen Start (`TwaLauncher: Launching Trusted Web Activity`, keine FATAL EXCEPTION mehr). Signierter Release-Build (v1.12.5/vc30) danach separat gebaut, Signatur + Manifest-Inhalt im AAB verifiziert (`unzip` + `jarsigner -verify`), am 2026-09-05 in Play Store hochgeladen.
+- **Lehre:** Ein Dependency-Upgrade einer TWA-Helper-Library kann neue **Manifest-Anforderungen** einführen, die weder Compile- noch CI-Fehler erzeugen (Manifest-Merge läuft durch, R8 warnt nicht) – bricht ausschließlich zur Laufzeit. Nach jedem `androidbrowserhelper`-Versionssprung die Release-Notes auf neue Pflicht-Manifest-Einträge prüfen, nicht nur auf API-Level-Anforderungen.
+- **Noch offen:** Gerätetest des tatsächlich hochgeladenen, signierten Release-Builds (v1.12.5/vc30) auf dem Nexus/Android-Go-Gerät nach dem Play-Store-Rollout steht noch aus (nur der Debug-Build wurde lokal verifiziert). Der offene R8-Gerätetest aus #367 bleibt davon unberührt und weiterhin separat offen.
+
 ## Features
 
 ### Sentry Error Monitoring (Issue #263)
@@ -233,9 +249,9 @@ Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credenti
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-09-04)
+## Offene Issues (Backlog-Stand 2026-09-05)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen (siehe unten).
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen. Am 2026-09-05 kam #434 (App-Start-Crash) dazu und wurde noch am selben Tag per PR #435/#436 gefixt und mit Release v1.12.5/vc30 automatisch geschlossen (siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben).
 
 | # | Titel | Prio |
 |---|-------|------|
@@ -243,6 +259,8 @@ Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
 | #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
+
+> **Zusätzlich offen (nicht als eigenes Issue getrackt):** Gerätetest des signierten v1.12.5/vc30-Release-Builds auf dem Nexus/Android-Go-Gerät nach dem Play-Store-Rollout vom 2026-09-05 steht noch aus (User testet „später nochmal"). Nur der lokale Debug-Build wurde bisher am Gerät verifiziert.
 
 > **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245, und – bis zum 2026-08-28-Abgleich – #385, #348, #351, #266). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
 
@@ -264,6 +282,8 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **#434** – App-Start-Crash auf allen Geräten (fehlender `ManageDataLauncherActivity`-Manifest-Eintrag nach androidbrowserhelper-Upgrade), gefixt per PR #435 (testing) + #436 (main), Versionsbump auf 1.12.5/vc30 per PR #437/#438, Release am 2026-09-05 in Play Store hochgeladen, Git-Tag `v1.12.5`. Details siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben.
 
 - **#296** – Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) am 2026-09-04 geschlossen (`wontfix`). Grund: Die vorgeschlagene Architektur hätte ein langlebiges Refresh-Token eines Bot-Users im Klartext auf fremden Rechnern (`claude_desktop_config.json`) gespeichert – zusammen mit dem ohnehin öffentlichen Firebase-API-Key eine dauerhaft vergrößerte Angriffsfläche, die auch App Check nicht vollständig entschärft. Bei ohnehin niedriger Priorität steht der Aufwand nicht im Verhältnis zum Risiko. Bei erneutem Bedarf: Ansatz mit kurzlebigen, serverseitig ausgegebenen Tokens statt lokal gespeichertem Dauer-Credential evaluieren.
 
