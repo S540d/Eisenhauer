@@ -14,6 +14,7 @@
         android:resizeableActivity="true"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Translucent.NoTitleBar"
+        android:manageSpaceActivity="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
         tools:ignore="GoogleAppIndexingWarning">
 
         <!-- Main TWA Activity -->
@@ -58,6 +59,17 @@
             <meta-data
                 android:name="android.support.customtabs.trusted.FILE_PROVIDER_AUTHORITY"
                 android:value="com.sven4321.eisenhauer.fileprovider" />
+        </activity>
+
+        <!-- Manage space activity: androidbrowserhelper resolves this component by name
+             via PackageManager at TWA launch time (LauncherActivity.launchTwa), so it
+             must be declared here even though the app never starts it directly. -->
+        <activity
+            android:name="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.customtabs.trusted.MANAGE_SPACE_URL"
+                android:value="${defaultUrl}" />
         </activity>
 
         <!-- FileProvider for file sharing (if needed) -->
