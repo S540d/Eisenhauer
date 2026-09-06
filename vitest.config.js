@@ -19,6 +19,8 @@ export default defineConfig({
         'js/modules/translations.js',
         'js/modules/tasks.js',
         'js/modules/version.js',
+        'js/modules/undo.js',
+        'js/modules/onboarding.js',
       ],
       exclude: [
         'node_modules/',
