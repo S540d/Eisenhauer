@@ -38,6 +38,9 @@ export default defineConfig({
         'js/modules/offline-queue.js',
         'js/modules/drag-*.js',
         'js/modules/ui.js',
+        'js/modules/ui-render.js',
+        'js/modules/ui-modals-task.js',
+        'js/modules/ui-modals-settings.js',
         'js/modules/accessibility.js',
       ],
       thresholds: {
