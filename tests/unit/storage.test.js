@@ -24,7 +24,6 @@ import {
   getSyncStatus,
   exportData,
   requestPersistentStorage,
-  checkPersistentStorage,
   saveGuestTasks,
   loadGuestTasks,
   loadGuestNotes,
@@ -220,53 +219,6 @@ describe('Storage Module', () => {
       };
 
       const result = await requestPersistentStorage();
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('checkPersistentStorage', () => {
-    it('should check if storage is persisted', async () => {
-      const mockPersisted = vi.fn().mockResolvedValue(true);
-
-      global.navigator.storage = {
-        persisted: mockPersisted,
-      };
-
-      const result = await checkPersistentStorage();
-
-      expect(mockPersisted).toHaveBeenCalled();
-      expect(result).toBe(true);
-    });
-
-    it('should return false if persisted API is not available', async () => {
-      global.navigator.storage = undefined;
-
-      const result = await checkPersistentStorage();
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false if persisted check fails', async () => {
-      const mockPersisted = vi.fn().mockRejectedValue(new Error('Check failed'));
-
-      global.navigator.storage = {
-        persisted: mockPersisted,
-      };
-
-      const result = await checkPersistentStorage();
-
-      expect(result).toBe(false);
-    });
-
-    it('should handle false persisted status', async () => {
-      const mockPersisted = vi.fn().mockResolvedValue(false);
-
-      global.navigator.storage = {
-        persisted: mockPersisted,
-      };
-
-      const result = await checkPersistentStorage();
 
       expect(result).toBe(false);
     });

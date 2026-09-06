@@ -802,19 +802,3 @@ export async function requestPersistentStorage() {
   }
   return false;
 }
-
-/**
- * Check if persistent storage is active
- * @returns {Promise<boolean>} True if storage is persistent
- */
-export async function checkPersistentStorage() {
-  if (navigator.storage && navigator.storage.persisted) {
-    try {
-      const isPersisted = await navigator.storage.persisted();
-      return isPersisted;
-    } catch (_error) {
-      return false;
-    }
-  }
-  return false;
-}
