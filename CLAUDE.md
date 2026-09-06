@@ -234,24 +234,25 @@ Zwei Dependabot-PRs bleiben absichtlich offen, weil ihr `CI/CD - Automated Quali
 
 Beide PRs vor einem erneuten Dependency-Update-Lauf nicht blind mergen, nur weil `review-gate` grün ist – das prüft nur Merge-Konflikte, nicht den echten Build.
 
-## Test-Coverage (Stand 2026-06-19)
+## Test-Coverage (Stand 2026-09-06)
 
-Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
+Gemessen über die in `vitest.config.js` `coverage.include` gelisteten Module (aktuell 8: `store.js`, `notifications.js`, `error-handler.js`, `translations.js`, `tasks.js`, `version.js`, `undo.js`, `onboarding.js` – die letzten beiden seit PR #443/Issue #442 Punkt 1):
 
 | Metrik | Wert |
 |---|---|
-| Statements | 91.0% |
-| Branches | 80.8% |
-| Functions | 97.7% |
-| Lines | 90.9% |
+| Statements | 89.8% |
+| Branches | 80.0% |
+| Functions | 97.4% |
+| Lines | 89.7% |
 
-- Schwellenwerte in `vitest.config.js`: alle auf **80%** gesetzt (schlägt fehl wenn darunter)
-- CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
+- Schwellenwerte in `vitest.config.js`: alle auf **80%** gesetzt (schlägt fehl wenn darunter) – Branches liegt mit 80.0% knapp am Limit, bei weiteren `coverage.include`-Erweiterungen zuerst lokal mit `npm run test:coverage` prüfen
+- **`coverage.include` ist eine echte Allowlist** – nur gelistete Module zählen für Statements/Branches/etc., der Rest (u.a. `ui.js`/`ui-render.js`/`ui-modals-*.js`, `storage.js`, `drag-*.js`, `auth.js`) ist komplett unvermessen, nicht nur „ausgeschlossen". Siehe Issue #442 Punkt 1: schrittweise um 1-2 gut getestete Module pro PR erweitern statt in einem Rewrite
+- CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus (separates Problem: `storage.js` selbst ist ohnehin nicht in `coverage.include`)
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
 ## Offene Issues (Backlog-Stand 2026-09-05)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen. Am 2026-09-05 kam #434 (App-Start-Crash) dazu und wurde noch am selben Tag per PR #435/#436 gefixt und mit Release v1.12.5/vc30 automatisch geschlossen (siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben).
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen. Am 2026-09-05 kam #434 (App-Start-Crash) dazu und wurde noch am selben Tag per PR #435/#436 gefixt und mit Release v1.12.5/vc30 automatisch geschlossen (siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben). Am 2026-09-06 wurde der erste wiederkehrende Code-Health-Audit als #442 angelegt und alle 7 Befunde noch am selben Tag per PR #443 auf `testing` umgesetzt und geschlossen (siehe „Kürzlich erledigt" unten).
 
 | # | Titel | Prio |
 |---|-------|------|
@@ -282,6 +283,8 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **#442** – Erster wiederkehrender Code-Health-Audit (Standard aus project-templates#136), alle 7 Befunde per PR #443 auf `testing` umgesetzt, jeder Punkt ein eigener Commit, keine Verhaltensänderung: `vite.config.js` bereinigt (entfernte `firebase/storage`-Referenz), toten Export `checkPersistentStorage` entfernt, unbenutzte `chart.js`-Abhängigkeit entfernt (Precache ~1082 KiB → ~880 KiB), `buildTaskData()`-Hilfsfunktion in `storage.js` extrahiert (löst die 4-fache Duplikation, die den `deleteField()`-Bug verursacht hatte), hartkodierte `#9ca3af`-Vorkommen in `style.css` auf `var(--text-light)` umgestellt, `vitest.config.js` coverage.include um `undo.js`/`onboarding.js` erweitert (siehe Abschnitt „Test-Coverage" oben). **Größter Einzelpunkt:** `js/modules/ui.js` (2026 Zeilen, God-Module) in vier Dateien aufgeteilt – `ui-render.js` (Task-Rendering), `ui-modals-task.js` (Quick-Add/Edit-Recurring/Tutorial-Modal), `ui-modals-settings.js` (Settings/About/Personalize/Metrics/Backup-Modal), `ui.js` selbst bleibt als schlanker Re-Export-Barrel (Online/Sync-Status, Sprachumschaltung) für Abwärtskompatibilität bestehen – bestehende Importe aus `'./ui.js'` (`script.js`, Tests) mussten nicht angepasst werden. **Wichtig für künftige Änderungen an der UI-Modal-Logik:** neuer Code gehört in die passende `ui-*.js`-Datei, nicht zurück in `ui.js`.
 
 - **#434** – App-Start-Crash auf allen Geräten (fehlender `ManageDataLauncherActivity`-Manifest-Eintrag nach androidbrowserhelper-Upgrade), gefixt per PR #435 (testing) + #436 (main), Versionsbump auf 1.12.5/vc30 per PR #437/#438, Release am 2026-09-05 in Play Store hochgeladen, Git-Tag `v1.12.5`. Details siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben.
 
