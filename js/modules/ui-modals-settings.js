@@ -257,6 +257,11 @@ export function openAboutModal(version, currentLanguage = 'en') {
       if (el) el.textContent = text;
     };
     set('aboutTitle', lang.title);
+    set('aboutVersionTitle', lang.versionTitle);
+    set('aboutVersionInfo', version || '');
+    set('aboutLegalTitle', lang.legalTitle);
+    set('aboutImpressumLink', lang.impressumLink);
+    set('aboutPrivacyLink', lang.privacyLink);
     set('aboutLicenseTitle', lang.licenseTitle);
     set('aboutLicenseInfo', lang.licenseInfo);
     set('aboutNoCommercial', lang.noCommercial);
