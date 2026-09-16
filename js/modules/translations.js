@@ -109,6 +109,10 @@ export const translations = {
     },
     about: {
       title: 'Über',
+      versionTitle: 'VERSION',
+      legalTitle: 'RECHTLICHES',
+      impressumLink: 'Impressum',
+      privacyLink: 'Datenschutz',
       licenseTitle: 'APP-LIZENZ',
       licenseInfo: 'Open Source • MIT License',
       noCommercial: 'Keine kommerzielle Nutzung ohne Genehmigung',
@@ -355,6 +359,10 @@ export const translations = {
     },
     about: {
       title: 'About',
+      versionTitle: 'VERSION',
+      legalTitle: 'LEGAL',
+      impressumLink: 'Imprint',
+      privacyLink: 'Privacy Policy',
       licenseTitle: 'APP LICENSE',
       licenseInfo: 'Open Source • MIT License',
       noCommercial: 'No commercial use without permission',
@@ -1073,6 +1081,26 @@ export function updateLanguageUI(renderAllTasksCallback) {
   const aboutTitle = document.getElementById('aboutTitle');
   if (aboutTitle) {
     aboutTitle.textContent = lang.about.title;
+  }
+
+  const aboutVersionTitle = document.getElementById('aboutVersionTitle');
+  if (aboutVersionTitle) {
+    aboutVersionTitle.textContent = lang.about.versionTitle;
+  }
+
+  const aboutLegalTitle = document.getElementById('aboutLegalTitle');
+  if (aboutLegalTitle) {
+    aboutLegalTitle.textContent = lang.about.legalTitle;
+  }
+
+  const aboutImpressumLink = document.getElementById('aboutImpressumLink');
+  if (aboutImpressumLink) {
+    aboutImpressumLink.textContent = lang.about.impressumLink;
+  }
+
+  const aboutPrivacyLink = document.getElementById('aboutPrivacyLink');
+  if (aboutPrivacyLink) {
+    aboutPrivacyLink.textContent = lang.about.privacyLink;
   }
 
   const aboutLicenseTitle = document.getElementById('aboutLicenseTitle');
