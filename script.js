@@ -10,13 +10,11 @@
 import { isStaging, isTesting } from './js/modules/env-config.js';
 import { initSentry } from './js/modules/sentry.js';
 
-// Import npm packages for local storage and charting
+// Import npm packages for local storage
 import localforage from 'localforage';
-import Chart from 'chart.js/auto';
 
 // Make libraries globally available for legacy code
 window.localforage = localforage;
-window.Chart = Chart;
 
 // Import Firebase services (Modular SDK V2)
 import { auth, db } from './js/modules/firebase-init.js';

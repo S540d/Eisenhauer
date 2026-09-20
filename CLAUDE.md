@@ -70,6 +70,22 @@ Play Console meldete für Release 25 (1.12.1), dass die R8-Optimierung nicht gre
 - **Bei einem Laufzeit-Crash:** keine pauschale `-keep class androidx.** { *; }`-Regel wiedereinsetzen (macht den Fix wirkungslos), sondern eine gezielte Regel für die konkret betroffene Klasse ergänzen.
 - Issue #367 bleibt bis zum erfolgreichen Gerätetest offen.
 
+### App-Start-Crash: ManageDataLauncherActivity fehlte im Manifest (Issue #434, PR #435/#436, gemerged, Release v1.12.5/vc30)
+
+Nach dem androidbrowserhelper-Upgrade 2.5.0 → 2.7.2 (#368/PR #374) stürzte die App auf **allen** Geräten beim Start ab (nicht API-Level-spezifisch – ursprünglicher Verdacht auf den zeitgleich angehobenen `minSdk` 21→23 traf nicht zu, ebenso wenig der R8-Verdacht aus #367). Logcat zeigte:
+
+```
+IllegalArgumentException: Component class
+com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity
+does not exist in com.sven4321.eisenhauer
+```
+
+- **Root Cause:** `androidbrowserhelper` referenziert `ManageDataLauncherActivity` zur Laufzeit per `PackageManager.setComponentEnabledSetting()` (in `LauncherActivity.launchTwa` → `addSiteSettingsShortcut`). Die Komponente ist **nicht** Teil der AAR selbst (verifiziert per AAR-Extraktion) – sie muss von der konsumierenden App explizit im eigenen `AndroidManifest.xml` deklariert werden. Das wurde beim 2.5.0→2.7.2-Upgrade übersehen.
+- **Fix:** `android:manageSpaceActivity`-Attribut am `<application>`-Element + `<activity>`-Deklaration mit `MANAGE_SPACE_URL`-Meta-Data (nutzt den bestehenden `${defaultUrl}`-Platzhalter pro Product-Flavor). Kein ProGuard/R8-Bezug – `-keep class com.google.androidbrowserhelper.** { *; }` deckte die Klasse bereits ab, das Problem lag rein im fehlenden Manifest-Eintrag.
+- **Verifiziert:** Debug-Build lokal auf dem ursprünglich betroffenen Gerät installiert (`adb install`), Logcat bestätigt sauberen Start (`TwaLauncher: Launching Trusted Web Activity`, keine FATAL EXCEPTION mehr). Signierter Release-Build (v1.12.5/vc30) danach separat gebaut, Signatur + Manifest-Inhalt im AAB verifiziert (`unzip` + `jarsigner -verify`), am 2026-09-05 in Play Store hochgeladen.
+- **Lehre:** Ein Dependency-Upgrade einer TWA-Helper-Library kann neue **Manifest-Anforderungen** einführen, die weder Compile- noch CI-Fehler erzeugen (Manifest-Merge läuft durch, R8 warnt nicht) – bricht ausschließlich zur Laufzeit. Nach jedem `androidbrowserhelper`-Versionssprung die Release-Notes auf neue Pflicht-Manifest-Einträge prüfen, nicht nur auf API-Level-Anforderungen.
+- **Noch offen:** Gerätetest des tatsächlich hochgeladenen, signierten Release-Builds (v1.12.5/vc30) auf dem Nexus/Android-Go-Gerät nach dem Play-Store-Rollout steht noch aus (nur der Debug-Build wurde lokal verifiziert). Der offene R8-Gerätetest aus #367 bleibt davon unberührt und weiterhin separat offen.
+
 ## Features
 
 ### Sentry Error Monitoring (Issue #263)
@@ -209,33 +225,35 @@ Betroffen sind `completedAt`, `recurring`, `dueDate`, `category` und `notes`. Vo
 - Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) mit gemocktem `firebase/firestore`. **Achtung:** Diese Suite ist in der CI per `--exclude` ausgeschlossen, die Tests laufen also nur lokal über `npm test`.
 - Beim Ergänzen weiterer optionaler Task-Felder: immer dem `deleteField()`-Muster folgen.
 
-### Blockierte Major-Dependency-Bumps (Stand 2026-09-03)
+### Blockierte Major-Dependency-Bumps (Stand 2026-09-07)
 
-Zwei Dependabot-PRs bleiben absichtlich offen, weil ihr `CI/CD - Automated Quality Checks`-Job real fehlschlägt (nicht CI-Flake, per Job-Log verifiziert):
+Vier Dependabot-PRs bleiben absichtlich offen, weil ihr `CI/CD - Automated Quality Checks`-Job real fehlschlägt (nicht CI-Flake, per Job-Log verifiziert):
 
 - **#427 – TypeScript 5.9.3 → 7.0.2:** `npm ci` bricht mit `ERESOLVE` ab. `@typescript-eslint/eslint-plugin@8.68.0` verlangt Peer `typescript@">=4.8.4 <6.1.0"` – TS7 (der neue Go-basierte Compiler, überspringt sogar Major 6) wird vom aktuell installierten `@typescript-eslint` schlicht nicht unterstützt. Kein Fix im Repo möglich, bis `@typescript-eslint/*` ein TS7-kompatibles Release bringt. Nichts tun, PR offen lassen.
 - **#426 – Vite 7.3.6 → 8.2.2:** `npm ci` läuft durch, aber `npm run build` bricht mit `TypeError: manualChunks is not a function` ab. Vite 8 nutzt den Rolldown-Bundler, der für `manualChunks` in `vite.config.js` nur noch eine **Funktion** akzeptiert, kein Objekt mehr. Real behebbar, aber erfordert eine Code-Änderung an `vite.config.js` über den reinen Dependency-Bump hinaus – bewusst nicht ungefragt umgesetzt.
+- **#449/#450 – @vitest/ui bzw. vitest 4.1.11 → 5.0.0:** gleicher Root Cause, daher als ein Punkt geführt. `npm ci` bricht mit `ERESOLVE` ab: Dependabot bumpt jeweils nur ein Vitest-Teilpaket, `@vitest/coverage-v8` bleibt auf `^4.1.11` stehen und verlangt Peer `vitest@4.1.11` – Konflikt mit dem gleichzeitig geforderten `vitest@^5.0.0`. Selbst nach einem synchronen Bump aller `@vitest/*`-Pakete auf 5.0.0 wäre als nächstes Hindernis Node im Weg: vitest 5 verlangt `^22.12.0 || ^24.0.0 || >=26.0.0`, das Repo läuft laut `.nvmrc` auf Node 20. Kein Fix im Rahmen eines reinen Dependency-Bumps – erfordert einen bewusst geplanten Node-Versions-Wechsel (CI-Runner, Android-Toolchain-Kompatibilität prüfen) plus einen zusammengefassten `@vitest/*`-Group-Bump. Beide PRs offen lassen, bis das angegangen wird.
 
-Beide PRs vor einem erneuten Dependency-Update-Lauf nicht blind mergen, nur weil `review-gate` grün ist – das prüft nur Merge-Konflikte, nicht den echten Build.
+Alle vier PRs vor einem erneuten Dependency-Update-Lauf nicht blind mergen, nur weil `review-gate` grün ist – das prüft nur Merge-Konflikte, nicht den echten Build.
 
-## Test-Coverage (Stand 2026-06-19)
+## Test-Coverage (Stand 2026-09-06)
 
-Gemessen über 9 Unit-Test-Suites (ohne `storage.test.js`, die Firebase-Credentials benötigt):
+Gemessen über die in `vitest.config.js` `coverage.include` gelisteten Module (aktuell 8: `store.js`, `notifications.js`, `error-handler.js`, `translations.js`, `tasks.js`, `version.js`, `undo.js`, `onboarding.js` – die letzten beiden seit PR #443/Issue #442 Punkt 1):
 
 | Metrik | Wert |
 |---|---|
-| Statements | 91.0% |
-| Branches | 80.8% |
-| Functions | 97.7% |
-| Lines | 90.9% |
+| Statements | 89.8% |
+| Branches | 80.0% |
+| Functions | 97.4% |
+| Lines | 89.7% |
 
-- Schwellenwerte in `vitest.config.js`: alle auf **80%** gesetzt (schlägt fehl wenn darunter)
-- CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus
+- Schwellenwerte in `vitest.config.js`: alle auf **80%** gesetzt (schlägt fehl wenn darunter) – Branches liegt mit 80.0% knapp am Limit, bei weiteren `coverage.include`-Erweiterungen zuerst lokal mit `npm run test:coverage` prüfen
+- **`coverage.include` ist eine echte Allowlist** – nur gelistete Module zählen für Statements/Branches/etc., der Rest (u.a. `ui.js`/`ui-render.js`/`ui-modals-*.js`, `storage.js`, `drag-*.js`, `auth.js`) ist komplett unvermessen, nicht nur „ausgeschlossen". Siehe Issue #442 Punkt 1: schrittweise um 1-2 gut getestete Module pro PR erweitern statt in einem Rewrite
+- CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus (separates Problem: `storage.js` selbst ist ohnehin nicht in `coverage.include`)
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-09-04)
+## Offene Issues (Backlog-Stand 2026-09-05)
 
-Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen (siehe unten).
+Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen. Am 2026-09-05 kam #434 (App-Start-Crash) dazu und wurde noch am selben Tag per PR #435/#436 gefixt und mit Release v1.12.5/vc30 automatisch geschlossen (siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben). Am 2026-09-06 wurde der erste wiederkehrende Code-Health-Audit als #442 angelegt und alle 7 Befunde noch am selben Tag per PR #443 auf `testing` umgesetzt und geschlossen (siehe „Kürzlich erledigt" unten).
 
 | # | Titel | Prio |
 |---|-------|------|
@@ -243,6 +261,8 @@ Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
 | #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
+
+> **Zusätzlich offen (nicht als eigenes Issue getrackt):** Gerätetest des signierten v1.12.5/vc30-Release-Builds auf dem Nexus/Android-Go-Gerät nach dem Play-Store-Rollout vom 2026-09-05 steht noch aus (User testet „später nochmal"). Nur der lokale Debug-Build wurde bisher am Gerät verifiziert.
 
 > **Wichtig für künftige Backlog-Updates:** Diese Tabelle listete zuvor mehrere längst geschlossene Issues (#263, #265, #256, #245, und – bis zum 2026-08-28-Abgleich – #385, #348, #351, #266). Vor dem Ergänzen bitte gegen die tatsächlich offenen Issues auf GitHub abgleichen, nicht blind fortschreiben.
 
@@ -265,11 +285,17 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 
 ### Kürzlich erledigt
 
+- **#442** – Erster wiederkehrender Code-Health-Audit (Standard aus project-templates#136), alle 7 Befunde per PR #443 auf `testing` umgesetzt, jeder Punkt ein eigener Commit, keine Verhaltensänderung: `vite.config.js` bereinigt (entfernte `firebase/storage`-Referenz), toten Export `checkPersistentStorage` entfernt, unbenutzte `chart.js`-Abhängigkeit entfernt (Precache ~1082 KiB → ~880 KiB), `buildTaskData()`-Hilfsfunktion in `storage.js` extrahiert (löst die 4-fache Duplikation, die den `deleteField()`-Bug verursacht hatte), hartkodierte `#9ca3af`-Vorkommen in `style.css` auf `var(--text-light)` umgestellt, `vitest.config.js` coverage.include um `undo.js`/`onboarding.js` erweitert (siehe Abschnitt „Test-Coverage" oben). **Größter Einzelpunkt:** `js/modules/ui.js` (2026 Zeilen, God-Module) in vier Dateien aufgeteilt – `ui-render.js` (Task-Rendering), `ui-modals-task.js` (Quick-Add/Edit-Recurring/Tutorial-Modal), `ui-modals-settings.js` (Settings/About/Personalize/Metrics/Backup-Modal), `ui.js` selbst bleibt als schlanker Re-Export-Barrel (Online/Sync-Status, Sprachumschaltung) für Abwärtskompatibilität bestehen – bestehende Importe aus `'./ui.js'` (`script.js`, Tests) mussten nicht angepasst werden. **Wichtig für künftige Änderungen an der UI-Modal-Logik:** neuer Code gehört in die passende `ui-*.js`-Datei, nicht zurück in `ui.js`.
+
+- **#434** – App-Start-Crash auf allen Geräten (fehlender `ManageDataLauncherActivity`-Manifest-Eintrag nach androidbrowserhelper-Upgrade), gefixt per PR #435 (testing) + #436 (main), Versionsbump auf 1.12.5/vc30 per PR #437/#438, Release am 2026-09-05 in Play Store hochgeladen, Git-Tag `v1.12.5`. Details siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben.
+
 - **#296** – Cross-App Task Integration (MCP-Server, Firebase REST + Bot-User) am 2026-09-04 geschlossen (`wontfix`). Grund: Die vorgeschlagene Architektur hätte ein langlebiges Refresh-Token eines Bot-Users im Klartext auf fremden Rechnern (`claude_desktop_config.json`) gespeichert – zusammen mit dem ohnehin öffentlichen Firebase-API-Key eine dauerhaft vergrößerte Angriffsfläche, die auch App Check nicht vollständig entschärft. Bei ohnehin niedriger Priorität steht der Aufwand nicht im Verhältnis zum Risiko. Bei erneutem Bedarf: Ansatz mit kurzlebigen, serverseitig ausgegebenen Tokens statt lokal gespeichertem Dauer-Credential evaluieren.
 
 - **2026-09-03 – Dependabot-Aufräumen:** 8 offene Dependabot-PRs (#418–#425) direkt auf `main` gemergt (CI grün, `review-gate` konfliktfrei): GitHub-Actions-Bumps (setup-node, setup-java, upload-artifact, beide `project-templates`-Reusable-Workflows), sowie npm-Bumps fast-uri, browserslist und die minor-and-patch-Gruppe (sentry/browser, eslint, happy-dom). Damit **Issue #428** (5 High-Severity-Alerts) geschlossen – fast-uri 3.1.7 und browserslist 4.28.8 decken laut Release-Notes alle 5 CVEs ab.
-  - **Zwei Major-Bumps bewusst nicht gemergt** (siehe eigener Abschnitt „Blockierte Major-Dependency-Bumps" unten): #426 (Vite 7→8) und #427 (TypeScript 5→7). Beide PRs bleiben offen, kein Handlungsbedarf bis das Ökosystem nachzieht bzw. jemand den Vite-Config-Fix macht.
+  - **Major-Bumps bewusst nicht gemergt** (siehe eigener Abschnitt „Blockierte Major-Dependency-Bumps" unten): #426 (Vite 7→8) und #427 (TypeScript 5→7). Beide PRs bleiben offen, kein Handlungsbedarf bis das Ökosystem nachzieht bzw. jemand den Vite-Config-Fix macht.
   - **Wichtig für künftige Dependency-Update-Läufe:** Dependabot-PRs für dieses Repo zielen alle auf `main` (kein `testing`-Zwischenschritt möglich, da Dependabot immer gegen den Default-Branch arbeitet). Trotzdem gilt die GLOBAL-POLICY-Regel „Merge auf main nur mit expliziter schriftlicher Freigabe" – vor jedem Dependabot-Merge-Batch erst den Nutzer fragen, auch wenn CI grün ist.
+
+- **2026-09-07 – Dependabot-Batch #445–#450:** Sechs neue Dependabot-PRs gegen `main` (strukturell normal, siehe oben). Vier reine CI-/Patch-Bumps ohne Build-Relevanz nach grünem CI und Freigabe gemergt: #445 (peaceiris/actions-gh-pages 3→4), #446 (actions/checkout 5→7), #447 (android-actions/setup-android 3→4), #448 (minor-and-patch-Gruppe, 5 Updates). #449/#450 (vitest-Ökosystem 4→5) reihen sich als drittes Beispiel in „Blockierte Major-Dependency-Bumps" ein – siehe dort für den Root Cause (Peer-Dependency-Konflikt plus Node-Versions-Anforderung).
 
 - **PR #411** – #409 (fehlgeschlagene Backup-Versuche wurden als Erfolg angezeigt) und #408 (uneindeutige Daten-Button-Labels) behoben, auf `testing`. `trackBackupFailure()` schreibt den Fehlversuch jetzt in einen eigenen Key `lastBackupAttempt` statt in `lastAutoBackup`; die Anzeige hängt bei bekanntem Fehlschlag „· letzter Versuch fehlgeschlagen" an. Export/Import-Buttons benennen jetzt das Format (`Export (JSON)`/`Import (JSON)`), der .ics-Import nennt den Zweck (`Aus Apple Erinnerungen importieren (BETA)`). **Noch offen:** Release-PR `testing` → `main`, danach schließen sich #409/#408 nicht automatisch (Merge-Ziel war `testing`, nicht der Default-Branch) – beim Release-PR explizit „Closes #409"/„Closes #408" mitgeben oder manuell schließen.
 
@@ -310,6 +336,7 @@ Epic #95 (Production-Grade Dev Setup) wurde am 2026-05-30 als `completed` geschl
 - `--no-verify` nur auf explizite Bitte
 - **Vor jedem Push: lokale Tests ausführen** (`npm test` bzw. projektspezifischer Test-Befehl) – kein Push ohne grüne lokale Tests
 - **Kein Merge bei CI-Fail** – Branch Protection erzwingt das technisch; nie mit `--admin` umgehen außer auf explizite Bitte
+- **Zugehöriges Issue beim Merge schließen** (Issue #111): `Closes #X` im PR-Body greift nur beim Merge in den Default-Branch (`main`) — bei PRs nach `testing` also **nie**. Das Issue nach dem Merge manuell schließen (`gh issue close <N> -c "Umgesetzt in #<PR>, gemergt nach \`testing\`."`), sonst bleiben erledigte Issues offen liegen. Ausnahme: Sammel-/Meta-Issues, die ein Teil-PR nur anteilig abarbeitet — die bleiben offen. `Closes #X` trotzdem im PR-Body lassen: es erzeugt die sichtbare Verknüpfung.
 
 ## [ANDROID BUILD – PFLICHTREGELN]
 
@@ -319,6 +346,10 @@ Epic #95 (Production-Grade Dev Setup) wurde am 2026-05-30 als `completed` geschl
 - **JAVA_HOME** für EAS/Expo-Builds explizit auf Android Studio JBR setzen: `export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"`
 - **Gradle-Lock nach Absturz:** Bei "Cannot lock file hash cache"-Fehler Daemons stoppen: `pkill -f GradleDaemon`, dann Workingdir leeren und neu starten
 - **AAB-Archiv:** Gebaute Release-AABs in einem **gitignored** `aab-archive/`-Verzeichnis im Repo-Root ablegen (in `.gitignore` aufnehmen – AABs sind 3–110 MB und gehören nie in die Git-History). Benennung: `<Projekt>-vX.Y.Z-vc<versionCode>-YYYY-MM-DD.aab`. **Retention: max. 2 Dateien** (aktuelles Release + ein Vorgänger für schnelles Rollback); ältere AABs löschen. Der Git-Tag `vX.Y.Z` ist die eigentliche Release-Baseline – ältere AABs lassen sich daraus jederzeit neu bauen.
+
+## [CODE HEALTH AUDIT]
+
+- **Wiederkehrendes Code-Health-Audit** (Ballast/Architektur: God Components, Boilerplate-Duplikation, toter Code, Dependency-Bloat, Test-Integrität, Design-Konsistenz, Bundle-Größe) alle ~3 Monate oder ~15 gemergte Feature-PRs (je nachdem was zuerst eintritt). Checkliste + Ablauf: https://github.com/S540d/project-templates/blob/main/dev-standards/code-health-audit.md — Ergebnis ist immer ein Issue im jeweiligen Projekt-Repo, nie in project-templates.
 
 ## [CI – CACHE-CLEANUP]
 

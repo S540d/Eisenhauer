@@ -209,6 +209,53 @@ export async function loadUserTasks(userId, db) {
 }
 
 /**
+ * Build the Firestore document payload for a task.
+ *
+ * Shared by every code path that writes a task document (single save, bulk
+ * save, restore, guest import, update) so the optional-field handling can't
+ * drift between copies again - that drift is what caused the deleteField()
+ * bug documented on updateTaskInFirestore below (only `notes` had it at
+ * first, the other four optional fields kept a stale value after clearing).
+ *
+ * @param {object} task - Task object
+ * @param {object} [options]
+ * @param {boolean} [options.forUpdate] - Use deleteField() for empty optional
+ *   fields (merge writes) instead of omitting them (create writes)
+ * @returns {object} Firestore-ready task data
+ */
+function buildTaskData(task, { forUpdate = false } = {}) {
+  const taskData = {
+    text: task.text,
+    segment: task.segment,
+    checked: task.checked || false,
+    // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
+    createdAt: task.createdAt || serverTimestamp(),
+  };
+
+  if (forUpdate) {
+    // setDoc uses merge:true, so an omitted field would just keep its old
+    // value in Firestore. Every optional field here is user-clearable — the
+    // edit dialog can drop the due date, the category ("Keine"), the notes
+    // and the recurring config, and un-checking a Done task resets
+    // completedAt — so an absent/empty value must explicitly delete the
+    // field rather than silently leaving a stale one behind.
+    taskData.completedAt = task.completedAt ? task.completedAt : deleteField();
+    taskData.recurring = task.recurring ? task.recurring : deleteField();
+    taskData.dueDate = task.dueDate ? task.dueDate : deleteField();
+    taskData.category = task.category ? task.category : deleteField();
+    taskData.notes = task.notes ? task.notes : deleteField();
+  } else {
+    if (task.completedAt) taskData.completedAt = task.completedAt;
+    if (task.recurring) taskData.recurring = task.recurring;
+    if (task.dueDate) taskData.dueDate = task.dueDate;
+    if (task.category) taskData.category = task.category;
+    if (task.notes) taskData.notes = task.notes;
+  }
+
+  return taskData;
+}
+
+/**
  * Save a single task to Firestore (with offline queue support)
  * @param {object} task - Task object
  * @param {string} userId - User ID
@@ -224,34 +271,7 @@ export async function saveTaskToFirestore(task, userId, db) {
     return;
   }
 
-  const taskData = {
-    text: task.text,
-    segment: task.segment,
-    checked: task.checked || false,
-    // Preserve existing createdAt if it exists (for moved tasks), otherwise use server timestamp
-    createdAt: task.createdAt || serverTimestamp(),
-  };
-
-  // Add optional fields
-  if (task.completedAt) {
-    taskData.completedAt = task.completedAt;
-  }
-
-  if (task.recurring) {
-    taskData.recurring = task.recurring;
-  }
-
-  if (task.dueDate) {
-    taskData.dueDate = task.dueDate;
-  }
-
-  if (task.category) {
-    taskData.category = task.category;
-  }
-
-  if (task.notes) {
-    taskData.notes = task.notes;
-  }
+  const taskData = buildTaskData(task);
 
   // Add to offline queue with retry logic and error handling
   try {
@@ -318,32 +338,7 @@ export async function saveAllTasksToFirestore(tasksBySegment, userId, db) {
             }
 
             const docRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
-            const taskData = {
-              text: task.text,
-              segment: task.segment,
-              checked: task.checked || false,
-              createdAt: task.createdAt || serverTimestamp(),
-            };
-
-            if (task.completedAt) {
-              taskData.completedAt = task.completedAt;
-            }
-
-            if (task.recurring) {
-              taskData.recurring = task.recurring;
-            }
-
-            if (task.dueDate) {
-              taskData.dueDate = task.dueDate;
-            }
-
-            if (task.category) {
-              taskData.category = task.category;
-            }
-
-            if (task.notes) {
-              taskData.notes = task.notes;
-            }
+            const taskData = buildTaskData(task);
 
             batch.set(docRef, taskData);
           });
@@ -418,18 +413,7 @@ export async function replaceAllTasksInFirestore(tasksBySegment, userId, db) {
 
     allTasks.slice(i, i + BATCH_LIMIT).forEach((task) => {
       const docRef = doc(tasksRef, task.id.toString());
-      const taskData = {
-        text: task.text,
-        segment: task.segment,
-        checked: task.checked || false,
-        createdAt: task.createdAt || serverTimestamp(),
-      };
-
-      if (task.completedAt) taskData.completedAt = task.completedAt;
-      if (task.recurring) taskData.recurring = task.recurring;
-      if (task.dueDate) taskData.dueDate = task.dueDate;
-      if (task.category) taskData.category = task.category;
-      if (task.notes) taskData.notes = task.notes;
+      const taskData = buildTaskData(task);
 
       batch.set(docRef, taskData);
     });
@@ -448,26 +432,7 @@ export async function replaceAllTasksInFirestore(tasksBySegment, userId, db) {
 export async function updateTaskInFirestore(task, userId, db) {
   if (!userId || !db) return;
 
-  const updateData = {
-    text: task.text,
-    segment: task.segment,
-    checked: task.checked || false,
-    // Preserve existing createdAt if it exists, otherwise use server timestamp
-    createdAt: task.createdAt || serverTimestamp(),
-  };
-
-  // setDoc uses merge:true below, so an omitted field would just keep its old
-  // value in Firestore. Every optional field here is user-clearable — the edit
-  // dialog can drop the due date, the category ("Keine"), the notes and the
-  // recurring config, and un-checking a Done task resets completedAt — so an
-  // absent/empty value must explicitly delete the field rather than silently
-  // leaving a stale one behind. Without this the cleared value reappears on
-  // the next load (Issue: clearing fields did not persist for signed-in users).
-  updateData.completedAt = task.completedAt ? task.completedAt : deleteField();
-  updateData.recurring = task.recurring ? task.recurring : deleteField();
-  updateData.dueDate = task.dueDate ? task.dueDate : deleteField();
-  updateData.category = task.category ? task.category : deleteField();
-  updateData.notes = task.notes ? task.notes : deleteField();
+  const updateData = buildTaskData(task, { forUpdate: true });
 
   // Add to offline queue with retry logic
   await offlineQueue.add(
@@ -639,33 +604,7 @@ export async function importGuestTasksToFirestore(userId, db) {
     Object.keys(tasksData).forEach((segmentId) => {
       tasksData[segmentId].forEach((task) => {
         const docRef = doc(collection(db, 'users', userId, 'tasks'), task.id.toString());
-
-        const taskData = {
-          text: task.text,
-          segment: task.segment,
-          checked: task.checked || false,
-          createdAt: task.createdAt || serverTimestamp(),
-        };
-
-        if (task.completedAt) {
-          taskData.completedAt = task.completedAt;
-        }
-
-        if (task.recurring) {
-          taskData.recurring = task.recurring;
-        }
-
-        if (task.dueDate) {
-          taskData.dueDate = task.dueDate;
-        }
-
-        if (task.category) {
-          taskData.category = task.category;
-        }
-
-        if (task.notes) {
-          taskData.notes = task.notes;
-        }
+        const taskData = buildTaskData(task);
 
         batch.set(docRef, taskData);
         importedCount++;
@@ -795,22 +734,6 @@ export async function requestPersistentStorage() {
   if (navigator.storage && navigator.storage.persist) {
     try {
       const isPersisted = await navigator.storage.persist();
-      return isPersisted;
-    } catch (_error) {
-      return false;
-    }
-  }
-  return false;
-}
-
-/**
- * Check if persistent storage is active
- * @returns {Promise<boolean>} True if storage is persistent
- */
-export async function checkPersistentStorage() {
-  if (navigator.storage && navigator.storage.persisted) {
-    try {
-      const isPersisted = await navigator.storage.persisted();
       return isPersisted;
     } catch (_error) {
       return false;
