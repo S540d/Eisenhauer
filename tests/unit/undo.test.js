@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { showUndoDelete, showUndoToggle } from '../../js/modules/undo.js';
+import { showUndoDelete, showUndoToggle, clearUndoStack } from '../../js/modules/undo.js';
 
 describe('Undo Module', () => {
   beforeEach(() => {
@@ -121,6 +121,41 @@ describe('Undo Module', () => {
       undoButton.click();
 
       expect(onSuccess).toHaveBeenCalled();
+    });
+  });
+
+  describe('showToast replacing an existing toast', () => {
+    it('clears the pending auto-hide timer of the previous toast', () => {
+      const task = { id: 1, text: 'Task A', segment: 1, checked: false };
+
+      showUndoDelete(task, 'en');
+      expect(document.querySelector('.undo-toast')).toBeTruthy();
+
+      // Trigger a second toast before the first one's timeout fires,
+      // exercising the "clear the previous pending timer" branch.
+      showUndoDelete(task, 'en');
+
+      // The old toast's fade-out removal is deferred; once it completes,
+      // only the new toast should remain.
+      vi.advanceTimersByTime(300);
+      expect(document.querySelectorAll('.undo-toast').length).toBe(1);
+    });
+  });
+
+  describe('clearUndoStack', () => {
+    it('hides the current toast and clears its timer', () => {
+      const task = { id: 1, text: 'Task A', segment: 1, checked: false };
+      showUndoDelete(task, 'en');
+      expect(document.querySelector('.undo-toast')).toBeTruthy();
+
+      clearUndoStack();
+
+      vi.advanceTimersByTime(300);
+      expect(document.querySelector('.undo-toast')).toBeFalsy();
+    });
+
+    it('does nothing harmful when there is no active toast', () => {
+      expect(() => clearUndoStack()).not.toThrow();
     });
   });
 

@@ -53,6 +53,11 @@ describe('Onboarding Module', () => {
       expect(() => dismissSegmentDemo(1)).not.toThrow();
       expect(isSegmentDemoDismissed(1)).toBe(true);
     });
+
+    it('tolerates valid JSON that is not an array', () => {
+      localStorage.setItem('onboardingDemoDismissed', '{"1":true}');
+      expect(isSegmentDemoDismissed(1)).toBe(false);
+    });
   });
 
   describe('shouldShowSegmentDemo', () => {
