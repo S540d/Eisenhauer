@@ -5,7 +5,6 @@
  */
 
 import localforage from 'localforage';
-import { isGuestMode } from './auth.js';
 import { OfflineQueue } from './offline-queue.js';
 import { ErrorHandler } from './error-handler.js';
 import { showError, showInfo, showWarning } from './notifications.js';
@@ -23,6 +22,12 @@ import {
 
 // Initialize offline queue
 const offlineQueue = new OfflineQueue('eisenhauer-sync-queue');
+
+// Optional task fields the user can explicitly clear (due date, category
+// "Keine", notes, recurring config, un-checking a Done task). Single source
+// of truth for buildTaskData() below — see its docstring for why this can't
+// be a per-field list duplicated across branches.
+const CLEARABLE_TASK_FIELDS = ['completedAt', 'recurring', 'dueDate', 'category', 'notes'];
 
 // UI update callback
 let syncStatusCallback = null;
@@ -100,18 +105,6 @@ export function getSyncStatus() {
     isProcessing: offlineQueue.isProcessing,
     isOnline: navigator.onLine,
   };
-}
-
-/**
- * Save all tasks to storage (Firebase or LocalForage depending on auth state)
- * @param {object} tasks - Tasks object to save
- */
-export async function saveTasks(tasks) {
-  // Use guest mode saving if in guest mode (delegates to localForage)
-  if (typeof isGuestMode !== 'undefined' && isGuestMode) {
-    await saveGuestTasks(tasks);
-  }
-  // If logged in, tasks are saved to Firestore automatically via individual save functions
 }
 
 /**
@@ -239,17 +232,13 @@ function buildTaskData(task, { forUpdate = false } = {}) {
     // and the recurring config, and un-checking a Done task resets
     // completedAt — so an absent/empty value must explicitly delete the
     // field rather than silently leaving a stale one behind.
-    taskData.completedAt = task.completedAt ? task.completedAt : deleteField();
-    taskData.recurring = task.recurring ? task.recurring : deleteField();
-    taskData.dueDate = task.dueDate ? task.dueDate : deleteField();
-    taskData.category = task.category ? task.category : deleteField();
-    taskData.notes = task.notes ? task.notes : deleteField();
+    for (const field of CLEARABLE_TASK_FIELDS) {
+      taskData[field] = task[field] ? task[field] : deleteField();
+    }
   } else {
-    if (task.completedAt) taskData.completedAt = task.completedAt;
-    if (task.recurring) taskData.recurring = task.recurring;
-    if (task.dueDate) taskData.dueDate = task.dueDate;
-    if (task.category) taskData.category = task.category;
-    if (task.notes) taskData.notes = task.notes;
+    for (const field of CLEARABLE_TASK_FIELDS) {
+      if (task[field]) taskData[field] = task[field];
+    }
   }
 
   return taskData;
@@ -474,6 +463,54 @@ export async function deleteTaskFromFirestore(taskId, userId, db) {
     },
     3 // maxRetries
   );
+}
+
+/**
+ * Delete many tasks from Firestore in one or more batches (chunked at 500
+ * ops/batch, the Firestore writeBatch limit). Used for bulk operations (e.g.
+ * Purge Done) where deleting every task individually via deleteTaskFromFirestore
+ * would serialize N round-trips. Individual deletes keep using
+ * deleteTaskFromFirestore with its offline-queue retry logic.
+ * @param {Array<string|number>} taskIds - Task IDs to delete
+ * @param {string} userId - User ID
+ * @param {object} db - Firestore database instance
+ */
+export async function deleteTasksFromFirestore(taskIds, userId, db) {
+  if (!userId || !db || !taskIds || taskIds.length === 0) return;
+
+  const BATCH_LIMIT = 500;
+  const chunks = [];
+  for (let i = 0; i < taskIds.length; i += BATCH_LIMIT) {
+    chunks.push(taskIds.slice(i, i + BATCH_LIMIT));
+  }
+
+  try {
+    await offlineQueue.add(
+      'deleteAllTasks',
+      async () => {
+        for (const chunk of chunks) {
+          const batch = writeBatch(db);
+          chunk.forEach((taskId) => {
+            const docRef = doc(collection(db, 'users', userId, 'tasks'), taskId.toString());
+            batch.delete(docRef);
+          });
+          await batch.commit();
+        }
+      },
+      {
+        userId,
+        taskCount: taskIds.length,
+      },
+      3 // maxRetries
+    );
+  } catch (error) {
+    console.warn('Firebase bulk delete failed, continuing with local storage:', error);
+    ErrorHandler.handleStorageError(error, {
+      operation: 'deleteTasksFromFirestore',
+      data: { taskCount: taskIds.length },
+      silent: false,
+    });
+  }
 }
 
 /**

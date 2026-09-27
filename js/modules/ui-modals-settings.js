@@ -3,8 +3,58 @@
  * Settings, About, Personalize, Metrics and Backup/Restore modals
  */
 
-import { translations } from './translations.js';
+import { translations, getLocale } from './translations.js';
 import { listBackups } from './backup.js';
+
+/**
+ * Determine the currently active theme from localStorage
+ * @returns {'dark'|'light'|'system'} Active theme
+ */
+function getActiveTheme() {
+  const savedTheme = localStorage.getItem('darkMode');
+  if (savedTheme === 'true') return 'dark';
+  if (savedTheme === 'false') return 'light';
+  return 'system';
+}
+
+/**
+ * Sync a set of theme toggle buttons' active state with the current theme
+ * @param {NodeListOf<Element>} themeButtons - Theme buttons to sync
+ */
+function syncThemeButtons(themeButtons) {
+  const activeTheme = getActiveTheme();
+  themeButtons.forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.theme === activeTheme);
+  });
+}
+
+/**
+ * Apply a theme choice: persist it and toggle the dark-mode class
+ * @param {string} theme - 'dark', 'light' or 'system'
+ */
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    localStorage.setItem('darkMode', 'true');
+    document.body.classList.add('dark-mode');
+  } else if (theme === 'system') {
+    localStorage.removeItem('darkMode');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.body.classList.toggle('dark-mode', prefersDark);
+  }
+}
+
+/**
+ * Handle a click on a theme button within the given scope: update its
+ * active-state siblings and apply the chosen theme
+ * @param {Element} themeBtn - The clicked theme button
+ * @param {NodeListOf<Element>} themeButtons - All theme buttons in this modal
+ */
+function handleThemeButtonClick(themeBtn, themeButtons) {
+  const theme = themeBtn.dataset.theme;
+  themeButtons.forEach((b) => b.classList.remove('active'));
+  themeBtn.classList.add('active');
+  applyTheme(theme);
+}
 
 /**
  * Open settings modal
@@ -28,23 +78,7 @@ export function openSettingsModal(
   }
   // Update theme toggle button active state based on current theme
   const themeButtons = document.querySelectorAll('.theme-btn');
-  const savedTheme = localStorage.getItem('darkMode');
-  let activeTheme = 'system'; // Default to system
-
-  if (savedTheme === 'true') {
-    activeTheme = 'dark';
-  } else if (savedTheme === 'false') {
-    activeTheme = 'light';
-  } else if (savedTheme === null) {
-    activeTheme = 'system';
-  }
-
-  themeButtons.forEach((btn) => {
-    btn.classList.remove('active');
-    if (btn.dataset.theme === activeTheme) {
-      btn.classList.add('active');
-    }
-  });
+  syncThemeButtons(themeButtons);
 
   // Use event delegation for all settings modal buttons to avoid listener loss after DOM changes
   // Remove any existing delegated listener first
@@ -60,25 +94,7 @@ export function openSettingsModal(
     // Handle theme button clicks
     const themeBtn = target.closest('.theme-btn');
     if (themeBtn) {
-      const theme = themeBtn.dataset.theme;
-
-      // Update active state
-      document.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
-      themeBtn.classList.add('active');
-
-      // Update theme
-      if (theme === 'dark') {
-        localStorage.setItem('darkMode', 'true');
-        document.body.classList.add('dark-mode');
-      } else if (theme === 'system') {
-        localStorage.removeItem('darkMode');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) {
-          document.body.classList.add('dark-mode');
-        } else {
-          document.body.classList.remove('dark-mode');
-        }
-      }
+      handleThemeButtonClick(themeBtn, document.querySelectorAll('.theme-btn'));
       return;
     }
 
@@ -189,9 +205,7 @@ export function openSettingsModal(
 
         const renderLastBackup = (timestamp) => {
           if (timestamp) {
-            const formattedDate = new Date(timestamp).toLocaleString(
-              lang === 'de' ? 'de-DE' : 'en-US'
-            );
+            const formattedDate = new Date(timestamp).toLocaleString(getLocale(lang));
             lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}${failedSuffix}`;
           } else {
             lastBackupInfo.textContent = `${lastBackupLabel}: ${neverText}${failedSuffix}`;
@@ -311,23 +325,7 @@ export function openPersonalizeModal(currentLanguage = 'en') {
 
   // Update theme toggle button active state based on current theme
   const themeButtons = personalizeModal.querySelectorAll('.theme-btn');
-  const savedTheme = localStorage.getItem('darkMode');
-  let activeTheme = 'system'; // Default to system
-
-  if (savedTheme === 'true') {
-    activeTheme = 'dark';
-  } else if (savedTheme === 'false') {
-    activeTheme = 'light';
-  } else if (savedTheme === null) {
-    activeTheme = 'system';
-  }
-
-  themeButtons.forEach((btn) => {
-    btn.classList.remove('active');
-    if (btn.dataset.theme === activeTheme) {
-      btn.classList.add('active');
-    }
-  });
+  syncThemeButtons(themeButtons);
 
   // Update language toggle button active state
   const langButtons = personalizeModal.querySelectorAll('.lang-btn');
@@ -387,25 +385,7 @@ export function openPersonalizeModal(currentLanguage = 'en') {
     // Handle theme button clicks
     const themeBtn = target.closest('.theme-btn');
     if (themeBtn) {
-      const theme = themeBtn.dataset.theme;
-
-      // Update active state
-      personalizeModal.querySelectorAll('.theme-btn').forEach((b) => b.classList.remove('active'));
-      themeBtn.classList.add('active');
-
-      // Update theme
-      if (theme === 'dark') {
-        localStorage.setItem('darkMode', 'true');
-        document.body.classList.add('dark-mode');
-      } else if (theme === 'system') {
-        localStorage.removeItem('darkMode');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (prefersDark) {
-          document.body.classList.add('dark-mode');
-        } else {
-          document.body.classList.remove('dark-mode');
-        }
-      }
+      handleThemeButtonClick(themeBtn, personalizeModal.querySelectorAll('.theme-btn'));
       return;
     }
 
@@ -598,9 +578,7 @@ export function openBackupRestoreModal(backups, onRestore, currentLanguage = 'en
 
       const dateLine = document.createElement('span');
       dateLine.className = 'backup-restore-date';
-      dateLine.textContent = backup.date.toLocaleString(
-        currentLanguage === 'de' ? 'de-DE' : 'en-US'
-      );
+      dateLine.textContent = backup.date.toLocaleString(getLocale(currentLanguage));
       info.appendChild(dateLine);
 
       if (typeof backup.taskCount === 'number') {

@@ -8,6 +8,8 @@
  * Permission is only requested when the user explicitly enables reminders in Settings.
  */
 
+import { getLocale } from './translations.js';
+
 const STORAGE_KEY_ENABLED = 'remindersEnabled';
 const STORAGE_KEY_DAYS = 'reminderDaysBefore';
 
@@ -154,7 +156,7 @@ function formatDueDate(dueDate, lang) {
       const ts = Number(dueDate);
       date = new Date(ts);
     }
-    return date.toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US', {
+    return date.toLocaleDateString(getLocale(lang), {
       day: 'numeric',
       month: 'long',
     });
