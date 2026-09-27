@@ -54,37 +54,15 @@ Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeig
 
 ### Edge-to-Edge / Android 15 API-Deprecations (Issue #368, PR #374, gemerged)
 
-Play Console meldete die Verwendung nicht mehr unterstützter Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`/`LAYOUT_IN_DISPLAY_CUTOUT_MODE_*`, seit Android 15 deprecated). Die gemeldeten Stacktraces zeigen ausschließlich auf `com.google.androidbrowserhelper`-Klassen (`EdgeToEdgeUtils`, `LauncherActivity`) – die App selbst ruft keine dieser APIs direkt auf (Konfiguration läuft rein über `STATUS_BAR_COLOR`/`NAVIGATION_BAR_COLOR`-Metadaten in `AndroidManifest.xml`, siehe oben).
+`androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs in der TWA-Library; kein eigener App-Code betroffen. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#edge-to-edge--android-15-api-deprecations-issue-368-pr-374-gemerged).
 
-- `com.google.androidbrowserhelper:androidbrowserhelper` **2.5.0 → 2.7.2** angehoben (`Android/app/build.gradle`) – Version 2.7.1 behebt laut Changelog explizit „Deprecations in launcher activity“, 2.7.0 bringt zusätzlich Edge-to-Edge-Support für den Splash-Screen.
-- Kein eigener App-Code betroffen, daher keine weiteren Änderungen nötig.
-- Nach dem nächsten Play-Store-Upload prüfen, ob die Play-Console-Warnung verschwindet.
+### R8/ProGuard-Optimierung (Issue #367, PR #375, gemerged – Gerätetest offen)
 
-### R8/ProGuard-Optimierung (Issue #367, PR #375, gemerged – Verifikation offen)
-
-Play Console meldete für Release 25 (1.12.1), dass die R8-Optimierung nicht greift. Ursache: `Android/app/proguard-rules.pro` enthielt `-keep class androidx.** { *; }`, was **jede** AndroidX-Klasse pauschal vor Shrinking/Optimierung/Obfuskation schützte – da AndroidX den Großteil des TWA-Codes ausmacht, blieb R8 praktisch nichts zu tun übrig.
-
-- Die Regel wurde entfernt. Bewusst **unverändert** blieben `-keep class com.google.androidbrowserhelper.** { *; }` (Reflection) und `-keep class androidx.browser.** { *; }` (prozessübergreifende Bindung, TWA-kritisch) sowie das breite `-dontwarn androidx.**` (als `TODO(#367)` im File markiert, bis ein sauberer Release-Build zeigt, welche Warnungen real sind).
-- **⚠️ Nicht auf einem echten Gerät getestet.** Kein CI-Check baut einen Android-Release (die Workflows bauen die PWA + Playwright-E2E gegen den Browser) – grünes CI im gemergten PR #375 sagt zu diesem Fix nichts aus. Zu aggressiv entfernte Keep-Regeln brechen erst zur Laufzeit (TWA startet nicht, Splash hängt, Deep Links tot), nicht beim Build.
-- **Vor dem nächsten Play-Store-Upload zwingend:** `cd Android && ./gradlew bundleRelease` bauen und auf einem echten Gerät testen (App-Start, Splash, Deep Links, Status-/Navigationsleisten-Farbe). Ein Debug-Build genügt nicht – `minifyEnabled` gilt nur für `release`.
-- **Bei einem Laufzeit-Crash:** keine pauschale `-keep class androidx.** { *; }`-Regel wiedereinsetzen (macht den Fix wirkungslos), sondern eine gezielte Regel für die konkret betroffene Klasse ergänzen.
-- Issue #367 bleibt bis zum erfolgreichen Gerätetest offen.
+Blanket `-keep class androidx.** { *; }` aus `proguard-rules.pro` entfernt (machte R8-Shrinking wirkungslos). **Nicht auf echtem Gerät verifiziert** – vor jedem Play-Store-Upload zwingend `./gradlew bundleRelease` + Gerätetest. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#r8proguard-optimierung-greift-nicht-issue-367-pr-375-gemerged--verifikation-offen).
 
 ### App-Start-Crash: ManageDataLauncherActivity fehlte im Manifest (Issue #434, PR #435/#436, gemerged, Release v1.12.5/vc30)
 
-Nach dem androidbrowserhelper-Upgrade 2.5.0 → 2.7.2 (#368/PR #374) stürzte die App auf **allen** Geräten beim Start ab (nicht API-Level-spezifisch – ursprünglicher Verdacht auf den zeitgleich angehobenen `minSdk` 21→23 traf nicht zu, ebenso wenig der R8-Verdacht aus #367). Logcat zeigte:
-
-```
-IllegalArgumentException: Component class
-com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity
-does not exist in com.sven4321.eisenhauer
-```
-
-- **Root Cause:** `androidbrowserhelper` referenziert `ManageDataLauncherActivity` zur Laufzeit per `PackageManager.setComponentEnabledSetting()` (in `LauncherActivity.launchTwa` → `addSiteSettingsShortcut`). Die Komponente ist **nicht** Teil der AAR selbst (verifiziert per AAR-Extraktion) – sie muss von der konsumierenden App explizit im eigenen `AndroidManifest.xml` deklariert werden. Das wurde beim 2.5.0→2.7.2-Upgrade übersehen.
-- **Fix:** `android:manageSpaceActivity`-Attribut am `<application>`-Element + `<activity>`-Deklaration mit `MANAGE_SPACE_URL`-Meta-Data (nutzt den bestehenden `${defaultUrl}`-Platzhalter pro Product-Flavor). Kein ProGuard/R8-Bezug – `-keep class com.google.androidbrowserhelper.** { *; }` deckte die Klasse bereits ab, das Problem lag rein im fehlenden Manifest-Eintrag.
-- **Verifiziert:** Debug-Build lokal auf dem ursprünglich betroffenen Gerät installiert (`adb install`), Logcat bestätigt sauberen Start (`TwaLauncher: Launching Trusted Web Activity`, keine FATAL EXCEPTION mehr). Signierter Release-Build (v1.12.5/vc30) danach separat gebaut, Signatur + Manifest-Inhalt im AAB verifiziert (`unzip` + `jarsigner -verify`), am 2026-09-05 in Play Store hochgeladen.
-- **Lehre:** Ein Dependency-Upgrade einer TWA-Helper-Library kann neue **Manifest-Anforderungen** einführen, die weder Compile- noch CI-Fehler erzeugen (Manifest-Merge läuft durch, R8 warnt nicht) – bricht ausschließlich zur Laufzeit. Nach jedem `androidbrowserhelper`-Versionssprung die Release-Notes auf neue Pflicht-Manifest-Einträge prüfen, nicht nur auf API-Level-Anforderungen.
-- **Noch offen:** Gerätetest des tatsächlich hochgeladenen, signierten Release-Builds (v1.12.5/vc30) auf dem Nexus/Android-Go-Gerät nach dem Play-Store-Rollout steht noch aus (nur der Debug-Build wurde lokal verifiziert). Der offene R8-Gerätetest aus #367 bleibt davon unberührt und weiterhin separat offen.
+Ein androidbrowserhelper-Upgrade kann neue **Manifest-Pflichteinträge** einführen, die weder Compile- noch CI-Fehler erzeugen, sondern nur zur Laufzeit crashen (hier: `ManageDataLauncherActivity` fehlte). Nach jedem `androidbrowserhelper`-Versionssprung die Release-Notes auf neue Pflicht-Manifest-Einträge prüfen. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#app-start-crash-managedatalauncheractivity-fehlte-im-manifest-issue-434-pr-435436-gemerged-release-v1125vc30).
 
 ## Features
 
@@ -125,16 +103,9 @@ Cloud-Backup liegt seit Issue #396 in **Firestore** (`users/{userId}/backups/{ba
 
 ### Firestore Security Rules: jetzt versioniert (Issue #396)
 
-`firestore.rules` war bis #396 **reine Dokumentation** – es gab kein `firebase.json`, also keinen Deploy-Weg. Die Datei war ausserdem stark gedriftet: `hasOnlyAllowedFields()` erlaubte nur `text`/`segment`/`checked`/`createdAt`, die App schreibt aber längst `notes`, `dueDate`, `category`, `recurring`, `completedAt`; die Create-Regel forderte `createdAt == request.time`, während die App eine Zahl schreibt.
+Deploy über `npm run rules:deploy` (bzw. `rules:deploy:testing`), Konfiguration in `firebase.json`. **`hasOnlyAllowedFields()` ist bewusst eine Obermenge** aller je geschriebenen Felder (Service-Worker-Cache → ältere Clients müssen weiterlaufen): neue optionale Task-Felder erst dort deployen, **dann** den schreibenden Client ausliefern, sonst lehnen die Rules den Write ab. Seit 2026-08-27 deployt (Rollout #404) in `eisenhauer-matrix` **und** `eisenhauer-testing`, Rollback-Pfad unter `docs/rules-backup/firestore.rules.pre-404`. `docs/FIREBASE_SECURITY_RULES.md` ist in Teilen überholt. `npm run rules:deploy:testing` ist derzeit wirkungslos (#406, Testing zeigt auf Produktionsprojekt).
 
-- Deploy jetzt über `npm run rules:deploy` (bzw. `rules:deploy:testing`), Konfiguration in `firebase.json`.
-- **`hasOnlyAllowedFields()` ist bewusst eine Obermenge** aller je geschriebenen Felder: Die PWA wird per Service Worker gecacht, ältere Client-Versionen müssen nach einem Rules-Deploy weiterlaufen.
-- **Regel für neue optionale Task-Felder:** erst in `hasOnlyAllowedFields()` deployen, **dann** den Client ausliefern, der das Feld schreibt. Sonst lehnen die Rules die Writes ab.
-- `docs/FIREBASE_SECURITY_RULES.md` ist in Teilen überholt (dokumentiert `segment` als String-Enum und 500 Zeichen Textlimit) und oben entsprechend markiert.
-- **Seit 2026-08-27 sind die Regeln deployt** (Rollout #404), in `eisenhauer-matrix` **und** `eisenhauer-testing`. Der vorherige Stand liegt als Rollback-Pfad unter `docs/rules-backup/firestore.rules.pre-404`.
-- **Der vorherige deployte Stand war nicht zu streng, sondern zu locker:** `allow read, write: if request.auth.uid == userId` ohne jede Feldvalidierung, und **ohne** `match`-Block für `backups`. Da Firestore-Regeln sich nicht auf Subcollections vererben, fiel jeder Backup-Write auf das abschliessende Deny durch – das war die Ursache des kaputten Cloud-Backups. Der Deploy war damit eine **Verschärfung**, nicht die im Dokument beschriebene harmlose Obermengen-Erweiterung.
-- **Vor jeder künftigen Regelverschärfung** dieselbe Prüfung fahren wie in #404: JSON-Export der echten Daten gegen die neuen Bedingungen laufen lassen (deckt alle Aufgaben ab, nicht nur eine Stichprobe – `loadUserTasks()` liest per `docSnap.data()` das rohe Dokument), dann die Playground-Fälle aus `docs/DATENSICHERUNG.md`, Abschnitt 5.1.
-- **`npm run rules:deploy:testing` ist derzeit wirkungslos** – die Testing-App zeigt auf das Produktionsprojekt, kein Client spricht mit `eisenhauer-testing` (#406).
+Der Rollout #404 war tatsächlich eine **Verschärfung** (vorher fehlte Feldvalidierung UND der `match`-Block für `backups` komplett, wodurch jeder Backup-Write durchs abschliessende Deny fiel) – vor jeder künftigen Regelverschärfung dieselbe Prüfung fahren. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#firestore-regeln-deploy-404-war-eine-verschärfung-keine-harmlose-erweiterung-issue-396-406408409).
 
 ### Export CSV & Markdown (Issue #179, PR #332)
 
@@ -213,17 +184,13 @@ Klick auf den Task-Text öffnet das bestehende Quick-Add-Modal (`openQuickAddMod
 
 ### Optionale Task-Felder löschen: `deleteField()` statt Feld weglassen
 
-`updateTaskInFirestore()` in `js/modules/storage.js` schreibt mit `setDoc(..., { merge: true })`. Ein **weggelassenes** Feld bedeutet dort „alten Wert behalten" – nicht „Feld löschen". Optionale Felder, die der Nutzer leeren kann, dürfen deshalb nie über ein `if (task.x) { updateData.x = task.x; }` geschrieben werden, sondern müssen den leeren Fall explizit als `deleteField()` senden:
+`updateTaskInFirestore()` schreibt mit `setDoc(..., { merge: true })` – ein **weggelassenes** Feld heißt dort „alten Wert behalten", nicht „löschen". Optionale Felder (`completedAt`, `recurring`, `dueDate`, `category`, `notes`), die der Nutzer leeren kann, müssen den leeren Fall deshalb immer explizit als `deleteField()` senden:
 
 ```js
 updateData.dueDate = task.dueDate ? task.dueDate : deleteField();
 ```
 
-Betroffen sind `completedAt`, `recurring`, `dueDate`, `category` und `notes`. Vorher war nur `notes` so umgesetzt (PR #373); die übrigen vier hatten den Bug, was durch den Edit-Dialog aus PR #378 sichtbar wurde: Fälligkeit/Kategorie im Dialog leeren → lokal korrekt weg → nach dem Reload wieder da. `completedAt` traf es beim Abwählen einer erledigten Aufgabe (`task.completedAt = null` in `tasks.js`), was die Metriken verfälscht.
-
-- **Nur der Firebase-Modus war betroffen** – `saveGuestTasks()` serialisiert das Task-Objekt komplett und kennt das Problem nicht.
-- Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) mit gemocktem `firebase/firestore`. **Achtung:** Diese Suite ist in der CI per `--exclude` ausgeschlossen, die Tests laufen also nur lokal über `npm test`.
-- Beim Ergänzen weiterer optionaler Task-Felder: immer dem `deleteField()`-Muster folgen.
+Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) – laufen nur lokal über `npm test` (CI-`--exclude`). Details/Fund-Historie: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#optionale-task-felder-blieben-nach-dem-leeren-in-firestore-stehen-pr-383-gefunden-beim-review-von-pr-382).
 
 ### Blockierte Major-Dependency-Bumps (Stand 2026-09-07)
 
