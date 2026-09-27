@@ -39,6 +39,7 @@ import {
   updateLanguageUI,
   detectBrowserLanguage,
   initLoginTranslations,
+  getLocale,
 } from './js/modules/translations.js';
 import {
   tasks,
@@ -66,6 +67,7 @@ import {
   replaceAllTasksInFirestore,
   updateTaskInFirestore,
   deleteTaskFromFirestore,
+  deleteTasksFromFirestore,
   exportData,
   importData,
   requestPersistentStorage,
@@ -1139,9 +1141,23 @@ function setupEventListeners() {
       const confirmed = confirm(lang.settings.q4DetoxConfirm);
       if (!confirmed) return;
 
-      // Move all Q4 tasks to Q5 (Done)
+      // Move all Q4 tasks to Q5 (Done) in memory first, then persist and
+      // render once instead of once per task (avoids N full matrix re-renders
+      // and N sequential Firestore round-trips for a bulk operation).
       for (const task of q4Tasks) {
-        handleMoveTask(task.id, SEGMENTS.IGNORE, SEGMENTS.DONE);
+        moveTask(task.id, SEGMENTS.IGNORE, SEGMENTS.DONE);
+      }
+
+      if (currentUser && db && !isGuestMode) {
+        saveAllTasks().catch((error) => {
+          ErrorHandler.handleStorageError(error, {
+            operation: 'q4Detox',
+            data: { taskCount: q4Tasks.length },
+            silent: false,
+          });
+        });
+      } else {
+        saveGuestTasks(tasks);
       }
 
       // Show success message
@@ -1173,9 +1189,16 @@ function setupEventListeners() {
           : `Permanently delete ${doneTasks.length} completed task(s)?`;
       if (!confirm(confirmMsg)) return;
 
+      const doneTaskIds = doneTasks.map((task) => task.id);
       for (const task of [...doneTasks]) {
         deleteTask(task.id, SEGMENTS.DONE);
-        syncDelete(task.id);
+      }
+
+      // Persist once as a batch instead of one Firestore round-trip per task
+      if (currentUser && db && !isGuestMode) {
+        deleteTasksFromFirestore(doneTaskIds, currentUser.uid, db);
+      } else {
+        saveGuestTasks(tasks);
       }
 
       renderTasksWithCallbacks();
@@ -1254,7 +1277,7 @@ function setupEventListeners() {
         if (lastBackupInfo) {
           const lang = getCurrentLanguage();
           const date = new Date();
-          const formattedDate = date.toLocaleString(lang === 'de' ? 'de-DE' : 'en-US');
+          const formattedDate = date.toLocaleString(getLocale(lang));
           const lastBackupLabel = lang === 'de' ? 'Letztes Backup' : 'Last backup';
           lastBackupInfo.textContent = `${lastBackupLabel}: ${formattedDate}`;
         }

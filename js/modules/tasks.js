@@ -679,6 +679,17 @@ export function getRecurringDescription(recurring, translations) {
 }
 
 /**
+ * Return a shallow copy of a task without the transient isUrgent flag
+ * @param {object} task - Task object
+ * @returns {object} Task copy without isUrgent
+ */
+function stripUrgent(task) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { isUrgent, ...taskWithoutUrgent } = task;
+  return taskWithoutUrgent;
+}
+
+/**
  * Apply smart rules to tasks (e.g., mark as urgent if due date is near)
  * @param {object} tasksToProcess - Tasks object grouped by segment
  * @param {boolean} smartFunctionsEnabled - Whether smart functions are enabled
@@ -694,11 +705,7 @@ export function applySmartRules(
     // If smart functions are disabled, clear any isUrgent flags
     const clearedTasks = {};
     for (let segmentId = 1; segmentId <= 5; segmentId++) {
-      clearedTasks[segmentId] = (tasksToProcess[segmentId] || []).map((task) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { isUrgent, ...taskWithoutUrgent } = task;
-        return taskWithoutUrgent;
-      });
+      clearedTasks[segmentId] = (tasksToProcess[segmentId] || []).map(stripUrgent);
     }
     return clearedTasks;
   }
@@ -712,9 +719,7 @@ export function applySmartRules(
     processedTasks[segmentId] = segmentTasks.map((task) => {
       // Skip if no due date or task is already completed (segment 5)
       if (!task.dueDate || task.segment === SEGMENTS.DONE) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { isUrgent, ...taskWithoutUrgent } = task;
-        return taskWithoutUrgent;
+        return stripUrgent(task);
       }
 
       // Parse due date (support both ISO string and timestamp)
@@ -725,13 +730,7 @@ export function applySmartRules(
       const timeUntilDue = dueDate - now;
       const shouldBeUrgent = timeUntilDue <= thresholdMs;
 
-      if (shouldBeUrgent) {
-        return { ...task, isUrgent: true };
-      } else {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { isUrgent, ...taskWithoutUrgent } = task;
-        return taskWithoutUrgent;
-      }
+      return shouldBeUrgent ? { ...task, isUrgent: true } : stripUrgent(task);
     });
   }
 

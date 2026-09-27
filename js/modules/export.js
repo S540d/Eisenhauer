@@ -3,6 +3,8 @@
  * Handles CSV and Markdown export of tasks
  */
 
+import { getLocale } from './translations.js';
+
 const SEGMENT_LABELS = {
   de: { 1: 'Q1 – Sofort!', 2: 'Q2 – Planen!', 3: 'Q3 – Abgeben!', 4: 'Q4 – Später!', 5: 'Fertig!' },
   en: { 1: 'Q1 – Do!', 2: 'Q2 – Schedule!', 3: 'Q3 – Delegate!', 4: 'Q4 – Ignore!', 5: 'Done!' },
@@ -22,7 +24,7 @@ export function exportCsv(tasks, lang = 'en') {
 
   const doneLabel = lang === 'de' ? 'Erledigt' : 'Done';
   const openLabel = lang === 'de' ? 'Offen' : 'Open';
-  const locale = lang === 'de' ? 'de-DE' : 'en-US';
+  const locale = getLocale(lang);
 
   const rows = [headers.join(',')];
 
@@ -48,7 +50,7 @@ export function exportCsv(tasks, lang = 'en') {
  */
 export function exportMarkdown(tasks, lang = 'en') {
   const labels = SEGMENT_LABELS[lang] || SEGMENT_LABELS.en;
-  const locale = lang === 'de' ? 'de-DE' : 'en-US';
+  const locale = getLocale(lang);
   const dateLabel = lang === 'de' ? 'Exportiert am' : 'Exported on';
   const dueLabel = lang === 'de' ? 'Fällig' : 'Due';
 
