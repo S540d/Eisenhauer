@@ -9,6 +9,7 @@ import { getRecurringDescription } from './tasks.js';
 import { DragManager } from './drag-manager.js';
 import { announceDragStart, announceDragEnd } from './accessibility.js';
 import { shouldShowSegmentDemo } from './onboarding.js';
+import { getLocale } from './translations.js';
 
 /**
  * Create a task DOM element
@@ -134,14 +135,11 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     // never throws "Invalid time value" and breaks the whole task list.
     const dueDate = new Date(task.dueDate);
     if (!Number.isNaN(dueDate.getTime())) {
-      dueDateSpan.textContent = dueDate.toLocaleDateString(
-        currentLanguage === 'de' ? 'de-DE' : 'en-US',
-        {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-        }
-      );
+      dueDateSpan.textContent = dueDate.toLocaleDateString(getLocale(currentLanguage), {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
       content.appendChild(dueDateSpan);
     }
   }
@@ -152,12 +150,12 @@ export function createTaskElement(task, translations, currentLanguage, callbacks
     timestampSpan.className = 'task-timestamp';
     const date = new Date(task.completedAt);
     if (!Number.isNaN(date.getTime())) {
-      const formattedDate = date.toLocaleDateString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
+      const formattedDate = date.toLocaleDateString(getLocale(currentLanguage), {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       });
-      const formattedTime = date.toLocaleTimeString(currentLanguage === 'de' ? 'de-DE' : 'en-US', {
+      const formattedTime = date.toLocaleTimeString(getLocale(currentLanguage), {
         hour: '2-digit',
         minute: '2-digit',
       });

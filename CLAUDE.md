@@ -54,37 +54,15 @@ Beim App-Start wird jetzt ausschließlich der moderne PWA-Splash-Screen angezeig
 
 ### Edge-to-Edge / Android 15 API-Deprecations (Issue #368, PR #374, gemerged)
 
-Play Console meldete die Verwendung nicht mehr unterstützter Edge-to-Edge-APIs (`setStatusBarColor`/`setNavigationBarColor`/`LAYOUT_IN_DISPLAY_CUTOUT_MODE_*`, seit Android 15 deprecated). Die gemeldeten Stacktraces zeigen ausschließlich auf `com.google.androidbrowserhelper`-Klassen (`EdgeToEdgeUtils`, `LauncherActivity`) – die App selbst ruft keine dieser APIs direkt auf (Konfiguration läuft rein über `STATUS_BAR_COLOR`/`NAVIGATION_BAR_COLOR`-Metadaten in `AndroidManifest.xml`, siehe oben).
+`androidbrowserhelper` 2.5.0 → 2.7.2 angehoben, behebt Play-Console-Meldung zu deprecated Edge-to-Edge-APIs in der TWA-Library; kein eigener App-Code betroffen. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#edge-to-edge--android-15-api-deprecations-issue-368-pr-374-gemerged).
 
-- `com.google.androidbrowserhelper:androidbrowserhelper` **2.5.0 → 2.7.2** angehoben (`Android/app/build.gradle`) – Version 2.7.1 behebt laut Changelog explizit „Deprecations in launcher activity“, 2.7.0 bringt zusätzlich Edge-to-Edge-Support für den Splash-Screen.
-- Kein eigener App-Code betroffen, daher keine weiteren Änderungen nötig.
-- Nach dem nächsten Play-Store-Upload prüfen, ob die Play-Console-Warnung verschwindet.
+### R8/ProGuard-Optimierung (Issue #367, PR #375, gemerged – Gerätetest offen)
 
-### R8/ProGuard-Optimierung (Issue #367, PR #375, gemerged – Verifikation offen)
-
-Play Console meldete für Release 25 (1.12.1), dass die R8-Optimierung nicht greift. Ursache: `Android/app/proguard-rules.pro` enthielt `-keep class androidx.** { *; }`, was **jede** AndroidX-Klasse pauschal vor Shrinking/Optimierung/Obfuskation schützte – da AndroidX den Großteil des TWA-Codes ausmacht, blieb R8 praktisch nichts zu tun übrig.
-
-- Die Regel wurde entfernt. Bewusst **unverändert** blieben `-keep class com.google.androidbrowserhelper.** { *; }` (Reflection) und `-keep class androidx.browser.** { *; }` (prozessübergreifende Bindung, TWA-kritisch) sowie das breite `-dontwarn androidx.**` (als `TODO(#367)` im File markiert, bis ein sauberer Release-Build zeigt, welche Warnungen real sind).
-- **⚠️ Nicht auf einem echten Gerät getestet.** Kein CI-Check baut einen Android-Release (die Workflows bauen die PWA + Playwright-E2E gegen den Browser) – grünes CI im gemergten PR #375 sagt zu diesem Fix nichts aus. Zu aggressiv entfernte Keep-Regeln brechen erst zur Laufzeit (TWA startet nicht, Splash hängt, Deep Links tot), nicht beim Build.
-- **Vor dem nächsten Play-Store-Upload zwingend:** `cd Android && ./gradlew bundleRelease` bauen und auf einem echten Gerät testen (App-Start, Splash, Deep Links, Status-/Navigationsleisten-Farbe). Ein Debug-Build genügt nicht – `minifyEnabled` gilt nur für `release`.
-- **Bei einem Laufzeit-Crash:** keine pauschale `-keep class androidx.** { *; }`-Regel wiedereinsetzen (macht den Fix wirkungslos), sondern eine gezielte Regel für die konkret betroffene Klasse ergänzen.
-- Issue #367 bleibt bis zum erfolgreichen Gerätetest offen.
+Blanket `-keep class androidx.** { *; }` aus `proguard-rules.pro` entfernt (machte R8-Shrinking wirkungslos). **Nicht auf echtem Gerät verifiziert** – vor jedem Play-Store-Upload zwingend `./gradlew bundleRelease` + Gerätetest. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#r8proguard-optimierung-greift-nicht-issue-367-pr-375-gemerged--verifikation-offen).
 
 ### App-Start-Crash: ManageDataLauncherActivity fehlte im Manifest (Issue #434, PR #435/#436, gemerged, Release v1.12.5/vc30)
 
-Nach dem androidbrowserhelper-Upgrade 2.5.0 → 2.7.2 (#368/PR #374) stürzte die App auf **allen** Geräten beim Start ab (nicht API-Level-spezifisch – ursprünglicher Verdacht auf den zeitgleich angehobenen `minSdk` 21→23 traf nicht zu, ebenso wenig der R8-Verdacht aus #367). Logcat zeigte:
-
-```
-IllegalArgumentException: Component class
-com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity
-does not exist in com.sven4321.eisenhauer
-```
-
-- **Root Cause:** `androidbrowserhelper` referenziert `ManageDataLauncherActivity` zur Laufzeit per `PackageManager.setComponentEnabledSetting()` (in `LauncherActivity.launchTwa` → `addSiteSettingsShortcut`). Die Komponente ist **nicht** Teil der AAR selbst (verifiziert per AAR-Extraktion) – sie muss von der konsumierenden App explizit im eigenen `AndroidManifest.xml` deklariert werden. Das wurde beim 2.5.0→2.7.2-Upgrade übersehen.
-- **Fix:** `android:manageSpaceActivity`-Attribut am `<application>`-Element + `<activity>`-Deklaration mit `MANAGE_SPACE_URL`-Meta-Data (nutzt den bestehenden `${defaultUrl}`-Platzhalter pro Product-Flavor). Kein ProGuard/R8-Bezug – `-keep class com.google.androidbrowserhelper.** { *; }` deckte die Klasse bereits ab, das Problem lag rein im fehlenden Manifest-Eintrag.
-- **Verifiziert:** Debug-Build lokal auf dem ursprünglich betroffenen Gerät installiert (`adb install`), Logcat bestätigt sauberen Start (`TwaLauncher: Launching Trusted Web Activity`, keine FATAL EXCEPTION mehr). Signierter Release-Build (v1.12.5/vc30) danach separat gebaut, Signatur + Manifest-Inhalt im AAB verifiziert (`unzip` + `jarsigner -verify`), am 2026-09-05 in Play Store hochgeladen.
-- **Lehre:** Ein Dependency-Upgrade einer TWA-Helper-Library kann neue **Manifest-Anforderungen** einführen, die weder Compile- noch CI-Fehler erzeugen (Manifest-Merge läuft durch, R8 warnt nicht) – bricht ausschließlich zur Laufzeit. Nach jedem `androidbrowserhelper`-Versionssprung die Release-Notes auf neue Pflicht-Manifest-Einträge prüfen, nicht nur auf API-Level-Anforderungen.
-- **Noch offen:** Gerätetest des tatsächlich hochgeladenen, signierten Release-Builds (v1.12.5/vc30) auf dem Nexus/Android-Go-Gerät nach dem Play-Store-Rollout steht noch aus (nur der Debug-Build wurde lokal verifiziert). Der offene R8-Gerätetest aus #367 bleibt davon unberührt und weiterhin separat offen.
+Ein androidbrowserhelper-Upgrade kann neue **Manifest-Pflichteinträge** einführen, die weder Compile- noch CI-Fehler erzeugen, sondern nur zur Laufzeit crashen (hier: `ManageDataLauncherActivity` fehlte). Nach jedem `androidbrowserhelper`-Versionssprung die Release-Notes auf neue Pflicht-Manifest-Einträge prüfen. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#app-start-crash-managedatalauncheractivity-fehlte-im-manifest-issue-434-pr-435436-gemerged-release-v1125vc30).
 
 ## Features
 
@@ -125,16 +103,9 @@ Cloud-Backup liegt seit Issue #396 in **Firestore** (`users/{userId}/backups/{ba
 
 ### Firestore Security Rules: jetzt versioniert (Issue #396)
 
-`firestore.rules` war bis #396 **reine Dokumentation** – es gab kein `firebase.json`, also keinen Deploy-Weg. Die Datei war ausserdem stark gedriftet: `hasOnlyAllowedFields()` erlaubte nur `text`/`segment`/`checked`/`createdAt`, die App schreibt aber längst `notes`, `dueDate`, `category`, `recurring`, `completedAt`; die Create-Regel forderte `createdAt == request.time`, während die App eine Zahl schreibt.
+Deploy über `npm run rules:deploy` (bzw. `rules:deploy:testing`), Konfiguration in `firebase.json`. **`hasOnlyAllowedFields()` ist bewusst eine Obermenge** aller je geschriebenen Felder (Service-Worker-Cache → ältere Clients müssen weiterlaufen): neue optionale Task-Felder erst dort deployen, **dann** den schreibenden Client ausliefern, sonst lehnen die Rules den Write ab. Seit 2026-08-27 deployt (Rollout #404) in `eisenhauer-matrix` **und** `eisenhauer-testing`, Rollback-Pfad unter `docs/rules-backup/firestore.rules.pre-404`. `docs/FIREBASE_SECURITY_RULES.md` ist in Teilen überholt. `npm run rules:deploy:testing` ist derzeit wirkungslos (#406, Testing zeigt auf Produktionsprojekt).
 
-- Deploy jetzt über `npm run rules:deploy` (bzw. `rules:deploy:testing`), Konfiguration in `firebase.json`.
-- **`hasOnlyAllowedFields()` ist bewusst eine Obermenge** aller je geschriebenen Felder: Die PWA wird per Service Worker gecacht, ältere Client-Versionen müssen nach einem Rules-Deploy weiterlaufen.
-- **Regel für neue optionale Task-Felder:** erst in `hasOnlyAllowedFields()` deployen, **dann** den Client ausliefern, der das Feld schreibt. Sonst lehnen die Rules die Writes ab.
-- `docs/FIREBASE_SECURITY_RULES.md` ist in Teilen überholt (dokumentiert `segment` als String-Enum und 500 Zeichen Textlimit) und oben entsprechend markiert.
-- **Seit 2026-08-27 sind die Regeln deployt** (Rollout #404), in `eisenhauer-matrix` **und** `eisenhauer-testing`. Der vorherige Stand liegt als Rollback-Pfad unter `docs/rules-backup/firestore.rules.pre-404`.
-- **Der vorherige deployte Stand war nicht zu streng, sondern zu locker:** `allow read, write: if request.auth.uid == userId` ohne jede Feldvalidierung, und **ohne** `match`-Block für `backups`. Da Firestore-Regeln sich nicht auf Subcollections vererben, fiel jeder Backup-Write auf das abschliessende Deny durch – das war die Ursache des kaputten Cloud-Backups. Der Deploy war damit eine **Verschärfung**, nicht die im Dokument beschriebene harmlose Obermengen-Erweiterung.
-- **Vor jeder künftigen Regelverschärfung** dieselbe Prüfung fahren wie in #404: JSON-Export der echten Daten gegen die neuen Bedingungen laufen lassen (deckt alle Aufgaben ab, nicht nur eine Stichprobe – `loadUserTasks()` liest per `docSnap.data()` das rohe Dokument), dann die Playground-Fälle aus `docs/DATENSICHERUNG.md`, Abschnitt 5.1.
-- **`npm run rules:deploy:testing` ist derzeit wirkungslos** – die Testing-App zeigt auf das Produktionsprojekt, kein Client spricht mit `eisenhauer-testing` (#406).
+Der Rollout #404 war tatsächlich eine **Verschärfung** (vorher fehlte Feldvalidierung UND der `match`-Block für `backups` komplett, wodurch jeder Backup-Write durchs abschliessende Deny fiel) – vor jeder künftigen Regelverschärfung dieselbe Prüfung fahren. Details: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#firestore-regeln-deploy-404-war-eine-verschärfung-keine-harmlose-erweiterung-issue-396-406408409).
 
 ### Export CSV & Markdown (Issue #179, PR #332)
 
@@ -213,17 +184,13 @@ Klick auf den Task-Text öffnet das bestehende Quick-Add-Modal (`openQuickAddMod
 
 ### Optionale Task-Felder löschen: `deleteField()` statt Feld weglassen
 
-`updateTaskInFirestore()` in `js/modules/storage.js` schreibt mit `setDoc(..., { merge: true })`. Ein **weggelassenes** Feld bedeutet dort „alten Wert behalten" – nicht „Feld löschen". Optionale Felder, die der Nutzer leeren kann, dürfen deshalb nie über ein `if (task.x) { updateData.x = task.x; }` geschrieben werden, sondern müssen den leeren Fall explizit als `deleteField()` senden:
+`updateTaskInFirestore()` schreibt mit `setDoc(..., { merge: true })` – ein **weggelassenes** Feld heißt dort „alten Wert behalten", nicht „löschen". Optionale Felder (`completedAt`, `recurring`, `dueDate`, `category`, `notes`), die der Nutzer leeren kann, müssen den leeren Fall deshalb immer explizit als `deleteField()` senden:
 
 ```js
 updateData.dueDate = task.dueDate ? task.dueDate : deleteField();
 ```
 
-Betroffen sind `completedAt`, `recurring`, `dueDate`, `category` und `notes`. Vorher war nur `notes` so umgesetzt (PR #373); die übrigen vier hatten den Bug, was durch den Edit-Dialog aus PR #378 sichtbar wurde: Fälligkeit/Kategorie im Dialog leeren → lokal korrekt weg → nach dem Reload wieder da. `completedAt` traf es beim Abwählen einer erledigten Aufgabe (`task.completedAt = null` in `tasks.js`), was die Metriken verfälscht.
-
-- **Nur der Firebase-Modus war betroffen** – `saveGuestTasks()` serialisiert das Task-Objekt komplett und kennt das Problem nicht.
-- Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) mit gemocktem `firebase/firestore`. **Achtung:** Diese Suite ist in der CI per `--exclude` ausgeschlossen, die Tests laufen also nur lokal über `npm test`.
-- Beim Ergänzen weiterer optionaler Task-Felder: immer dem `deleteField()`-Muster folgen.
+Regression-Tests in `tests/unit/storage.test.js` (`describe('updateTaskInFirestore clearable fields')`) – laufen nur lokal über `npm test` (CI-`--exclude`). Details/Fund-Historie: [`docs/INCIDENTS.md`](docs/INCIDENTS.md#optionale-task-felder-blieben-nach-dem-leeren-in-firestore-stehen-pr-383-gefunden-beim-review-von-pr-382).
 
 ### Blockierte Major-Dependency-Bumps (Stand 2026-09-07)
 
@@ -231,22 +198,23 @@ Vier Dependabot-PRs bleiben absichtlich offen, weil ihr `CI/CD - Automated Quali
 
 - **#427 – TypeScript 5.9.3 → 7.0.2:** `npm ci` bricht mit `ERESOLVE` ab. `@typescript-eslint/eslint-plugin@8.68.0` verlangt Peer `typescript@">=4.8.4 <6.1.0"` – TS7 (der neue Go-basierte Compiler, überspringt sogar Major 6) wird vom aktuell installierten `@typescript-eslint` schlicht nicht unterstützt. Kein Fix im Repo möglich, bis `@typescript-eslint/*` ein TS7-kompatibles Release bringt. Nichts tun, PR offen lassen.
 - **#426 – Vite 7.3.6 → 8.2.2:** `npm ci` läuft durch, aber `npm run build` bricht mit `TypeError: manualChunks is not a function` ab. Vite 8 nutzt den Rolldown-Bundler, der für `manualChunks` in `vite.config.js` nur noch eine **Funktion** akzeptiert, kein Objekt mehr. Real behebbar, aber erfordert eine Code-Änderung an `vite.config.js` über den reinen Dependency-Bump hinaus – bewusst nicht ungefragt umgesetzt.
-- **#449/#450 – @vitest/ui bzw. vitest 4.1.11 → 5.0.0:** gleicher Root Cause, daher als ein Punkt geführt. `npm ci` bricht mit `ERESOLVE` ab: Dependabot bumpt jeweils nur ein Vitest-Teilpaket, `@vitest/coverage-v8` bleibt auf `^4.1.11` stehen und verlangt Peer `vitest@4.1.11` – Konflikt mit dem gleichzeitig geforderten `vitest@^5.0.0`. Selbst nach einem synchronen Bump aller `@vitest/*`-Pakete auf 5.0.0 wäre als nächstes Hindernis Node im Weg: vitest 5 verlangt `^22.12.0 || ^24.0.0 || >=26.0.0`, das Repo läuft laut `.nvmrc` auf Node 20. Kein Fix im Rahmen eines reinen Dependency-Bumps – erfordert einen bewusst geplanten Node-Versions-Wechsel (CI-Runner, Android-Toolchain-Kompatibilität prüfen) plus einen zusammengefassten `@vitest/*`-Group-Bump. Beide PRs offen lassen, bis das angegangen wird.
+- **#449/#450 – @vitest/ui bzw. vitest 4.1.11 → 5.0.0:** gleicher Root Cause, daher als ein Punkt geführt. `npm ci` bricht mit `ERESOLVE` ab: Dependabot bumpt jeweils nur ein Vitest-Teilpaket, `@vitest/coverage-v8` bleibt auf `^4.1.11` stehen und verlangt Peer `vitest@4.1.11` – Konflikt mit dem gleichzeitig geforderten `vitest@^5.0.0`. Selbst nach einem synchronen Bump aller `@vitest/*`-Pakete auf 5.0.0 wäre als nächstes Hindernis Node im Weg: vitest 5 verlangt `^22.12.0 || ^24.0.0 || >=26.0.0`, das Repo läuft laut `.nvmrc` auf Node 20. Ein probeweiser vollständiger Bump aller drei Pakete auf 5.0.1 zeigt zusätzlich, dass `tests/setup.js` bricht (`global.localStorage = ...` schlägt fehl, weil happy-doms Vitest-5-Integration `window.localStorage` nur noch als Getter bereitstellt). Kein Fix im Rahmen eines reinen Dependency-Bumps – erfordert einen bewusst geplanten Node-Versions-Wechsel (CI-Runner, Android-Toolchain-Kompatibilität prüfen), einen zusammengefassten `@vitest/*`-Group-Bump und eine Anpassung von `tests/setup.js`. Beide PRs offen lassen, bis das angegangen wird.
+  - **#449 wurde am 2026-09-07 trotzdem direkt auf `main` gemergt** (Verstoß gegen „Merge auf main nur mit expliziter schriftlicher Freigabe" – vermutlich versehentlich als Teil des Batches #445–#450 durchgerutscht, da es strukturell wie die unkritischen CI-Bumps aussah). Bump nur des Teilpakets `@vitest/ui` auf 5.0.0, ohne `vitest`/`@vitest/coverage-v8` mitzuziehen → `npm ci` auf `main` seitdem kaputt (ERESOLVE), bis zum Fix in PR #461 (2026-09-20) unbemerkt, weil auf `main` selbst kein CI-Lauf mehr stattfand (kein Push, keine PRs direkt gegen `main` offen) und die Kollision erst beim nächsten Release-PR `testing`→`main` (#459) auffiel. Fix: `@vitest/ui` in PR #461 zurück auf `^4.1.11`. **Lehre:** Ein einzelnes Dependabot-Paket aus einer PR-Gruppe zu mergen, ohne die anderen PRs derselben Gruppe (hier #450, das `vitest`+`@vitest/coverage-v8` gemeinsam gebumpt hätte) zu prüfen, kann `npm ci` auf `main` lautlos brechen.
 
-Alle vier PRs vor einem erneuten Dependency-Update-Lauf nicht blind mergen, nur weil `review-gate` grün ist – das prüft nur Merge-Konflikte, nicht den echten Build.
+Alle vier PRs vor einem erneuten Dependency-Update-Lauf nicht blind mergen, nur weil `review-gate` grün ist – das prüft nur Merge-Konflikte, nicht den echten Build. Nach jedem Dependabot-Merge-Batch zusätzlich `npm ci` (nicht `npm install`) frisch (ohne bestehendes `node_modules`) gegen den neuen `main`-Stand verifizieren, gerade wenn nur ein Teil einer PR-Gruppe gemergt wird.
 
-## Test-Coverage (Stand 2026-09-06)
+## Test-Coverage (Stand 2026-09-20)
 
 Gemessen über die in `vitest.config.js` `coverage.include` gelisteten Module (aktuell 8: `store.js`, `notifications.js`, `error-handler.js`, `translations.js`, `tasks.js`, `version.js`, `undo.js`, `onboarding.js` – die letzten beiden seit PR #443/Issue #442 Punkt 1):
 
 | Metrik | Wert |
 |---|---|
-| Statements | 89.8% |
-| Branches | 80.0% |
-| Functions | 97.4% |
-| Lines | 89.7% |
+| Statements | 89.84% |
+| Branches | 80.11% |
+| Functions | 98.05% |
+| Lines | 89.72% |
 
-- Schwellenwerte in `vitest.config.js`: alle auf **80%** gesetzt (schlägt fehl wenn darunter) – Branches liegt mit 80.0% knapp am Limit, bei weiteren `coverage.include`-Erweiterungen zuerst lokal mit `npm run test:coverage` prüfen
+- Schwellenwerte in `vitest.config.js`: alle auf **80%** gesetzt (schlägt fehl wenn darunter) – Branches liegt mit 80.11% weiterhin knapp am Limit, bei weiteren `coverage.include`-Erweiterungen zuerst lokal mit `npm run test:coverage` prüfen. **Vorfall 2026-09-20:** Die Aufnahme von `undo.js`/`onboarding.js` (PR #443) drückte Branches ohne Nachtest zunächst auf 79.68% und blockierte damit den Release-PR `testing`→`main` (#459) in CI. Fix in PR #460: gezielte Tests für die konkret fehlenden Branches (`clearUndoStack()`, Toast-Timer-Ersetzung in `undo.js`; Nicht-Array-JSON in `onboarding.js`) statt Produktionscode-Änderungen. **Merke:** Ein neues Modul ins `coverage.include` aufzunehmen ist erst mit vollständiger Branch-Abdeckung sicher – sonst reißt es die globale Schwelle erst beim nächsten Release-PR, nicht beim Feature-PR (siehe „CI-Gate" oben: Feature-PRs gegen `testing` laufen ja ohne Unit-Tests).
 - **`coverage.include` ist eine echte Allowlist** – nur gelistete Module zählen für Statements/Branches/etc., der Rest (u.a. `ui.js`/`ui-render.js`/`ui-modals-*.js`, `storage.js`, `drag-*.js`, `auth.js`) ist komplett unvermessen, nicht nur „ausgeschlossen". Siehe Issue #442 Punkt 1: schrittweise um 1-2 gut getestete Module pro PR erweitern statt in einem Rewrite
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus (separates Problem: `storage.js` selbst ist ohnehin nicht in `coverage.include`)
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
@@ -284,6 +252,11 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **2026-09-20 – Release-PR #459 (`testing`→`main`) freigeräumt:** Zwei Blocker gefunden und gefixt, siehe Abschnitte „Test-Coverage" und „Blockierte Major-Dependency-Bumps" oben für Details:
+  - **PR #460:** Coverage-Branches-Schwelle (80%) durch neue, ungetestete Branches in `undo.js`/`onboarding.js` gerissen (79.68%) – gezielte Tests ergänzt, 80.11%.
+  - **PR #461:** Danach noch ein echter Merge-Konflikt zwischen `testing` (entfernte `chart.js`, Issue #442) und direkt auf `main` gemergten Dependabot-Bumps (#448/#449) in `package.json`/`package-lock.json`. Dabei auch die Regression aus #449 gefixt (`@vitest/ui` allein auf 5.0.0 gebumpt, Rest der vitest-Familie auf 4.x – brach `npm ci` auf `main` seit 2026-09-07 unbemerkt).
+  - #459 danach konfliktfrei, vom Nutzer gemergt.
 
 - **#442** – Erster wiederkehrender Code-Health-Audit (Standard aus project-templates#136), alle 7 Befunde per PR #443 auf `testing` umgesetzt, jeder Punkt ein eigener Commit, keine Verhaltensänderung: `vite.config.js` bereinigt (entfernte `firebase/storage`-Referenz), toten Export `checkPersistentStorage` entfernt, unbenutzte `chart.js`-Abhängigkeit entfernt (Precache ~1082 KiB → ~880 KiB), `buildTaskData()`-Hilfsfunktion in `storage.js` extrahiert (löst die 4-fache Duplikation, die den `deleteField()`-Bug verursacht hatte), hartkodierte `#9ca3af`-Vorkommen in `style.css` auf `var(--text-light)` umgestellt, `vitest.config.js` coverage.include um `undo.js`/`onboarding.js` erweitert (siehe Abschnitt „Test-Coverage" oben). **Größter Einzelpunkt:** `js/modules/ui.js` (2026 Zeilen, God-Module) in vier Dateien aufgeteilt – `ui-render.js` (Task-Rendering), `ui-modals-task.js` (Quick-Add/Edit-Recurring/Tutorial-Modal), `ui-modals-settings.js` (Settings/About/Personalize/Metrics/Backup-Modal), `ui.js` selbst bleibt als schlanker Re-Export-Barrel (Online/Sync-Status, Sprachumschaltung) für Abwärtskompatibilität bestehen – bestehende Importe aus `'./ui.js'` (`script.js`, Tests) mussten nicht angepasst werden. **Wichtig für künftige Änderungen an der UI-Modal-Logik:** neuer Code gehört in die passende `ui-*.js`-Datei, nicht zurück in `ui.js`.
 
@@ -347,9 +320,23 @@ Epic #95 (Production-Grade Dev Setup) wurde am 2026-05-30 als `completed` geschl
 - **Gradle-Lock nach Absturz:** Bei "Cannot lock file hash cache"-Fehler Daemons stoppen: `pkill -f GradleDaemon`, dann Workingdir leeren und neu starten
 - **AAB-Archiv:** Gebaute Release-AABs in einem **gitignored** `aab-archive/`-Verzeichnis im Repo-Root ablegen (in `.gitignore` aufnehmen – AABs sind 3–110 MB und gehören nie in die Git-History). Benennung: `<Projekt>-vX.Y.Z-vc<versionCode>-YYYY-MM-DD.aab`. **Retention: max. 2 Dateien** (aktuelles Release + ein Vorgänger für schnelles Rollback); ältere AABs löschen. Der Git-Tag `vX.Y.Z` ist die eigentliche Release-Baseline – ältere AABs lassen sich daraus jederzeit neu bauen.
 
+## [CLAUDE.MD-WARTUNG]
+
+- **CLAUDE.md bleibt bei maximal 300 Zeilen** (Issue #160): Sie wird bei jeder Session vollständig in den Kontext geladen. Beschreibt ein Abschnitt einen konkreten Vorfall, gehören maximal 2-3 Zeilen (Kernregel + kurzer Auslöser-Kontext) + ein Link auf `docs/private/INCIDENTS.md` hinein; aktuell gültiges Architektur-/Prozesswissen, das kein Vorfall ist, aber zu ausführlich für CLAUDE.md, gehört in versionierte `docs/*.md`-Dateien (z. B. `docs/ARCHITECTURE.md`). Die Schwelle ist ein Prüf-Auslöser, kein Zwang, bewusst dort gehaltenes, aktuelles Architekturwissen aus CLAUDE.md zu verdrängen. Aktiv gekürzt wird erst ab 500 Zeilen; Dateien zwischen 300 und 500 Zeilen werden im Turnus nicht angefasst. Ausführlicher Prozess, Checkliste und Stand pro Projekt: https://github.com/S540d/project-templates/blob/main/dev-standards/claude-md-maintenance.md
+- **`docs/private/INCIDENTS.md` ist bewusst gitignored** — reine lokale Gedächtnisstütze wie Memory, kein Teil des geteilten Repo-Zustands. In jedem Projekt mit dieser Datei muss `.gitignore` einen Eintrag `docs/private/` enthalten; existiert die Datei bereits versioniert (z. B. als `docs/INCIDENTS.md`), gehört sie nach `docs/private/` verschoben und per `git rm --cached` aus dem Tracking genommen.
+- **Regelmäßig `/simplify` auf CLAUDE.md ausführen**, nicht nur einmalig beim Überschreiten der Schwelle — Ziel ist dauerhaft niedriger Token-Verbrauch pro Session statt zyklischem Anwachsen und Zurückkürzen in großen Sprüngen.
+
 ## [CODE HEALTH AUDIT]
 
 - **Wiederkehrendes Code-Health-Audit** (Ballast/Architektur: God Components, Boilerplate-Duplikation, toter Code, Dependency-Bloat, Test-Integrität, Design-Konsistenz, Bundle-Größe) alle ~3 Monate oder ~15 gemergte Feature-PRs (je nachdem was zuerst eintritt). Checkliste + Ablauf: https://github.com/S540d/project-templates/blob/main/dev-standards/code-health-audit.md — Ergebnis ist immer ein Issue im jeweiligen Projekt-Repo, nie in project-templates.
+
+## [SIMPLIFY-AUDIT]
+
+- **Wiederkehrender `/simplify`-Durchlauf auf den Quellcode** (Reuse, Simplification, Efficiency, Altitude) alle ~3 Monate oder ~15 gemergte Feature-PRs (je nachdem was zuerst eintritt), gleiche Kadenz wie das Code-Health-Audit. Anders als dieses wendet er die Fixes direkt an: Ergebnis ist ein PR gegen den projektüblichen Ziel-Branch, nur kleine, verhaltensneutrale Refactorings (bei Unsicherheit Finding auslassen). Ablauf: https://github.com/S540d/project-templates/blob/main/dev-standards/simplify-audit.md
+
+## [ÜBER-ABSCHNITT]
+
+- **Einheitlicher „Über"-Abschnitt im Settingsmenü** (Issue #150): Jedes Web-Projekt zeigt „Über" als Eintrag in einem `⋮`-Settingsmenü (kein Footer — wird bei Bedarf neu angelegt, auch für aktuell menülose Projekte). Fester Vollausbau: App-Name, Version, Impressum, Datenschutz, Quellcode, Play Store, Feedback — nicht zutreffende Felder werden weggelassen, nie umsortiert. Spezifikation: https://github.com/S540d/project-templates/blob/main/dev-standards/about-section.md — Umsetzung ist immer ein Issue im jeweiligen Projekt-Repo, nie in project-templates.
 
 ## [CI – CACHE-CLEANUP]
 
