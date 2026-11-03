@@ -62,8 +62,7 @@ function createToast(message, onUndo, currentLanguage = 'en') {
 
   const undoBtn = document.createElement('button');
   undoBtn.className = 'undo-toast-btn';
-  undoBtn.textContent =
-    currentLanguage === 'de' ? translations.de.undo.button : translations.en.undo.button;
+  undoBtn.textContent = (translations[currentLanguage] || translations.en).undo.button;
   undoBtn.setAttribute('aria-label', 'Undo last action');
 
   undoBtn.addEventListener('click', () => {
@@ -136,8 +135,7 @@ function hideToast() {
  * @param {Function} onSuccess - Success callback after undo
  */
 export function showUndoDelete(task, currentLanguage = 'en', onSuccess) {
-  const message =
-    currentLanguage === 'de' ? translations.de.undo.taskDeleted : translations.en.undo.taskDeleted;
+  const message = (translations[currentLanguage] || translations.en).undo.taskDeleted;
 
   pushUndoStack(UNDO_ACTIONS.DELETE, {
     task: { ...task },
@@ -167,13 +165,8 @@ export function showUndoDelete(task, currentLanguage = 'en', onSuccess) {
  * @param {Function} onSuccess - Success callback after undo
  */
 export function showUndoToggle(taskId, segment, wasChecked, currentLanguage = 'en', onSuccess) {
-  const message = wasChecked
-    ? currentLanguage === 'de'
-      ? translations.de.undo.taskUncompleted
-      : translations.en.undo.taskUncompleted
-    : currentLanguage === 'de'
-      ? translations.de.undo.taskCompleted
-      : translations.en.undo.taskCompleted;
+  const t = translations[currentLanguage] || translations.en;
+  const message = wasChecked ? t.undo.taskUncompleted : t.undo.taskCompleted;
 
   pushUndoStack(UNDO_ACTIONS.TOGGLE, {
     taskId,

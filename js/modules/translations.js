@@ -544,6 +544,15 @@ export function getTranslation() {
 }
 
 /**
+ * Map an app language code to the BCP 47 locale used for date/time formatting
+ * @param {string} lang - Language code ('de' or 'en')
+ * @returns {string} 'de-DE' or 'en-US'
+ */
+export function getLocale(lang) {
+  return lang === 'de' ? 'de-DE' : 'en-US';
+}
+
+/**
  * Build a human-readable description of a task's recurrence config
  * @param {Object} recurring - Recurring config with `interval` and interval-specific fields
  * @returns {string} Localized description of the recurrence

@@ -124,6 +124,24 @@ describe('Undo Module', () => {
     });
   });
 
+  describe('unsupported language falls back to English', () => {
+    it('uses English texts and button label for showUndoDelete', () => {
+      showUndoDelete({ id: 1, text: 'Test task', segment: 1, checked: false }, 'fr');
+
+      const toast = document.querySelector('.undo-toast');
+      expect(toast.textContent).toContain('Task deleted');
+      expect(toast.querySelector('button').textContent).toBe('Undo');
+    });
+
+    it('uses English text for showUndoToggle in both directions', () => {
+      showUndoToggle(1, 1, true, 'fr');
+      expect(document.querySelector('.undo-toast').textContent).toContain('incomplete');
+
+      showUndoToggle(1, 1, false, 'fr');
+      expect(document.querySelector('.undo-toast').textContent).toContain('complete');
+    });
+  });
+
   describe('showToast replacing an existing toast', () => {
     it('clears the pending auto-hide timer of the previous toast', () => {
       const task = { id: 1, text: 'Task A', segment: 1, checked: false };
