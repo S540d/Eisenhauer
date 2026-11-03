@@ -169,7 +169,9 @@ Firebase **web** API keys ≠ Server-side secrets
 
 ## Bekannte `npm audit`-Befunde (Stand 2026-11-03)
 
-Nach den Overrides (`serialize-javascript`, `minimatch` in `package.json`) bleiben 15 Meldungen (2 low, 9 moderate, 4 high).
+Nach dem Override (`serialize-javascript` in `package.json`) bleiben 25 Meldungen (2 low, 19 moderate, 4 high).
+
+**Kein `minimatch`-Override!** `minimatch ^11` (Fix für GHSA-g3hv-75wg-m249) bricht `workbox-build`: das Glob-Matching findet keine Dateien, der Service Worker bekommt 3 statt 19 Precache-Einträge (0 statt ~907 KiB, nur Warnung "glob patterns doesn't match any files" im Build, kein Fehler). Nach Änderungen an Dependencies/Overrides immer im Build-Log `precache  19 entries (~907 KiB)` prüfen.
 
 - **4 High: `@grpc/grpc-js` <= 1.13.5** (Kette `firebase` -> `@firebase/firestore` -> `@grpc/grpc-js@1.9.16`, Advisories GHSA-m9gg-hp2v-232j, GHSA-f596-whhp-79r4). Betrifft den gRPC-**Server** bzw. Node-Transport. Die PWA läuft im Browser, das Firestore-Web-SDK nutzt dort kein gRPC. Firestore pinnt `~1.9.0`, per Override nicht sinnvoll hebbar. Der von `npm audit` vorgeschlagene Fix (`firebase@9.14.0`) ist ein Downgrade und wird **nicht** eingespielt. Risiko akzeptiert, bis Firebase die Abhängigkeit anhebt. Beim Firebase-Update prüfen, ob `@grpc/grpc-js` >= 1.14 gezogen wird.
 - **Moderate/Low:** nur Dev-/Build-Tooling (`npm audit --omit=dev` zeigt nur die 4 High). Nicht behebbar ohne die blockierten Majors (Vitest 5, siehe CLAUDE.md "Blockierte Major-Dependency-Bumps") oder ohne Upstream-Fix: `@vitest/mocker`, `deepmerge`, `glob`, `workbox-build`-Kette.
