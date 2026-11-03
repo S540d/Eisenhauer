@@ -93,13 +93,17 @@ jobs:
 
       - name: Build ${{ steps.env.outputs.environment }}
         run: npm run ${{ steps.env.outputs.build_script }}
+        # Only production gets the Firebase config. Testing is built without a
+        # cloud backend (guest mode, local data only) so it can never reach
+        # the live project (#406).
         env:
-          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          VITE_DISABLE_CLOUD: ${{ steps.env.outputs.environment == 'production' && 'false' || 'true' }}
+          VITE_FIREBASE_API_KEY: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_API_KEY || '' }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_AUTH_DOMAIN || '' }}
+          VITE_FIREBASE_PROJECT_ID: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_PROJECT_ID || '' }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_STORAGE_BUCKET || '' }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_MESSAGING_SENDER_ID || '' }}
+          VITE_FIREBASE_APP_ID: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_APP_ID || '' }}
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
