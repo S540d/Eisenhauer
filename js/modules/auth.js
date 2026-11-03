@@ -9,7 +9,7 @@
  * @version 2.0.0
  */
 
-import { auth, googleProvider, appleProvider } from './firebase-init.js';
+import { auth, googleProvider, appleProvider, isCloudEnabled } from './firebase-init.js';
 import {
   onAuthStateChanged,
   signInWithPopup,
@@ -178,6 +178,18 @@ async function continueAsGuest() {
  * Solution: Initialize immediately without event listener wrapper
  */
 export async function initAuth() {
+  // Build without cloud backend (testing deploy, #406): no sign-in possible,
+  // start straight in guest mode so only local data is ever used
+  if (!isCloudEnabled) {
+    for (const id of ['googleSignInBtn', 'appleSignInBtn']) {
+      const btn = document.getElementById(id);
+      if (btn) btn.remove();
+    }
+    document.querySelector('#loginScreen .login-info')?.remove();
+    await continueAsGuest();
+    return;
+  }
+
   // Check sessionStorage availability (non-critical)
   if (!isSessionStorageAvailable()) {
     // OK to continue without sessionStorage

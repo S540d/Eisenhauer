@@ -7,8 +7,8 @@
  *
  * Environment Isolation:
  * - Production: eisenhauer-matrix (Firebase project)
- * - Staging: eisenhauer-staging (Firebase project)
- * - Testing: eisenhauer-testing (Firebase project)
+ * - Testing: no Firebase at all (VITE_DISABLE_CLOUD=true) – the app runs
+ *   guest-only with local data, so the testing URL can never touch live data (#406)
  */
 
 import { initializeApp } from 'firebase/app';
@@ -22,6 +22,9 @@ import {
 
 // Current environment from Vite build
 const CURRENT_ENV = import.meta.env.VITE_ENV || 'production';
+
+/** False when the build has no cloud backend (testing deploy): guest mode only (#406) */
+export const isCloudEnabled = import.meta.env.VITE_DISABLE_CLOUD !== 'true';
 
 // Firebase configuration from environment variables
 const firebaseConfig = {
@@ -40,7 +43,11 @@ const expectedProjects = {
   testing: 'eisenhauer-testing',
 };
 
-if (expectedProjects[CURRENT_ENV] && firebaseConfig.projectId !== expectedProjects[CURRENT_ENV]) {
+if (
+  isCloudEnabled &&
+  expectedProjects[CURRENT_ENV] &&
+  firebaseConfig.projectId !== expectedProjects[CURRENT_ENV]
+) {
   console.warn(
     `⚠️ Firebase project mismatch! Expected "${expectedProjects[CURRENT_ENV]}" for ${CURRENT_ENV}, got "${firebaseConfig.projectId}"`
   );
@@ -60,38 +67,47 @@ if (expectedProjects[CURRENT_ENV] && firebaseConfig.projectId !== expectedProjec
  * Learn more: https://firebase.google.com/docs/projects/api-keys
  */
 
-// Initialize Firebase app
-const app = initializeApp(firebaseConfig);
+// Without a cloud backend all exports stay null; callers already treat a
+// missing db/user as guest mode.
+let app = null;
+let auth = null;
+let db = null;
+let googleProvider = null;
+let appleProvider = null;
 
-// Initialize Firebase services
-const auth = getAuth(app);
+if (isCloudEnabled) {
+  // Initialize Firebase app
+  app = initializeApp(firebaseConfig);
 
-// Replace deprecated enableIndexedDbPersistence with initializeFirestore + persistentLocalCache
-// Use try-catch to handle case where Firestore was already initialized
-// (can happen with multiple imports in ES modules)
-let db;
-try {
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager(),
-    }),
-  });
-} catch (error) {
-  if (error.code === 'failed-precondition' || error.message?.includes('already been called')) {
-    // Firestore already initialized, use getFirestore instead
-    db = getFirestore(app);
-  } else {
-    throw error;
+  // Initialize Firebase services
+  auth = getAuth(app);
+
+  // Replace deprecated enableIndexedDbPersistence with initializeFirestore + persistentLocalCache
+  // Use try-catch to handle case where Firestore was already initialized
+  // (can happen with multiple imports in ES modules)
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  } catch (error) {
+    if (error.code === 'failed-precondition' || error.message?.includes('already been called')) {
+      // Firestore already initialized, use getFirestore instead
+      db = getFirestore(app);
+    } else {
+      throw error;
+    }
   }
+
+  // Configure authentication providers
+  googleProvider = new GoogleAuthProvider();
+  googleProvider.setCustomParameters({
+    prompt: 'select_account',
+  });
+
+  appleProvider = new OAuthProvider('apple.com');
 }
-
-// Configure authentication providers
-const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  prompt: 'select_account',
-});
-
-const appleProvider = new OAuthProvider('apple.com');
 
 // Note: Firebase Cloud Storage is intentionally NOT initialized. It requires the
 // paid Blaze plan (since October 2024) and this project runs on the free Spark
@@ -105,7 +121,7 @@ const appleProvider = new OAuthProvider('apple.com');
 /** Current Firebase environment info (env name + project ID), for debugging */
 export const firebaseEnvironment = {
   env: CURRENT_ENV,
-  projectId: firebaseConfig.projectId,
+  projectId: isCloudEnabled ? firebaseConfig.projectId : null,
 };
 
 export { app, auth, db, googleProvider, appleProvider };

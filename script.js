@@ -1629,7 +1629,7 @@ async function initApp() {
       }
       renderTasksWithCallbacks();
       updateOnlineStatus();
-    } else if (auth.currentUser) {
+    } else if (auth?.currentUser) {
       // User is logged in: show app and load their tasks immediately
       currentUser = auth.currentUser;
       isGuestMode = false;
