@@ -219,15 +219,14 @@ Gemessen über die in `vitest.config.js` `coverage.include` gelisteten Module (a
 - CI führt Tests mit `--exclude="tests/unit/storage.test.js"` aus (separates Problem: `storage.js` selbst ist ohnehin nicht in `coverage.include`)
 - Coverage-Badge in `README.md` verlinkt auf `ci-cd.yml`
 
-## Offene Issues (Backlog-Stand 2026-09-05)
+## Offene Issues (Backlog-Stand 2026-11-03)
 
 Der Backlog wurde am 2026-07-29 von 19 auf 7 offene Issues konsolidiert. Am 2026-08-27 kamen aus dem Rollout #404 drei Befunde dazu (#406, #408, #409), #359 wurde geschlossen. #409 und #408 wurden per PR #411 auf `testing` gefixt und sind inzwischen (Release nach `main` erfolgt) auf GitHub geschlossen. Am 2026-09-03 wurde #428 (5 Dependabot-High-Severity-Alerts) durch reguläre Dependency-Bumps auf `main` geschlossen. Am 2026-09-04 wurde #296 wegen Sicherheitsbedenken geschlossen. Am 2026-09-05 kam #434 (App-Start-Crash) dazu und wurde noch am selben Tag per PR #435/#436 gefixt und mit Release v1.12.5/vc30 automatisch geschlossen (siehe Abschnitt „App-Start-Crash: ManageDataLauncherActivity" oben). Am 2026-09-06 wurde der erste wiederkehrende Code-Health-Audit als #442 angelegt und alle 7 Befunde noch am selben Tag per PR #443 auf `testing` umgesetzt und geschlossen (siehe „Kürzlich erledigt" unten).
 
 | # | Titel | Prio |
 |---|-------|------|
-| #406 | **Testing-Umgebung nicht isoliert** – `/Eisenhauer/testing/` zeigt auf das Produktionsprojekt; `rules:deploy:testing` deployt ins Leere, Tests auf der Testing-URL laufen auf Live-Daten. Braucht Zugriff auf die GitHub-Actions-Secrets der testing-Environment (Ops-Task) | High |
+| #485 | **Security: `@grpc/grpc-js` (4 High) über Firebase** – Risiko akzeptiert (Web-SDK nutzt im Browser kein gRPC), bei jedem Firebase-Update prüfen; Dependabot-Alerts manuell als „not used“ schließen. Details: `docs/SECURITY.md` | Low |
 | #352 | **Strategie/Epic: App aufwerten** – Dachplanung (Reflect/Focus/Capture), löst das alte Brainstorm #179 ab. B1–B3 erledigt, A1–A5/B4/B5/C offen | Medium |
-| #367 | Android: R8-Fix gemerged (PR #375), **Gerätetest steht aus** – siehe Abschnitt „R8/ProGuard-Optimierung" oben, nicht vor dem nächsten Play-Store-Upload ohne diesen Test | Medium |
 | #324 | Sentry-Projekt anlegen + Secrets in GitHub Actions hinterlegen (reiner Ops-Task, Code ist fertig) | Medium |
 
 > **Zusätzlich offen (nicht als eigenes Issue getrackt):** Gerätetest des signierten v1.12.5/vc30-Release-Builds auf dem Nexus/Android-Go-Gerät nach dem Play-Store-Rollout vom 2026-09-05 steht noch aus (User testet „später nochmal"). Nur der lokale Debug-Build wurde bisher am Gerät verifiziert.
@@ -252,6 +251,8 @@ Geschlossen und warum – damit nicht später erneut aufgemacht:
 | #19 | eigene Domain aktuell nicht geplant |
 
 ### Kürzlich erledigt
+
+- **2026-11-03 – #406 Testing-Umgebung isoliert (PR #489, Release #486):** Die Testing-URL wird ohne Firebase gebaut (`VITE_DISABLE_CLOUD=true`) und startet direkt im Gastmodus. Damit kann sie keine Live-Daten mehr erreichen (betrifft auch die Android-Beta-App). Firebase-Secrets gibt es nur noch für den Produktions-Build, `rules:deploy:testing` ist entfernt. Im selben Release: #488 entfernt den `minimatch`-Override aus #484, der den Service-Worker-Precache leerte (3 statt 19 Einträge). PRs gegen `testing` bekommen keine CI, deshalb vor dem Merge lokal Build und Precache-Zahl prüfen.
 
 - **2026-09-20 – Release-PR #459 (`testing`→`main`) freigeräumt:** Zwei Blocker gefunden und gefixt, siehe Abschnitte „Test-Coverage" und „Blockierte Major-Dependency-Bumps" oben für Details:
   - **PR #460:** Coverage-Branches-Schwelle (80%) durch neue, ungetestete Branches in `undo.js`/`onboarding.js` gerissen (79.68%) – gezielte Tests ergänzt, 80.11%.
