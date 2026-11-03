@@ -33,7 +33,7 @@ The project supports three isolated environments:
 
 ### Testing
 - **URL:** https://s540d.github.io/Eisenhauer/testing/
-- **Firebase Project:** `eisenhauer-testing`
+- **Firebase Project:** keins – Build ohne Cloud-Backend (`VITE_DISABLE_CLOUD=true`), startet direkt im Gastmodus, Daten nur lokal (#406). Gilt auch für die Android-Beta-App, die diese URL lädt.
 - **Branch:** `testing`
 - **Android App ID:** `com.sven4321.eisenhauer.beta` (Flavor: `beta`)
 - **Build Command:** `npm run build:testing`
@@ -217,20 +217,18 @@ Each environment uses a separate Firebase project:
 |-------------|------------------|---------|
 | Production  | `eisenhauer-matrix` | Live user data |
 | Staging     | `eisenhauer-staging` | Pre-release testing |
-| Testing     | `eisenhauer-testing` | Development & CI/CD |
+| Testing     | – (guest mode only, `VITE_DISABLE_CLOUD=true`) | Development & CI/CD |
 
 **✅ Safeguard:** The app automatically loads the correct Firebase config based on `VITE_ENV`.
 
 ### Testing Firebase Isolation
 
 ```bash
-# Build testing version
-VITE_ENV=testing npm run build
+# Build testing version without cloud backend
+VITE_DISABLE_CLOUD=true npm run build:testing
 
-# Verify correct Firebase project in dist/
-grep -r "eisenhauer-testing" dist/
-
-# Should find: VITE_FIREBASE_PROJECT_ID=eisenhauer-testing
+# Verify the live project is NOT referenced in dist/
+grep -r "eisenhauer-matrix" dist/   # should find nothing
 ```
 
 ### Firebase Console Access

@@ -183,11 +183,14 @@ Alt und neu laufen so gefahrlos parallel, ohne dass ein Nutzer zum Update gezwun
 
 ### Reihenfolge des Rollouts
 
-1. Regeln in der **Rules Playground** gegen die Fälle in Abschnitt 5.1 testen.
-2. Regeln nach `eisenhauer-testing` deployen (`npm run rules:deploy:testing`).
-3. Mit einer **alten** (gecachten) und einer neuen App-Version gegen Testing prüfen.
-4. Erst dann nach Produktion (`npm run rules:deploy`).
-5. App-Deploy.
+1. Vollständigen lokalen Export der Live-Daten ziehen und prüfen (siehe 5.2).
+2. Regeln in der **Rules Playground** gegen die Fälle in Abschnitt 5.1 testen – inklusive
+   Writes einer **alten** App-Version (Teilmenge der Felder).
+3. Nach Produktion deployen (`npm run rules:deploy`) und dort verifizieren; Rollback-Datei bereithalten.
+4. App-Deploy.
+
+Eine Testing-Firebase gibt es nicht mehr: Die Testing-URL wird ohne Cloud-Backend gebaut
+(nur Gastmodus, siehe 5.3 und #406) und kann Rules daher weder prüfen noch Live-Daten berühren.
 
 ### Alte Storage-Backups
 
@@ -308,6 +311,12 @@ dann Produktion" ist damit aktuell **nicht durchführbar**. Für den Rollout aus
 auf die Vorabprüfungen gesetzt (vollständiger Datencheck, siehe 5.2, plus die Playground-Fälle oben)
 und direkt gegen Produktion verifiziert. Bei einem einzelnen Nutzer mit vorliegendem lokalem Export
 und 30-Sekunden-Rollback vertretbar; als Dauerzustand ist es das nicht. Erfasst als **#406**.
+
+> **Gelöst (#406, 2026-11):** Statt das Testing-Projekt nachträglich anzubinden, wird die
+> Testing-URL jetzt **ohne Firebase** gebaut (`VITE_DISABLE_CLOUD=true`, Firebase-Secrets nur für
+> den Produktions-Build). Sie startet direkt im Gastmodus mit lokalen Daten; Anmeldung, Sync und
+> Backup sind dort bewusst nicht verfügbar. `rules:deploy:testing` wurde entfernt, der Ablauf oben
+> entsprechend angepasst.
 
 **Deploy nach Produktion (2026-08-27).** `npm run rules:deploy` ausgeführt, `eisenhauer-matrix`
 führt die Regeln aus `firestore.rules` inklusive `match /backups/{backupId}`. Anschliessend gegen

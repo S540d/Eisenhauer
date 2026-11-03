@@ -17,6 +17,7 @@ vi.mock('../js/modules/firebase-init.js', () => ({
   storage: {},
   googleProvider: {},
   appleProvider: {},
+  isCloudEnabled: true,
   firebaseEnvironment: { env: 'testing', projectId: 'eisenhauer-testing' },
 }));
 
