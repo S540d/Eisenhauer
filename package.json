@@ -78,5 +78,9 @@
     "vitest": "^4.1.11",
     "workbox-precaching": "^7.4.1",
     "workbox-routing": "^7.4.1"
+  },
+  "overrides": {
+    "serialize-javascript": "^7.1.3",
+    "minimatch": "^11.0.1"
   }
 }
