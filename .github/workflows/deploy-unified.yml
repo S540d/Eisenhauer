@@ -105,6 +105,25 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_MESSAGING_SENDER_ID || '' }}
           VITE_FIREBASE_APP_ID: ${{ steps.env.outputs.environment == 'production' && secrets.FIREBASE_APP_ID || '' }}
 
+      - name: Guard – keine sensiblen Dateien im Deploy-Verzeichnis
+        # Ersetzt den früheren Schritt "Cleanup sensitive files from gh-pages".
+        # Der hat gh-pages im Build-Workspace ausgecheckt und per `git add -A`
+        # gitignorierte Build-Reste (.expo/, dist/, *-deploy/) erst eingecheckt
+        # (S540d/S540d.github.io#28). Geprüft wird jetzt VOR dem Upload genau das,
+        # was hochgeladen wird.
+        run: |
+          DIR=./dist
+          BAD=$( { find "$DIR" -maxdepth 1 \( -name node_modules -o -name .expo -o -name .git \) ; \
+                  find "$DIR" \( -name '.env' -o -name '.env.*' -o -name '*.jks' -o -name '*.keystore' \
+                    -o -name '*.p12' -o -name credentials.json -o -name google-services.json \
+                    -o -name GoogleService-Info.plist -o -name local.properties \) ; } | head -20)
+          if [ -n "$BAD" ]; then
+            echo "::error::Sensible Dateien im Deploy-Verzeichnis $DIR:"
+            echo "$BAD"
+            exit 1
+          fi
+          echo "✅ Deploy-Verzeichnis $DIR sauber"
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -118,67 +137,11 @@ jobs:
           force_orphan: false
           exclude_assets: '.github'
 
-      - name: Cleanup sensitive files from gh-pages
-        run: |
-          echo "🧹 Cleaning up sensitive files from gh-pages branch..."
-
-          # Save current working directory state
-          git stash --include-untracked || true
-
-          # Checkout gh-pages branch
-          git fetch origin gh-pages
-          git checkout gh-pages
-
-          # List of files/directories to remove
-          FILES_TO_REMOVE=(
-            ".env"
-            ".env.production"
-            ".env.staging"
-            ".env.testing"
-            ".vscode/"
-            ".husky/"
-            "node_modules/"
-            ".templates/"
-            "coverage/"
-            "Android/"
-            ".archive/"
-            "build/"
-            "builds/"
-            ".design-system/"
-            "*.log"
-          )
-
-          # Remove files if they exist
-          REMOVED=0
-          for item in "${FILES_TO_REMOVE[@]}"; do
-            if [ -e "$item" ] || [ -d "$item" ]; then
-              echo "  Removing: $item"
-              rm -rf "$item"
-              REMOVED=1
-            fi
-          done
-
-          # Commit and push if changes were made
-          if [ $REMOVED -eq 1 ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "🧹 Auto-cleanup: Remove sensitive files from gh-pages" || true
-            git push origin gh-pages
-            echo "✅ Cleanup completed and pushed"
-          else
-            echo "✅ No cleanup needed - gh-pages is already clean"
-          fi
-
-          # Switch back to original branch
-          git checkout -
-
       - name: Deployment Summary
         run: |
           echo "${{ steps.env.outputs.emoji }} ${{ steps.env.outputs.environment }} deployment successful!"
           echo "URL: ${{ steps.env.outputs.url }}"
           echo "Branch: gh-pages${{ steps.env.outputs.destination_dir && format(' (subdirectory: /{0}/)', steps.env.outputs.destination_dir) || ' (root directory)' }}"
-          echo "🧹 Auto-cleanup: Sensitive files removed from gh-pages"
 
           # Add summary to GitHub Actions
           echo "## ${{ steps.env.outputs.emoji }} Deployment Complete" >> $GITHUB_STEP_SUMMARY
