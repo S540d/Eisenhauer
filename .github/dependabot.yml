@@ -39,7 +39,13 @@ updates:
       - dependency-name: "@vitest/*"
         update-types: ["version-update:semver-major"]
     groups:
-      # Kein update-types-Filter → Major landet mit im Sammel-PR.
-      npm-all:
+      # Minor/Patch gesammelt – blockiert nicht mehr durch einen einzelnen Major.
+      npm-minor-patch:
+        update-types: ["minor", "patch"]
+        patterns:
+          - "*"
+      # Majors gesammelt – Breaking Changes stehen im PR-Body, dort prüfen.
+      npm-major:
+        update-types: ["major"]
         patterns:
           - "*"
