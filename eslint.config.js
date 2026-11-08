@@ -21,7 +21,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ['**/*.js', '**/*.ts', '**/*.tsx'],
+    files: ['**/*.js', '**/*.mjs', '**/*.ts', '**/*.tsx'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
