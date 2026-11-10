@@ -1,0 +1,11 @@
+{
+  "_comment": "Befristete Ausnahmen für scripts/audit-gate.mjs (Vorlage: DrawFromMemory, project-templates#171). Nur Findings ohne kurzfristigen Fix aufnehmen, jeweils mit Begründung und Ablaufdatum. Nach Ablauf schlägt das Gate fehl -> neu bewerten.",
+  "advisories": [
+    {
+      "id": "GHSA-m9gg-hp2v-232j",
+      "package": "@grpc/grpc-js",
+      "reason": "Transitiv über firebase -> @firebase/firestore (grpc-js@1.9.16). Das Web-SDK nutzt im Browser kein gRPC (WebChannel), betroffen wäre nur der Node-Build. Risiko akzeptiert in #485; bei jedem Firebase-Update neu prüfen.",
+      "expires": "2027-02-28"
+    }
+  ]
+}
