@@ -26,4 +26,4 @@ Aufgaben nach der Eisenhower-Methode sortieren: Entscheide, was du sofort erledi
 
 ## Lizenz
 
-Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) — private Nutzung erlaubt, kommerzielle nicht. Details: [LICENSE](LICENSE).
+PolyForm Noncommercial 1.0.0 (nicht-kommerzielle Nutzung). Details: [LICENSE](LICENSE).
